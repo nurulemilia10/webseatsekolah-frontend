@@ -1,26 +1,530 @@
-@import "tailwindcss";
-
+/* --- VARIABLES --- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+    --slate-50: #f8fafc;
+    --slate-100: #f1f5f9;
+    --slate-200: #e2e8f0;
+    --slate-400: #94a3b8;
+    --slate-600: #475569;
+    --slate-800: #1e293b;
+    --primary-blue: #2563eb;
+    --white: #ffffff;
+    --sidebar-width: 280px;
+    --sidebar-collapsed-width: 85px;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* --- BASE STYLES --- */
+body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    background-color: var(--slate-50);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Scrollbar styling */
+*::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+*::-webkit-scrollbar-track {
+    background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+    background: var(--slate-200);
+    border-radius: 10px;
+}
+*::-webkit-scrollbar-thumb:hover {
+    background: var(--slate-400);
+}
+
+@supports (scrollbar-width: thin) {
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: var(--slate-200) transparent;
+    }
+}
+
+/* Custom Login Styles - Compact Version */
+.max-w-420 { 
+    max-width: 380px; 
+}
+
+.school-logo { 
+    height: 45px; 
+    width: auto; 
+    object-fit: contain; 
+}
+
+.school-title { 
+    font-size: 1rem; 
+    color: #334155; 
+    line-height: 1.2;
+}
+
+.custom-input { 
+    background-color: #f1f5f9 !important; 
+    font-size: 0.875rem !important; 
+    padding: 0.6rem 1rem !important; 
+}
+
+.custom-btn { 
+    background-color: #0f172a !important; 
+    border: none;
+    font-size: 0.875rem; 
+    padding: 0.6rem !important; 
+    letter-spacing: 0.5px; 
+    transition: all 0.2s;
+}
+
+.custom-btn:hover {
+    opacity: 0.9;
+    background-color: #1e293b !important;
+}
+
+.custom-error { 
+    background-color: #fef2f2; 
+    color: #991b1b; 
+    font-size: 0.75rem;
+}
+
+.footer-copy { 
+    font-size: 0.65rem; 
+    margin-top: 2rem !important; 
+}
+
+/* --- UTILITY CLASSES --- */
+.fw-black { font-weight: 900 !important; }
+.tracking-tighter { letter-spacing: -0.05em !important; }
+.tracking-widest { letter-spacing: 0.12em !important; }
+.x-small-text { font-size: 9px !important; }
+.xx-small-text { font-size: 8px !important; }
+.d-flex { display: flex !important; }
+.transition-all { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+.rotate-180 { transform: rotate(180deg); }
+.cursor-pointer-custom { cursor: pointer; }
+.line-height-1-custom { line-height: 1; }
+
+/* FIX: Support untuk Safari (Menghilangkan Error Microsoft Edge Tools) */
+.user-select-none-custom { 
+    -webkit-user-select: none; 
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none; 
+}
+
+/* --- NAVBAR CUSTOM STYLES (Role & Online Status) --- */
+.text-online-kecil {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: lowercase; /* Memastikan teks 'online' tetap huruf kecil */
+    opacity: 0.8;
+}
+
+.online-dot-mini {
+    width: 6px;
+    height: 6px;
+}
+
+.text-role-capitalize {
+    text-transform: capitalize; /* Format: Admin, Guru, Orangtua */
+    font-size: 13px;
+}
+
+.nav-login-status-label {
+    font-size: 10px !important;
+    letter-spacing: 0.5px;
+}
+
+/* --- CORE LAYOUT --- */
+.page-container {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+/* Custom CSS untuk Navbar */
+
+.cursor-pointer-custom { 
+  cursor: pointer; 
+}
+
+.user-select-none-custom { 
+  -webkit-user-select: none; 
+  user-select: none; 
+}
+
+.line-height-1-custom { 
+  line-height: 1; 
+}
+
+.text-online-kecil {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: lowercase; 
+  opacity: 0.8;
+}
+
+.text-role-capitalize {
+  text-transform: capitalize;
+}
+
+.online-dot-mini {
+  width: 6px;
+  height: 6px;
+}
+
+.max-w-400 {
+  max-width: 400px;
+}
+
+/* Modal Overlay */
+.custom-modal-overlay {
+  background-color: rgba(5, 4, 4, 0.5);
+  z-index: 2000;
+}
+
+/* Animasi Fade In */
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: scale(0.95); 
+  }
+  to { 
+    opacity: 1; 
+    transform: scale(1); 
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.animation-fadeIn {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+/* Utility tambahan untuk transisi */
+.transition-all {
+  transition: all 0.2s ease-in-out;
+}
+
+.rotate-180 {
+  transform: rotate(180deg);
+}
+
+.hover-opacity-75:hover {
+  opacity: 0.75;
+}
+
+aside {
+    flex-shrink: 0;
+    width: var(--sidebar-width);
+    z-index: 1050;
+    background-color: var(--white);
+    border-right: 1px solid var(--slate-200);
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+}
+
+aside.collapsed {
+    width: var(--sidebar-collapsed-width) !important;
+}
+
+main {
+    flex: 1;
+    min-width: 0;
+    background-color: var(--slate-50);
+    display: flex;
+    flex-direction: column;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --- SIDEBAR COMPONENTS --- */
+aside.collapsed .sidebar-logo-container,
+aside.collapsed .sidebar-school-name,
+aside.collapsed .sidebar-panel-text,
+aside.collapsed .sidebar-menu-container,
+aside.collapsed nav span:not(.text-primary),
+aside.collapsed .ms-2,
+aside.collapsed .chevron-down-icon {
+    display: none !important;
+    opacity: 0;
+    visibility: hidden;
+    width: 0;
+    height: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+aside.collapsed .sidebar-group-header {
+    justify-content: center;
+    padding: 0.75rem 0;
+}
+
+.sidebar-logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.sidebar-logo-img {
+    width: 80%;
+    height: auto;
+    object-fit: contain; 
+    padding: 4px; 
+    display: block;
+}
+
+.sidebar-school-name {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--slate-800);
+    white-space: nowrap;
+}
+
+.sidebar-panel-text {
+    display: block;
+    font-size: 9px;
+    color: var(--slate-400);
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.sidebar-group-header {
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-bottom: 2px;
+}
+
+.sidebar-group-header:hover {
+    background-color: var(--slate-100);
+}
+
+.sidebar-menu-container {
+    overflow: hidden;
+    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, margin 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.menu-open {
+    max-height: 1000px;
+    opacity: 1;
+    margin-top: 4px;
+    margin-bottom: 8px;
+    visibility: visible;
+}
+
+.menu-closed {
+    max-height: 0 !important;
+    opacity: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* --- NAVBAR --- */
+.custom-navbar {
+    z-index: 1000;
+    height: 70px;
+    background-color: var(--white);
+    transition: all 0.3s ease;
+}
+
+.navbar-subtitle {
+    font-size: 10px !important;
+    letter-spacing: 1px !important;
+    color: var(--slate-400);
+}
+
+.online-indicator {
+    width: 7px;
+    height: 7px;
+    background-color: #22c55e;
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+    border-radius: 50%;
+}
+
+.avatar-wrapper {
+    width: 35px !important;
+    height: 35px !important;
+    background-color: var(--slate-50);
+    border: 2px solid var(--white);
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s ease;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.avatar-wrapper:hover {
+    transform: scale(1.05);
+}
+
+/* --- DROPDOWN & OVERLAYS --- */
+.dropdown-overlay {
+    z-index: 1050 !important;
+    background: rgba(0, 0, 0, 0.05);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.nav-dropdown-menu {
+    z-index: 1060 !important;
+    width: 220px;
+    right: 0;
+    background-color: var(--white);
+    border: 1px solid var(--slate-100) !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+    animation: slideInNavbar 0.2s ease-out;
+}
+
+/* --- CONTENT AREA & TABLES --- */
+.admin-dashboard-wrapper, 
+.content-area {
+    animation: fadeIn 0.5s ease forwards;
+    padding: 2rem;
+    flex: 1;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+.table-custom {
+    border-collapse: separate;
+    border-spacing: 0 0.5rem;
+    width: 100%;
+}
+
+.table-custom thead th {
+    padding: 1rem;
+    background: var(--slate-100);
+    border: none;
+    color: var(--slate-600);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+}
+
+.table-custom tbody tr {
+    background-color: var(--white);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    transition: all 0.2s ease;
+}
+
+.table-custom tbody tr:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.table-custom tbody td {
+    padding: 1rem;
+    border-top: 1px solid var(--slate-100);
+    border-bottom: 1px solid var(--slate-100);
+}
+
+/* --- STATS BOX & UTILS --- */
+.bg-dark-sisko {
+    background-color: #1e293b !important;
+    color: var(--white) !important;
+}
+
+.avatar-32 { width: 32px !important; height: 32px !important; flex-shrink: 0; }
+.rounded-xl { border-radius: 0.75rem !important; }
+.rounded-2xl { border-radius: 1rem !important; }
+
+.hover-lift:hover { 
+    transform: translateY(-4px); 
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05) !important; 
+}
+
+.stat-icon-box {
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-blue   { background: rgba(37, 99, 235, 0.1); color: #2563eb; }
+.stat-teal   { background: rgba(20, 184, 166, 0.1); color: #14b8a6; }
+.stat-orange { background: rgba(249, 115, 22, 0.1); color: #f97316; }
+.stat-purple { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+
+/* --- ANIMATIONS --- */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInNavbar {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 992px) {
+    aside {
+        position: fixed !important;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        transform: translateX(-100%);
+        z-index: 2000;
+        width: 280px !important;
+        height: 100vh !important;
+        background-color: white;
+        transition: transform 0.3s ease-in-out;
+    }
+
+    aside.mobile-open {
+        transform: translateX(0);
+        box-shadow: 10px 0 30px rgba(0,0,0,0.2);
+    }
+
+    .mobile-overlay {
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 1040;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar-school-name { font-size: 12px !important; }
+    .table-custom thead { display: none; }
+}
+/* Untuk lebar dropdown */
+.w-custom-200 {
+  min-width: 200px;
+}
+
+/* Untuk modal backdrop */
+.modal-backdrop-custom {
+  z-index: 2000;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Untuk form max width */
+.max-w-400 {
+  max-width: 400px;
 }
