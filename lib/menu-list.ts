@@ -6,10 +6,8 @@ export interface MenuItem {
 }
 
 export const MENU_LIST: MenuItem[] = [
-  // --- DASHBOARD ---
-  { title: 'Dashboard', path: '/dashboard', role: ['Admin', 'Guru', 'Siswa', 'Orangtua'] },
+  { title: 'Dashboard', path: '/admin/dashboard', role: ['Admin', 'Guru', 'Siswa', 'Orangtua'] },
 
-  // --- MODUL ADMIN & STRUKTURAL ---
   { title: 'User Management', path: '/admin/user', role: ['Admin'] },
   { title: 'Hak Akses & Role', path: '/admin/role', role: ['Admin'] },
   { title: 'Tahun Ajaran', path: '/admin/tahun-ajaran', role: ['Admin', 'Guru'], jabatan: ['WakaKurikulum'] },
@@ -38,33 +36,27 @@ export const MENU_LIST: MenuItem[] = [
   { title: 'Pesan Masuk (Humas)', path: '/admin/pesan', role: ['Admin', 'Guru'], jabatan: ['WakaHumas'] },
   { title: 'Log Aktivitas', path: '/admin/log', role: ['Admin', 'Guru'], jabatan: ['KepalaSekolah'] },
 
-  // --- KHUSUS KETUA JURUSAN ---
-  { title: 'Siswa Jurusan', path: '/jurusan/siswa', role: ['Guru'], jabatan: ['KetuaJurusan'] },
-  { title: 'Mapel Jurusan', path: '/jurusan/mapel', role: ['Guru'], jabatan: ['KetuaJurusan'] },
-  { title: 'Guru Mapel Jurusan', path: '/jurusan/guru-mapel', role: ['Guru'], jabatan: ['Ketua urusan'] },
-  { title: 'Kelas Jurusan', path: '/jurusan/kelas', role: ['Guru'], jabatan: ['KetuaJurusan'] },
+  { title: 'Siswa Jurusan', path: '/admin/jurusan/siswa', role: ['Guru'], jabatan: ['KetuaJurusan'] },
+  { title: 'Mapel Jurusan', path: '/admin/jurusan/mapel', role: ['Guru'], jabatan: ['KetuaJurusan'] },
+  { title: 'Guru Mapel Jurusan', path: '/admin/jurusan/guru-mapel', role: ['Guru'], jabatan: ['Ketua urusan'] },
+  { title: 'Kelas Jurusan', path: '/admin/jurusan/kelas', role: ['Guru'], jabatan: ['KetuaJurusan'] },
 
-  // --- KHUSUS WALI KELAS ---
-  { title: 'Siswa Kelas Saya', path: '/walikelas/siswa', role: ['Guru'], jabatan: ['WaliKelas'] },
-  { title: 'Orang Tua Siswa', path: '/walikelas/orangtua', role: ['Guru'], jabatan: ['WaliKelas'] },
-  { title: 'Presensi Harian Kelas', path: '/walikelas/presensi', role: ['Guru'], jabatan: ['WaliKelas'] },
+  { title: 'Siswa Kelas Saya', path: '/admin/walikelas/siswa', role: ['Guru'], jabatan: ['WaliKelas'] },
+  { title: 'Orang Tua Siswa', path: '/admin/walikelas/orangtua', role: ['Guru'], jabatan: ['WaliKelas'] },
+  { title: 'Presensi Harian Kelas', path: '/admin/walikelas/presensi', role: ['Guru'], jabatan: ['WaliKelas'] },
 
-  // --- KHUSUS GURU MATA PELAJARAN ---
-  { title: 'Jadwal Mengajar', path: '/mapel/jadwal', role: ['Guru'] },
-  { title: 'Presensi Mapel', path: '/mapel/presensi', role: ['Guru'] },
-  { title: 'Input Poin Pelanggaran', path: '/guru/poin-siswa', role: ['Guru'] },
+  { title: 'Jadwal Mengajar', path: '/admin/mapel/jadwal', role: ['Guru'] },
+  { title: 'Presensi Mapel', path: '/admin/mapel/presensi', role: ['Guru'] },
+  { title: 'Input Poin Pelanggaran', path: '/admin/guru/poin-siswa', role: ['Guru'] },
 
-  // --- SISWA ---
-  { title: 'Jadwal Saya', path: '/siswa/jadwal', role: ['Siswa'] },
-  { title: 'Presensi Saya', path: '/siswa/presensi', role: ['Siswa'] },
-  { title: 'Poin Pelanggaran', path: '/siswa/poin', role: ['Siswa'] },
+  { title: 'Jadwal Saya', path: '/admin/siswa/jadwal', role: ['Siswa'] },
+  { title: 'Presensi Saya', path: '/admin/siswa/presensi', role: ['Siswa'] },
+  { title: 'Poin Pelanggaran', path: '/admin/siswa/poin', role: ['Siswa'] },
 
-  // --- ORANG TUA ---
-  { title: 'Data Anak', path: '/ortu/anak', role: ['Orangtua'] },
-  { title: 'Presensi Anak', path: '/ortu/presensi', role: ['Orangtua'] },
-  { title: 'Poin Pelanggaran Anak', path: '/ortu/poin', role: ['OrangTua'] },
+  { title: 'Data Anak', path: '/admin/ortu/anak', role: ['Orangtua'] },
+  { title: 'Presensi Anak', path: '/admin/ortu/presensi', role: ['Orangtua'] },
+  { title: 'Poin Pelanggaran Anak', path: '/admin/ortu/poin', role: ['OrangTua'] },
 
-  // --- GLOBAL SETTINGS ---
   { title: 'Profil Sekolah', path: '/admin/profil-sekolah', role: ['Admin', 'Guru'], jabatan: ['KepalaSekolah'] },
-  { title: 'Keamanan Akun', path: '/setting/keamanan', role: ['Admin', 'Guru', 'Siswa', 'Orangtua'] }
+  { title: 'Keamanan Akun', path: '/admin/setting/keamanan', role: ['Admin', 'Guru', 'Siswa', 'Orangtua'] }
 ];

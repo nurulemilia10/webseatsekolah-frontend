@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const Api = axios.create({
-    baseURL: 'http://localhost:8000',
+    baseURL: 'http://127.0.0.1:8000',
     headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
@@ -55,7 +55,7 @@ const api = {
     auth: {
         logout: () => Api.post('/api/logout'),
         me: () => Api.get('/api/me'),
-        updateFoto: (data: any) => Api.post('/api/update-foto', data),
+        updateFoto: (data: any, config?: any) => Api.post('/api/update-foto', data, config),
         changePassword: (data: any) => Api.post('/api/change-password', data),
         switchRole: (data: any) => Api.post('/api/switch-role', data),
     },

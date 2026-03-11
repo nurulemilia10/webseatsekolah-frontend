@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+// Import Script dari next/script
+import Script from "next/script";
 import '@tabler/core/dist/css/tabler.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import "./globals.css";
@@ -13,10 +15,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="id">
       <body className="antialiased">
         {children}
-        <script 
+        
+        {/* Mengganti tag script standar dengan Script Next.js agar navigasi lancar */}
+        <Script 
           src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/js/tabler.min.js" 
-          defer 
-        ></script>
+          strategy="afterInteractive" 
+        />
       </body>
     </html>
   );

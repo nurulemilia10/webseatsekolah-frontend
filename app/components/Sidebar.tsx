@@ -3,16 +3,19 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import api from '@/lib/api'; 
 import { 
     LayoutDashboard, ChevronLeft, ChevronDown,
     FolderArchive, Users, Database, School, Menu, X 
 } from 'lucide-react';
 import { MENU_LIST } from '@/lib/menu-list';
 
+// Interface disesuaikan agar menerima data dari DashboardLayout (Props)
 interface SidebarProps {
     isMobileOpen: boolean;
     setIsMobileOpen: (open: boolean) => void;
+    user?: any;           // Tambahan props data user
+    schoolProfile?: any;  // Tambahan props profil sekolah
+    loading?: boolean;    // Tambahan props status loading
 }
 
 const GROUPS_CONFIG = [
@@ -22,12 +25,18 @@ const GROUPS_CONFIG = [
     { title: "Operasional", icon: <Users size={20} />, items: ["Guru Mapel", "Presensi Harian", "Monitoring Presensi Mapel", "Monitoring Poin Siswa", "Kenaikan Kelas (Massal)", "Ekstrakurikuler"] }
 ];
 
-export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps) {
-    const [user, setUser] = useState<any>(null);
-    const [schoolProfile, setSchoolProfile] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
-    const [isCollapsed, setIsCollapsed] = useState(false);
+export default function Sidebar({ 
+    isMobileOpen, 
+    setIsMobileOpen, 
+    user, 
+    schoolProfile, 
+    loading 
+}: SidebarProps) {
+    const pathname = usePathname();
     
+    // State UI tetap dipertahankan sesuai kode asli Anda
+    const [isCollapsed, setIsCollapsed] = useState(false);
+
     const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
         "Utama": true,
         "Akademik": false,
@@ -35,45 +44,38 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
         "Operasional": false
     });
 
-    const pathname = usePathname();
+    // Sinkronisasi status collapsed dengan localStorage
+    useEffect(() => {
+        const saved = localStorage.getItem('sidebar-collapsed');
+        if (saved !== null) setIsCollapsed(saved === 'true');
+    }, []);
 
     useEffect(() => {
-        let isMounted = true;
-        const fetchData = async () => {
-            try {
-                const [resUser, resSchool] = await Promise.all([
-                    api.auth.me().catch(() => null),
-                    api.public.getProfilSekolah().catch(() => null)
-                ]);
-                if (!isMounted) return;
-                if (resUser) {
-                    const userData = resUser.data.user || resUser.data.data || resUser.data;
-                    setUser(userData);
-                }
-                if (resSchool) {
-                    const schoolData = resSchool.data.data || resSchool.data;
-                    setSchoolProfile(schoolData);
-                }
-            } catch (err) {
-                console.error("Sidebar Error:", err);
-            } finally {
-                if (isMounted) setLoading(false);
-            }
-        };
-        fetchData();
-        return () => { isMounted = false; };
-    }, []);
+        localStorage.setItem('sidebar-collapsed', String(isCollapsed));
+    }, [isCollapsed]);
 
     useEffect(() => {
         setIsMobileOpen(false);
     }, [pathname, setIsMobileOpen]);
 
+    // Menggunakan data 'user' dari props untuk memfilter menu
     const filteredMenuGroups = useMemo(() => {
-        return GROUPS_CONFIG.map(group => ({
-            ...group,
-            menuItems: MENU_LIST.filter(m => group.items.includes(m.title))
-        }));
-    }, []);
+        if (!user) return [];
+        const currentRole = (user.current_role as string)?.toLowerCase() || "";
+
+        return GROUPS_CONFIG.map(group => {
+            const menuItems = MENU_LIST.filter(m => {
+                const isInsideGroup = group.items.includes(m.title);
+                const allowedRoles = Array.isArray(m.role) 
+                    ? m.role.map((r: any) => String(r).toLowerCase()) 
+                    : m.role ? [String(m.role).toLowerCase()] : [];
+
+                const hasPermission = !m.role || allowedRoles.includes(currentRole) || currentRole === 'admin';
+                return isInsideGroup && hasPermission;
+            });
+            return { ...group, menuItems };
+        }).filter(group => group.menuItems.length > 0); 
+    }, [user]);
 
     const handleGroupClick = useCallback((title: string) => {
         setOpenGroups(prev => {
@@ -85,7 +87,8 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
         });
     }, [isCollapsed]);
 
-    if (loading) return <aside className="bg-white border-end shadow-sm sidebar-loading" />;
+    // Menggunakan status 'loading' dari props
+    if (loading) return <aside className="bg-white border-end shadow-sm sidebar-loading opacity-50" />;
 
     return (
         <>
@@ -97,7 +100,6 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
             )}
 
             <aside className={`${isCollapsed ? 'collapsed' : ''} ${isMobileOpen ? 'mobile-open' : ''} transition-all`}>
-                
                 <div className={`sidebar-header-container d-flex align-items-center p-3 border-bottom ${isCollapsed ? 'justify-content-center' : 'justify-content-between'}`}>
                     <div className="d-flex align-items-center overflow-hidden">
                         <div className="sidebar-logo-container shadow-sm">
@@ -109,15 +111,14 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
                         </div>
                         {!isCollapsed && (
                             <div className="ms-2 min-w-0 animate-fade-in">
-                                <h6 className="sidebar-school-name text-truncate m-0">
+                                <h6 className="sidebar-school-name text-truncate m-0 fw-bold">
                                     {schoolProfile?.nama_sekolah || 'SISKO'}
                                 </h6>
-                                <span className="sidebar-panel-text">Panel Sistem</span>
+                                <span className="sidebar-panel-text text-capitalize">Panel {user?.current_role || 'Sistem'}</span>
                             </div>
                         )}
                     </div>
 
-                    {/* Desktop Toggle Button - Fixed Accessibility */}
                     <button 
                         type="button"
                         onClick={() => setIsCollapsed(!isCollapsed)}
@@ -128,7 +129,6 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
                         {isCollapsed ? <Menu size={20} /> : <ChevronLeft size={20} />}
                     </button>
 
-                    {/* Mobile Close Button - Fixed Accessibility */}
                     <button 
                         type="button"
                         onClick={() => setIsMobileOpen(false)}
@@ -146,7 +146,6 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
                             <div 
                                 onClick={() => handleGroupClick(group.title)}
                                 className="sidebar-group-header"
-                                title={isCollapsed ? group.title : undefined}
                                 role="button"
                                 tabIndex={0}
                                 onKeyDown={(e) => e.key === 'Enter' && handleGroupClick(group.title)}
@@ -184,20 +183,6 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
                         </div>
                     ))}
                 </nav>
-
-                {!isCollapsed && user && (
-                    <div className="p-3 border-top bg-white">
-                        <div className="d-flex align-items-center">
-                            <div className="avatar-32 rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold">
-                                {user.name?.charAt(0) || "U"}
-                            </div>
-                            <div className="ms-2 min-w-0">
-                                <p className="sidebar-school-name m-0 text-truncate font-bold user-info-name">{user.name}</p>
-                                <p className="online-text m-0 text-truncate text-muted user-info-role">{user.role}</p>
-                            </div>
-                        </div>
-                    </div>
-                )}
             </aside>
         </>
     );

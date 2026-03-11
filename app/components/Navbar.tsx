@@ -1,63 +1,64 @@
 "use client";
 
-import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useRef, useCallback, useMemo } from 'react';
 import api from '@/lib/api';
-import { User, LogOut, Key, Menu, ChevronDown, ShieldCheck, RefreshCw, X, ChevronRight } from 'lucide-react';
+import { LogOut, Key, Menu, ChevronDown, ShieldCheck, RefreshCw, X, ChevronRight } from 'lucide-react';
 import Swal from 'sweetalert2';
 
-export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
-  const [user, setUser] = useState<any>(null);
+interface NavbarProps {
+  onMenuClick?: () => void;
+  user?: any;
+  isLoading?: boolean;
+}
+
+export default function Navbar({ onMenuClick, user, isLoading }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [showPassModal, setShowPassModal] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loadingAction, setLoadingAction] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [passData, setPassData] = useState({ old: '', new: '', confirm: '' });
   const [passError, setPassError] = useState('');
   const [showRoleList, setShowRoleList] = useState(false);
 
-  const Toast = Swal.mixin({
+  const Toast = useMemo(() => Swal.mixin({
     toast: true,
-    position: 'top-end',
+    position: 'top',
     showConfirmButton: false,
     timer: 3000,
     timerProgressBar: true,
-  });
+  }), []);
 
-  const CenterTopToast = Swal.mixin({
+  const CenterTopToast = useMemo(() => Swal.mixin({
     toast: true,
     position: 'top',
     showConfirmButton: false,
     timer: 2000,
     timerProgressBar: true,
-  });
-
-  const fetchUserData = useCallback(async () => {
-    try {
-      const res = await api.auth.me();
-      setUser(res.data?.data || null);
-    } catch (err) {
-      console.error("Gagal mengambil data user");
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchUserData();
-  }, [fetchUserData]);
+  }), []);
 
   const handleUpdateFoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
     const formData = new FormData();
     formData.append('foto', file);
+
     try {
-      setLoading(true);
-      const res = await api.auth.updateFoto(formData);
-      Toast.fire({ icon: 'success', title: res.data?.message || "Foto berhasil diperbarui" });
-      await fetchUserData();
+      setLoadingAction(true);
+      const res = await api.auth.updateFoto(formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      Toast.fire({ 
+        icon: 'success', 
+        title: res.data?.message || "Foto berhasil diperbarui" 
+      });
+      window.location.reload();
     } catch (err: any) {
-      Toast.fire({ icon: 'error', title: err.response?.data?.message || "Gagal memperbarui foto" });
+      const errorMsg = err.response?.data?.errors?.foto?.[0] || err.response?.data?.message || "Gagal memperbarui foto";
+      Toast.fire({ icon: 'error', title: errorMsg });
     } finally {
-      setLoading(false);
+      setLoadingAction(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
@@ -69,38 +70,55 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
       return;
     }
     try {
-      setLoading(true);
+      setLoadingAction(true);
       const res = await api.auth.changePassword({ 
         current_password: passData.old, 
         new_password: passData.new,
         new_password_confirmation: passData.confirm 
       });
-      Swal.fire({ icon: 'success', title: 'Berhasil', text: res.data?.message || "Password berhasil diubah!", confirmButtonColor: '#0d6efd' });
+      Swal.fire({ 
+        icon: 'success', 
+        title: 'Berhasil', 
+        text: res.data?.message || "Password berhasil diubah!", 
+        confirmButtonColor: '#0d6efd' 
+      });
       setShowPassModal(false);
       setPassData({ old: '', new: '', confirm: '' });
     } catch (err: any) {
       setPassError(err.response?.data?.message || "Gagal mengubah password");
     } finally {
-      setLoading(false);
+      setLoadingAction(false);
     }
   };
 
   const handleSwitchRole = async (targetRole: string) => {
     const normalizedTarget = (targetRole || "").toLowerCase();
     const normalizedCurrent = (user?.current_role || "").toLowerCase();
-    
     if (normalizedTarget === normalizedCurrent) return;
 
     try {
-      setLoading(true);
+      setLoadingAction(true);
       const res = await api.auth.switchRole({ role: targetRole });
-      CenterTopToast.fire({ icon: 'success', title: res.data?.message || `Berhasil pindah ke role ${targetRole}` });
+      CenterTopToast.fire({ 
+        icon: 'success', 
+        title: res.data?.message || `Berhasil pindah ke role ${targetRole}` 
+      });
       setIsOpen(false);
-      window.location.reload();
+      
+      const roleSlug = targetRole.toLowerCase();
+      if (roleSlug.includes('admin')) window.location.href = '/admin/dashboard';
+      else if (roleSlug.includes('guru')) window.location.href = '/guru/dashboard';
+      else if (roleSlug.includes('siswa')) window.location.href = '/siswa/dashboard';
+      else if (roleSlug.includes('orangtua') || roleSlug.includes('ortu')) window.location.href = '/ortu/dashboard';
+      else window.location.reload();
+
     } catch (err: any) {
-      CenterTopToast.fire({ icon: 'error', title: err.response?.data?.message || "Gagal berpindah role" });
+      CenterTopToast.fire({ 
+        icon: 'error', 
+        title: err.response?.data?.message || "Gagal berpindah role" 
+      });
     } finally {
-      setLoading(false);
+      setLoadingAction(false);
     }
   };
 
@@ -108,7 +126,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
     const rolesData = user?.roles; 
     if (!rolesData) return [];
     if (Array.isArray(rolesData)) {
-      return rolesData.map((r: any) => typeof r === 'object' ? r.nama : r).filter(Boolean);
+      return rolesData.map((r: any) => typeof r === 'object' ? r.name || r.nama : r).filter(Boolean);
     }
     if (typeof rolesData === 'string') {
       return rolesData.split(',').map((r: string) => r.trim()).filter(Boolean);
@@ -119,18 +137,38 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const currentRole = user?.current_role || "";
   const displayName = user?.guru?.nama || user?.siswa?.nama || user?.username || "Pengguna";
 
+  const isRestrictedRole = useMemo(() => {
+    const role = (currentRole || "").toLowerCase();
+    return role === 'admin' || role === 'orangtua';
+  }, [currentRole]);
+
+  const handleAvatarClick = () => {
+    if (loadingAction || isRestrictedRole) return;
+    fileInputRef.current?.click();
+  };
+
+  const renderUserPhoto = () => {
+    const avatarFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=random&color=fff`;
+    const photoSrc = user?.foto ? user.foto : avatarFallback;
+    return (
+      <img 
+        src={photoSrc} 
+        alt="Profil" 
+        className="w-100 h-100 object-fit-cover" 
+        onError={(e) => {
+          const target = e.target as HTMLImageElement;
+          if (target.src !== avatarFallback) target.src = avatarFallback;
+        }}
+      />
+    );
+  };
+
   return (
     <>
       <nav className="navbar navbar-expand-md navbar-light bg-white border-bottom py-2 px-4 shadow-sm custom-navbar">
         <div className="container-fluid p-0">
           <div className="d-flex align-items-center">
-            <button 
-              type="button" 
-              className="btn btn-link p-0 me-3 d-lg-none text-dark border-0 shadow-none" 
-              onClick={onMenuClick}
-              aria-label="Buka Menu"
-              title="Buka Menu"
-            >
+            <button type="button" className="btn btn-link p-0 me-3 d-lg-none text-dark border-0 shadow-none" onClick={onMenuClick} title="Buka Menu" aria-label="Buka Menu">
               <Menu size={24} />
             </button>
             <div className="d-flex flex-column">
@@ -143,27 +181,15 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
             <div
               role="button"
               tabIndex={0}
-              className="avatar-wrapper rounded-3 border border-2 border-white shadow-sm overflow-hidden bg-light d-flex align-items-center justify-content-center nav-avatar-box cursor-pointer-custom"
-              onClick={() => !loading && fileInputRef.current?.click()}
-              onKeyDown={(e) => e.key === 'Enter' && !loading && fileInputRef.current?.click()}
-              title="Klik untuk ubah foto profil"
+              className={`avatar-wrapper rounded-3 border border-2 border-white shadow-sm overflow-hidden bg-light d-flex align-items-center justify-content-center nav-avatar-box ${isRestrictedRole || isLoading ? 'pe-none opacity-100' : 'cursor-pointer-custom'}`}
+              onClick={handleAvatarClick}
+              onKeyDown={(e) => e.key === 'Enter' && handleAvatarClick()}
+              title={isRestrictedRole ? "" : "Klik untuk ubah foto profil"}
             >
-              {user?.foto ? (
-                <img src={user.foto} alt="Profil" className="w-100 h-100 object-fit-cover" />
-              ) : (
-                <User size={18} className="text-muted" />
-              )}
+              {isLoading ? <div className="spinner-border spinner-border-sm text-primary" role="status" /> : renderUserPhoto()}
             </div>
 
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              className="d-none" 
-              accept="image/*" 
-              onChange={handleUpdateFoto}
-              title="Unggah Foto Profil"
-              aria-label="Unggah Foto Profil"
-            />
+            <input type="file" ref={fileInputRef} className="d-none" accept="image/*" onChange={handleUpdateFoto} title="Unggah Foto Profil" aria-label="Unggah Foto Profil" />
 
             <div className="dropdown position-relative">
               <div
@@ -172,7 +198,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                 onClick={() => { setIsOpen(!isOpen); setShowRoleList(false); }}
               >
                 <div className="text-end d-none d-md-block">
-                  <span className="mb-0 fw-black text-dark small d-block">{displayName}</span>
+                  <span className="mb-0 fw-black text-dark small d-block">{isLoading ? 'Loading...' : displayName}</span>
                   <div className="d-flex align-items-center justify-content-end gap-1">
                     <span className="online-indicator rounded-circle bg-success online-dot-mini"></span>
                     <span className="text-muted text-online-kecil">online</span>
@@ -190,21 +216,15 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                         <ShieldCheck size={12} className="text-primary" />
                         <span className="fw-black text-muted text-uppercase nav-login-status-label">Status Login</span>
                       </div>
-                      <p className="mb-0 small fw-bold text-truncate text-primary text-uppercase">
-                        {currentRole || "PENGGUNA"}
-                      </p>
+                      <p className="mb-0 small fw-bold text-truncate text-primary text-uppercase">{currentRole || "PENGGUNA"}</p>
                     </div>
 
                     {availableRoles.length > 1 && (
                       <div className="position-relative">
-                        <button
-                          type="button"
-                          onClick={() => setShowRoleList(!showRoleList)}
-                          className="dropdown-item d-flex align-items-center justify-content-between py-2 rounded-3 border-0 bg-transparent w-100 transition-all hover-bg-light text-start"
-                        >
+                        <button type="button" onClick={() => setShowRoleList(!showRoleList)} className="dropdown-item d-flex align-items-center justify-content-between py-2 rounded-3 border-0 bg-transparent w-100 transition-all hover-bg-light text-start">
                           <div className="d-flex align-items-center gap-3">
                             <div className="p-1 bg-light rounded text-muted">
-                              <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+                              <RefreshCw size={14} className={loadingAction ? 'animate-spin' : ''} />
                             </div>
                             <span className="small fw-bold text-dark">Ganti Role</span>
                           </div>
@@ -216,13 +236,8 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                             {availableRoles.map((roleName: string, idx: number) => {
                               const isSelected = (roleName || "").toLowerCase() === (currentRole || "").toLowerCase();
                               return (
-                                <button
-                                  key={idx}
-                                  type="button"
-                                  disabled={loading || isSelected}
-                                  onClick={() => handleSwitchRole(roleName)}
-                                  className={`dropdown-item small py-1 px-3 rounded-2 border-0 w-100 text-start ${isSelected ? 'bg-primary text-white fw-bold' : 'text-muted'}`}
-                                >
+                                <button key={idx} type="button" disabled={loadingAction || isSelected} onClick={() => handleSwitchRole(roleName)}
+                                  className={`dropdown-item small py-1 px-3 rounded-2 border-0 w-100 text-start ${isSelected ? 'bg-primary text-white fw-bold' : 'text-muted'}`}>
                                   {(roleName || "").toUpperCase()}
                                 </button>
                               );
@@ -238,13 +253,13 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                     </button>
 
                     <div className="mt-2 pt-2 border-top">
-                      <button
-                        type="button"
-                        onClick={async () => { await api.auth.logout(); localStorage.clear(); window.location.href = '/login'; }}
-                        className="dropdown-item d-flex align-items-center gap-3 py-2 rounded-3 text-white bg-dark border-0 w-100 text-start"
-                      >
+                      <button type="button" disabled={loadingAction} className="dropdown-item d-flex align-items-center gap-3 py-2 rounded-3 text-white bg-dark border-0 w-100 text-start"
+                        onClick={async () => {
+                          try { setLoadingAction(true); await api.auth.logout(); } catch (err) { console.error(err); } 
+                          finally { localStorage.clear(); window.location.href = '/login'; }
+                        }}>
                         <div className="p-1 text-white"><LogOut size={14} /></div>
-                        <span className="small fw-black text-uppercase">Keluar Sesi</span>
+                        <span className="small fw-black text-uppercase">{loadingAction ? 'Processing...' : 'Keluar Sesi'}</span>
                       </button>
                     </div>
                   </div>
@@ -273,7 +288,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                 <input type="password" required placeholder="Ulangi sandi baru" title="Ulangi sandi baru" className="form-control form-control-sm" value={passData.confirm} onChange={e => setPassData({ ...passData, confirm: e.target.value })} />
               </div>
               {passError && <div className="mb-3"><span className="text-danger small">* {passError}</span></div>}
-              <button type="submit" disabled={loading} className="btn btn-primary w-100 rounded-3 fw-bold small">{loading ? 'Memproses...' : 'Simpan Perubahan'}</button>
+              <button type="submit" disabled={loadingAction} className="btn btn-primary w-100 rounded-3 fw-bold small">{loadingAction ? 'Memproses...' : 'Simpan Perubahan'}</button>
             </form>
           </div>
         </div>

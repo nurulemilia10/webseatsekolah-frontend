@@ -12,6 +12,13 @@
     --sidebar-collapsed-width: 85px;
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 }
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+  position: relative;
+  /* Mencegah efek pantul/overscroll di beberapa browser mobile */
+  overscroll-behavior-y: none; 
+}
 
 /* --- BASE STYLES --- */
 body {
@@ -527,4 +534,42 @@ aside.collapsed .sidebar-group-header {
 /* Untuk form max width */
 .max-w-400 {
   max-width: 400px;
+}
+/* Custom Utility untuk Manajemen User */
+.text-xs-custom {
+  font-size: 12px;
+}
+
+.text-xxs-custom {
+  font-size: 10px;
+}
+
+.text-header-table {
+  font-size: 11px;
+  letter-spacing: 0.5px;
+}
+
+.w-search-custom {
+  width: 320px;
+}
+
+.modal-max-width {
+  max-width: 400px;
+}
+
+.rounded-custom {
+  border-radius: 10px;
+}
+
+/* Animasi hover untuk button edit */
+.hover-zoom {
+  transition: transform 0.2s ease;
+}
+
+.hover-zoom:hover {
+  transform: scale(1.2);
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }

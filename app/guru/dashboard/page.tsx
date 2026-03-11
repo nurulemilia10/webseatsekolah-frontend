@@ -3,12 +3,13 @@
 import React, { useEffect, useState, useMemo, useCallback, memo } from 'react';
 import api from '@/lib/api';
 import { 
-  Users, GraduationCap, Mail, School, Calendar, 
-  History, Megaphone, ShieldCheck, ArrowUpRight 
-} from 'lucide-react'; // Perbaikan: lucide-react
+  Users, GraduationCap, BookOpen, School, Calendar, 
+  History, Megaphone, ShieldCheck, ArrowUpRight,
+  Info
+} from 'lucide-react';
 
 const styles = {
-  wrapper: "admin-dashboard-wrapper p-2",
+  wrapper: "guru-dashboard-wrapper p-2",
   card: "card shadow-sm rounded-3xl border-0 bg-white h-100",
   headerCard: "p-3 border-bottom d-flex justify-content-between align-items-center",
   tableTh: "px-3 py-2 border-0 text-muted text-uppercase x-small-text tracking-widest",
@@ -18,7 +19,6 @@ const styles = {
   skeletonContent: "bg-light rounded-4 w-100 skeleton-h-300"
 };
 
-// Memoized Sub-Components untuk mencegah re-render yang tidak perlu
 const StatCard = memo(({ label, value, icon, variant, trend }: any) => (
   <div className="col-12 col-sm-6 col-md-3">
     <div className={`${styles.card} p-3 hover-lift`}>
@@ -43,21 +43,18 @@ const LightMetric = memo(({ label, value }: any) => (
   </div>
 ));
 
-export default function AdminView() {
+export default function GuruView({ user }: { user: any }) {
   const [dash, setDash] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  // Optimasi format waktu menggunakan Intl (lebih cepat dan stabil)
-  const timeFormatter = useMemo(() => 
-    new Intl.DateTimeFormat('id-ID', { hour: '2-digit', minute: '2-digit' }), 
-  []);
-
   const fetchData = useCallback(async (isMounted: boolean) => {
     try {
-      const res = await api.admin.getDashboard();
+      const res = await api.guru.getDashboard(); 
       if (isMounted) {
-        setDash(res.data.data);
+        const data = res.data.data;
+        setDash(data);
         setLoading(false);
+        localStorage.setItem('guru_dash_cache', JSON.stringify(data));
       }
     } catch (error) {
       if (isMounted) setLoading(false);
@@ -66,62 +63,82 @@ export default function AdminView() {
 
   useEffect(() => {
     let isMounted = true;
+    const cache = localStorage.getItem('guru_dash_cache');
+    if (cache) {
+      setDash(JSON.parse(cache));
+      setLoading(false);
+    }
     fetchData(isMounted);
     return () => { isMounted = false; };
   }, [fetchData]);
 
-  // Data pre-processing dengan useMemo untuk performa maksimal
   const stats = useMemo(() => dash?.statistics || {}, [dash]);
-  const agenda = useMemo(() => dash?.common?.kalender_akademik || [], [dash]);
+  const agenda = useMemo(() => dash?.kalender_akademik || [], [dash]);
   const announcements = useMemo(() => dash?.common?.recent_pengumuman?.slice(0, 3) || [], [dash]);
-  const logs = useMemo(() => dash?.recent_logs || [], [dash]);
+  const common = useMemo(() => dash?.common || {}, [dash]);
 
-  const formatDateOnly = useCallback((dateString: string) => {
-    if (!dateString) return "";
-    return dateString.split(" ")[0];
-  }, []);
+  const formatDateOnly = useCallback((dateString: string) => (
+    dateString ? dateString.split(" ")[0] : ""
+  ), []);
 
-  if (loading) return <DashboardSkeleton />;
+  if (loading && !dash) return <DashboardSkeleton />;
 
   return (
     <div className={styles.wrapper}>
-      {/* STATS SECTION */}
       <div className="row g-3 mb-3">
-        <StatCard label="Guru" value={stats.guru_aktif} icon={<Users size={20} />} variant="stat-blue" trend="Tenaga Pendidik" />
-        <StatCard label="Siswa" value={stats.siswa_aktif} icon={<GraduationCap size={20} />} variant="stat-teal" trend="Total Siswa" />
-        <StatCard label="Pesan" value={stats.pesan_baru} icon={<Mail size={20} />} variant="stat-orange" trend="Kotak Masuk" />
-        <StatCard label="Jurusan" value={stats.total_jurusan} icon={<School size={20} />} variant="stat-purple" trend="Program Studi" />
+        <StatCard label="Siswa Binaan" value={stats.total_siswa_binaan} icon={<Users size={20} />} variant="stat-blue" trend="Wali Kelas" />
+        <StatCard label="Hadir Hari Ini" value={stats.presensi_hari_ini} icon={<ShieldCheck size={20} />} variant="stat-teal" trend="Presensi" />
+        <StatCard label="Mata Pelajaran" value={stats.mapel_diampu} icon={<BookOpen size={20} />} variant="stat-orange" trend="Jam Mengajar" />
+        
+        {stats.total_siswa_global !== undefined && (
+          <StatCard 
+            label="Total Siswa" 
+            value={stats.total_siswa_global} 
+            icon={<GraduationCap size={20} />} 
+            variant="stat-purple" 
+            trend={dash?.manajerial?.role_jabatan || "Sekolah"} 
+          />
+        )}
+        
+        {stats.siswa_jurusan !== undefined && stats.total_siswa_global === undefined && (
+          <StatCard 
+            label="Siswa Jurusan" 
+            value={stats.siswa_jurusan} 
+            icon={<School size={20} />} 
+            variant="stat-purple" 
+            trend={dash?.manajerial?.role_jabatan || "Jurusan"} 
+          />
+        )}
       </div>
 
       <div className="row g-3 mb-3">
-        {/* AGENDA SECTION */}
         <div className="col-lg-8">
           <div className={`${styles.card} p-3`}>
             <h6 className="fw-black mb-3 d-flex align-items-center gap-2">
-              <Calendar size={18} className="text-primary" /> Agenda Akademik
+              <GraduationCap size={18} className="text-primary" /> Kalender Akademik
             </h6>
             <div className="row g-2">
-              {agenda.map((item: any, i: number) => (
+              {agenda.map((item: any, i: number) => item && (
                 <div key={i} className="col-md-6">
                   <div className="p-2 rounded-2xl border border-light bg-light bg-opacity-25 d-flex align-items-center justify-content-between hover-lift">
                     <div className="d-flex align-items-center gap-3">
-                      <div className={`avatar-32 rounded-circle d-flex align-items-center justify-content-center ${item.status === 'Aktif' ? 'bg-success text-white' : 'bg-secondary text-white opacity-25'}`}>
+                      <div className={`avatar-32 rounded-circle d-flex align-items-center justify-content-center ${item.status === 'Sedang Berlangsung' ? 'bg-success' : 'bg-primary'} text-white`}>
                         <Calendar size={14} />
                       </div>
                       <div>
                         <div className="fw-bold text-dark small leading-tight">{item.kegiatan}</div>
-                        <div className="fw-black text-muted xx-small-text text-uppercase">{formatDateOnly(item.tanggal_mulai)}</div>
+                        <div className="fw-black text-muted xx-small-text text-uppercase">{item.status || 'Agenda'} • {formatDateOnly(item.tanggal_mulai)}</div>
                       </div>
                     </div>
                     <ArrowUpRight size={14} className="text-muted" />
                   </div>
                 </div>
               ))}
+              {agenda.length === 0 && <div className="p-3 text-muted x-small-text">Tidak ada agenda terdekat.</div>}
             </div>
           </div>
         </div>
 
-        {/* PENGUMUMAN SECTION */}
         <div className="col-lg-4">
           <div className={`${styles.card} p-3`}>
             <div className="d-flex justify-content-between align-items-center mb-3">
@@ -135,46 +152,56 @@ export default function AdminView() {
                   <div className="fw-bold text-dark small leading-snug group-hover:text-primary transition-colors">{p.judul}</div>
                 </div>
               ))}
+              {announcements.length === 0 && <div className="py-3 text-muted x-small-text text-center">Belum ada pengumuman.</div>}
             </div>
           </div>
         </div>
       </div>
 
       <div className="row g-3">
-        {/* LOG SECTION */}
         <div className="col-lg-8">
           <div className={`${styles.card} overflow-hidden`}>
             <div className={styles.headerCard}>
               <div className="d-flex align-items-center gap-2">
                 <History size={18} className="text-secondary" />
-                <h6 className="fw-black mb-0">Log Aktivitas Terbaru</h6>
+                <h6 className="fw-black mb-0">Berita Sekolah Terbaru</h6>
               </div>
             </div>
             <div className="table-responsive">
               <table className="table align-middle mb-0 table-sm">
                 <thead className="bg-light">
                   <tr className={styles.tableTh}>
-                    <th className="px-3 py-2 border-0">Operator</th>
-                    <th className="py-2 border-0">Aksi & Perubahan</th>
-                    <th className="px-3 py-2 border-0 text-end">Waktu</th>
+                    <th className="px-3 py-2 border-0">Judul Berita</th>
+                    <th className="py-2 border-0">Tanggal</th>
+                    <th className="px-3 py-2 border-0 text-end">Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {logs.map((log: any, i: number) => (
+                  {common.recent_berita?.map((berita: any, i: number) => (
                     <tr key={i} className="border-bottom border-light last:border-0">
                       <td className="px-3 py-3 border-0">
-                        <div className="d-flex align-items-center gap-2">
-                          <div className="bg-primary rounded text-white d-flex align-items-center justify-content-center fw-black x-small-text avatar-32">
-                            {log.user?.username?.charAt(0).toUpperCase()}
-                          </div>
-                          <span className="fw-bold text-dark small">{log.user?.username}</span>
+                        <div className="d-flex align-items-center gap-3">
+                           {berita.foto_url ? (
+                             <img src={berita.foto_url} alt="" className="avatar-32 rounded object-cover" />
+                           ) : (
+                             <div className="avatar-32 bg-light rounded d-flex align-items-center justify-content-center text-muted">
+                               <School size={14} />
+                             </div>
+                           )}
+                           <span className="fw-bold text-dark small">{berita.judul}</span>
                         </div>
                       </td>
-                      <td className="py-3 border-0">
-                        <span className="text-dark small fw-bold opacity-75">{log.aksi}</span>
+                      <td className="py-3 border-0 text-muted small">
+                        {berita.tanggal_human}
                       </td>
-                      <td className="px-3 text-end text-muted small font-monospace border-0">
-                        {timeFormatter.format(new Date(log.created_at))}
+                      <td className="px-3 text-end border-0">
+                        <button 
+                          className="btn btn-sm btn-light rounded-circle p-1"
+                          title="Lihat Detail Berita"
+                          aria-label="Lihat Detail Berita"
+                        >
+                          <ArrowUpRight size={14} />
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -184,19 +211,30 @@ export default function AdminView() {
           </div>
         </div>
 
-        {/* METRICS SECTION */}
         <div className="col-lg-4">
           <div className={`${styles.card} p-3 position-relative overflow-hidden`}>
              <div className="pos-abs-top-end opacity-10 translate-25-n25 text-primary">
-                <ShieldCheck size={140} />
+                <GraduationCap size={140} />
              </div>
              <div className="position-relative z-1 d-flex flex-column h-100">
-                <p className="fw-black text-muted x-small-text text-uppercase tracking-widest mb-3">Content Management</p>
+                <p className="fw-black text-muted x-small-text text-uppercase tracking-widest mb-3">Info Jurusan & Jabatan</p>
+                
+                <div className="mb-4">
+                    <div className="fw-black text-dark h5 text-uppercase tracking-widest mb-0 leading-tight">
+                        {dash?.manajerial?.role_jabatan || 'GURU PENGAJAR'}
+                    </div>
+                    <div className="xx-small-text text-primary text-uppercase fw-bold tracking-widest opacity-75">
+                        Status Penugasan Aktif
+                    </div>
+                </div>
+
                 <div className="vstack gap-2 mt-auto">
-                  <LightMetric label="Berita" value={stats.total_berita} />
-                  <LightMetric label="Fasilitas" value={stats.total_fasilitas} />
-                  <LightMetric label="Eskul" value={stats.total_ekstrakurikuler} />
-                  <LightMetric label="Jurusan" value={stats.total_jurusan} />
+                  {stats.total_guru_staf !== undefined && <LightMetric label="Total Guru & Staf" value={stats.total_guru_staf} />}
+                  {stats.total_mapel !== undefined && <LightMetric label="Total Mata Pelajaran" value={stats.total_mapel} />}
+                  {stats.siswa_jurusan !== undefined && <LightMetric label="Siswa Jurusan" value={stats.siswa_jurusan} />}
+                  {stats.kelas_jurusan !== undefined && <LightMetric label="Kelas Jurusan" value={stats.kelas_jurusan} />}
+                  {stats.guru_jurusan !== undefined && <LightMetric label="Guru Jurusan" value={stats.guru_jurusan} />}
+                  {stats.total_pengumuman !== undefined && <LightMetric label="Total Pengumuman" value={stats.total_pengumuman} />}
                 </div>
              </div>
           </div>
@@ -218,12 +256,8 @@ function DashboardSkeleton() {
           ))}
         </div>
         <div className="row g-3">
-          <div className="col-lg-8">
-            <div className={styles.skeletonContent}></div>
-          </div>
-          <div className="col-lg-4">
-            <div className={styles.skeletonContent}></div>
-          </div>
+          <div className="col-lg-8"><div className={styles.skeletonContent}></div></div>
+          <div className="col-lg-4"><div className={styles.skeletonContent}></div></div>
         </div>
       </div>
     </div>
