@@ -5,24 +5,75 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
     LayoutDashboard, ChevronLeft, ChevronDown,
-    FolderArchive, Users, Database, School, Menu, X 
+    FolderArchive, Users, Database, School, Menu, X,
+    Info, Settings2, GraduationCap, UserCheck, BookOpen
 } from 'lucide-react';
 import { MENU_LIST } from '@/lib/menu-list';
 
-// Interface disesuaikan agar menerima data dari DashboardLayout (Props)
 interface SidebarProps {
     isMobileOpen: boolean;
     setIsMobileOpen: (open: boolean) => void;
-    user?: any;           // Tambahan props data user
-    schoolProfile?: any;  // Tambahan props profil sekolah
-    loading?: boolean;    // Tambahan props status loading
+    user?: any;
+    schoolProfile?: any;
+    loading?: boolean;
 }
 
 const GROUPS_CONFIG = [
-    { title: "Utama", icon: <LayoutDashboard size={20} />, items: ["Dashboard", "User Management", "Hak Akses & Role"] },
-    { title: "Akademik", icon: <Database size={20} />, items: ["Tahun Ajaran", "Semester", "Kurikulum", "Kalender Academic", "Jam Sekolah", "Mata Pelajaran"] },
-    { title: "Data Master", icon: <FolderArchive size={20} />, items: ["Data Tingkatan", "Data Jurusan", "Data Kelas", "Data Guru", "Semua Data Siswa", "Semua Data Orang Tua"] },
-    { title: "Operasional", icon: <Users size={20} />, items: ["Guru Mapel", "Presensi Harian", "Monitoring Presensi Mapel", "Monitoring Poin Siswa", "Kenaikan Kelas (Massal)", "Ekstrakurikuler"] }
+    { 
+        title: "Utama", 
+        icon: <LayoutDashboard size={20} />, 
+        items: ["Dashboard", "User Management"] 
+    },
+    { 
+        title: "Akademik", 
+        icon: <Database size={20} />, 
+        items: ["Tahun Ajaran", "Semester", "Kurikulum", "Kalender Akademik", "Jam Sekolah", "Penugasan Guru Mapel","Kenaikan Kelas",  "Kelas Walikelas"] 
+    },
+    { 
+        title: "Data Master", 
+        icon: <FolderArchive size={20} />, 
+        items: [ "Data Mata Pelajaran", "Data Jurusan", "Data Kelas", "Data Guru", "Data Siswa", "Data Orang Tua"] 
+    },
+    { 
+        title: "Operasional", 
+        icon: <Users size={20} />, 
+        items: ["Monitoring Presensi Harian", "Monitoring Presensi Mapel", "Monitoring Poin Siswa" ] 
+    },
+    {
+        title: "Ketua Jurusan",
+        icon: <GraduationCap size={20} />,
+        items: ["Siswa Jurusan", "Mapel Jurusan", "Penugasan Guru Mapel", "Kelas Jurusan"]
+    },
+    {
+        title: "Wali Kelas",
+        icon: <UserCheck size={20} />,
+        items: ["Siswa Kelas Saya", "Orang Tua Siswa", "Presensi Harian Kelas"]
+    },
+    {
+        title: "Guru Mapel",
+        icon: <BookOpen size={20} />,
+        items: ["Jam Sekolah", "Presensi Mapel", "Input Poin"]
+    },
+    {
+        title: "Siswa",
+        icon: <Users size={20} />,
+        items: ["Jadwal Mapel", "Presensi Saya", "Poin Saya"]
+    },
+    {
+        title: "Orang Tua",
+        icon: <Users size={20} />,
+        items: ["Jam Sekolah", "Presensi Anak", "Poin Anak"]
+    },
+    {
+        title: "Informasi",
+        icon: <Info size={20} />,
+        items: ["Berita & Artikel","Ekstrakurikuler", "Pengumuman", "Prestasi", "Banner Hero", "Portal & PPDB", "Fasilitas & Sarpras", "Galeri & Media", "Pesan Masuk","Kontak"]
+    },
+    {
+        title: "Sistem",
+        icon: <Settings2 size={20} />,
+        items: ["Profil Sekolah", "Log Aktivitas"]
+    }
 ];
 
 export default function Sidebar({ 
@@ -33,18 +84,44 @@ export default function Sidebar({
     loading 
 }: SidebarProps) {
     const pathname = usePathname();
-    
-    // State UI tetap dipertahankan sesuai kode asli Anda
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
 
-    const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
-        "Utama": true,
-        "Akademik": false,
-        "Data Master": false,
-        "Operasional": false
-    });
+    const normalize = (text: string) => String(text || "").toLowerCase().replace(/\s+/g, '');
 
-    // Sinkronisasi status collapsed dengan localStorage
+    const getUserJabatanList = useCallback((userData: any) => {
+        if (!userData || !userData.guru) return [];
+        const jabatans: string[] = [];
+        
+        if (userData.guru.jabatan) {
+            jabatans.push(normalize(userData.guru.jabatan));
+        }
+
+        if (Array.isArray(userData.guru.jabatan_struktural)) {
+            userData.guru.jabatan_struktural.forEach((j: any) => {
+                const name = typeof j === 'object' ? j.nama : j;
+                jabatans.push(normalize(name));
+            });
+        }
+
+        return jabatans;
+    }, []);
+
+    useEffect(() => {
+        if (user) {
+            const userJabatans = getUserJabatanList(user);
+            const isWaliKelas = !!user.guru?.kelas_wali;
+
+            setOpenGroups({
+                "Utama": true,
+                "Akademik": userJabatans.some(j => j.includes("kurikulum")),
+                "Ketua Jurusan": userJabatans.some(j => j.includes("ketuajurusan")),
+                "Wali Kelas": isWaliKelas,
+                "Guru Mapel": user.current_role?.toLowerCase() === "guru"
+            });
+        }
+    }, [user, getUserJabatanList]);
+
     useEffect(() => {
         const saved = localStorage.getItem('sidebar-collapsed');
         if (saved !== null) setIsCollapsed(saved === 'true');
@@ -58,36 +135,46 @@ export default function Sidebar({
         setIsMobileOpen(false);
     }, [pathname, setIsMobileOpen]);
 
-    // Menggunakan data 'user' dari props untuk memfilter menu
     const filteredMenuGroups = useMemo(() => {
         if (!user) return [];
+        
         const currentRole = (user.current_role as string)?.toLowerCase() || "";
+        const userJabatans = getUserJabatanList(user);
+        const isWaliKelas = !!user.guru?.kelas_wali;
 
         return GROUPS_CONFIG.map(group => {
             const menuItems = MENU_LIST.filter(m => {
-                const isInsideGroup = group.items.includes(m.title);
+                if (!group.items.includes(m.title)) return false;
+
                 const allowedRoles = Array.isArray(m.role) 
                     ? m.role.map((r: any) => String(r).toLowerCase()) 
-                    : m.role ? [String(m.role).toLowerCase()] : [];
+                    : (m.role ? [String(m.role).toLowerCase()] : []);
 
-                const hasPermission = !m.role || allowedRoles.includes(currentRole) || currentRole === 'admin';
-                return isInsideGroup && hasPermission;
+                if (!allowedRoles.includes(currentRole)) return false;
+                if (currentRole === 'admin') return true;
+
+                if (m.jabatan && m.jabatan.length > 0) {
+                    return m.jabatan.some(j => {
+                        const target = normalize(j);
+                        if (target === 'walikelas') return isWaliKelas;
+                        return userJabatans.some(uj => uj === target || uj.includes(target));
+                    });
+                }
+
+                return true;
             });
             return { ...group, menuItems };
         }).filter(group => group.menuItems.length > 0); 
-    }, [user]);
+    }, [user, getUserJabatanList]);
 
     const handleGroupClick = useCallback((title: string) => {
-        setOpenGroups(prev => {
-            if (isCollapsed) {
-                setIsCollapsed(false);
-                return { ...prev, [title]: true };
-            }
-            return { ...prev, [title]: !prev[title] };
-        });
+        setOpenGroups(prev => ({
+            ...prev,
+            [title]: isCollapsed ? true : !prev[title]
+        }));
+        if (isCollapsed) setIsCollapsed(false);
     }, [isCollapsed]);
 
-    // Menggunakan status 'loading' dari props
     if (loading) return <aside className="bg-white border-end shadow-sm sidebar-loading opacity-50" />;
 
     return (
@@ -104,7 +191,7 @@ export default function Sidebar({
                     <div className="d-flex align-items-center overflow-hidden">
                         <div className="sidebar-logo-container shadow-sm">
                             {schoolProfile?.logo ? (
-                                <img src={schoolProfile.logo} alt="Logo Sekolah" className="sidebar-logo-img" />
+                                <img src={schoolProfile.logo} alt="Logo" className="sidebar-logo-img" />
                             ) : (
                                 <School size={18} className="text-primary" />
                             )}
@@ -123,8 +210,8 @@ export default function Sidebar({
                         type="button"
                         onClick={() => setIsCollapsed(!isCollapsed)}
                         className="btn btn-sm p-1 border-0 text-secondary d-none d-lg-block hover-lift"
-                        title={isCollapsed ? "Buka Sidebar" : "Tutup Sidebar"}
-                        aria-label={isCollapsed ? "Buka Sidebar" : "Tutup Sidebar"}
+                        aria-label={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+                        title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
                     >
                         {isCollapsed ? <Menu size={20} /> : <ChevronLeft size={20} />}
                     </button>
@@ -133,8 +220,8 @@ export default function Sidebar({
                         type="button"
                         onClick={() => setIsMobileOpen(false)}
                         className="btn btn-sm p-1 border-0 text-secondary d-lg-none"
-                        title="Tutup Menu"
-                        aria-label="Tutup Menu"
+                        aria-label="Close Sidebar"
+                        title="Close Sidebar"
                     >
                         <X size={24} />
                     </button>
@@ -153,7 +240,7 @@ export default function Sidebar({
                                 <span className="text-primary d-flex align-items-center">{group.icon}</span>
                                 {!isCollapsed && (
                                     <>
-                                        <span className="flex-grow-1 sidebar-school-name fw-bold opacity-75 ms-2">
+                                        <span className="flex-grow-1 sidebar-school-name fw-bold opacity-75 ms-2 text-truncate">
                                             {group.title}
                                         </span>
                                         <ChevronDown 
