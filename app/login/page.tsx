@@ -84,7 +84,7 @@ export default function LoginPage() {
                 } else if (userRole.includes('siswa')) {
                     router.push('/siswa/dashboard');
                 } else if (userRole.includes('orangtua') || userRole.includes('ortu')) {
-                    router.push('/ortu/dashboard');
+                    router.push('/orangtua/dashboard');
                 } else {
                     router.push('/dashboard');
                 }

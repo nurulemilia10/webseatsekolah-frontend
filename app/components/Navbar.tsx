@@ -1,17 +1,25 @@
 "use client";
 
-import React, { useState, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import api from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
 import { LogOut, Key, Menu, ChevronDown, ShieldCheck, RefreshCw, X, ChevronRight } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 interface NavbarProps {
   onMenuClick?: () => void;
-  user?: any;
-  isLoading?: boolean;
 }
 
-export default function Navbar({ onMenuClick, user, isLoading }: NavbarProps) {
+export default function Navbar({ onMenuClick }: NavbarProps) {
+  const { 
+    user, 
+    loading: isLoading, 
+    displayName,
+    currentRole, 
+    isAdmin, 
+    isOrangTua 
+  } = useAuth();
+
   const [isOpen, setIsOpen] = useState(false);
   const [showPassModal, setShowPassModal] = useState(false);
   const [loadingAction, setLoadingAction] = useState(false);
@@ -45,14 +53,20 @@ export default function Navbar({ onMenuClick, user, isLoading }: NavbarProps) {
 
     try {
       setLoadingAction(true);
-      const res = await api.auth.updateFoto(formData, {
+      const resUpload = await api.auth.updateFoto(formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
+      
+      const resMe = await api.auth.me();
+      const updatedUser = resMe.data.data || resMe.data;
+      
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      window.dispatchEvent(new Event('user-updated'));
+
       Toast.fire({ 
         icon: 'success', 
-        title: res.data?.message || "Foto berhasil diperbarui" 
+        title: resUpload.data?.message || "Foto berhasil diperbarui" 
       });
-      window.location.reload();
     } catch (err: any) {
       const errorMsg = err.response?.data?.errors?.foto?.[0] || err.response?.data?.message || "Gagal memperbarui foto";
       Toast.fire({ icon: 'error', title: errorMsg });
@@ -92,25 +106,33 @@ export default function Navbar({ onMenuClick, user, isLoading }: NavbarProps) {
   };
 
   const handleSwitchRole = async (targetRole: string) => {
-    const normalizedTarget = (targetRole || "").toLowerCase();
-    const normalizedCurrent = (user?.current_role || "").toLowerCase();
+    const normalizedTarget = (targetRole || "").toLowerCase().trim();
+    const normalizedCurrent = (currentRole || "").toLowerCase().trim();
     if (normalizedTarget === normalizedCurrent) return;
 
     try {
       setLoadingAction(true);
-      const res = await api.auth.switchRole({ role: targetRole });
+      await api.auth.switchRole({ role: targetRole });
+      
+      const resMe = await api.auth.me();
+      const updatedUser = resMe.data.data || resMe.data;
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      window.dispatchEvent(new Event('user-updated'));
+
       CenterTopToast.fire({ 
         icon: 'success', 
-        title: res.data?.message || `Berhasil pindah ke role ${targetRole}` 
+        title: `Berhasil pindah ke role ${targetRole}` 
       });
       setIsOpen(false);
       
-      const roleSlug = targetRole.toLowerCase();
-      if (roleSlug.includes('admin')) window.location.href = '/admin/dashboard';
-      else if (roleSlug.includes('guru')) window.location.href = '/guru/dashboard';
-      else if (roleSlug.includes('siswa')) window.location.href = '/siswa/dashboard';
-      else if (roleSlug.includes('orangtua') || roleSlug.includes('ortu')) window.location.href = '/ortu/dashboard';
-      else window.location.reload();
+      setTimeout(() => {
+        const roleSlug = targetRole.toLowerCase();
+        if (roleSlug.includes('admin')) window.location.href = '/admin/dashboard';
+        else if (roleSlug.includes('guru')) window.location.href = '/guru/dashboard';
+        else if (roleSlug.includes('siswa')) window.location.href = '/siswa/dashboard';
+        else if (roleSlug.includes('orangtua') || roleSlug.includes('ortu')) window.location.href = '/ortu/dashboard';
+        else window.location.reload();
+      }, 200);
 
     } catch (err: any) {
       CenterTopToast.fire({ 
@@ -134,22 +156,14 @@ export default function Navbar({ onMenuClick, user, isLoading }: NavbarProps) {
     return [];
   }, [user]);
 
-  const currentRole = user?.current_role || "";
-  const displayName = user?.guru?.nama || user?.siswa?.nama || user?.username || "Pengguna";
-
-  const isRestrictedRole = useMemo(() => {
-    const role = (currentRole || "").toLowerCase();
-    return role === 'admin' || role === 'orangtua';
-  }, [currentRole]);
-
   const handleAvatarClick = () => {
-    if (loadingAction || isRestrictedRole) return;
+    if (loadingAction || isAdmin || isOrangTua) return;
     fileInputRef.current?.click();
   };
 
   const renderUserPhoto = () => {
-    const avatarFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=random&color=fff`;
-    const photoSrc = user?.foto ? user.foto : avatarFallback;
+    const avatarFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName || 'User')}&background=FFD700&color=000&bold=true`;
+    const photoSrc = user?.foto || user?.data?.foto || avatarFallback;
     return (
       <img 
         src={photoSrc} 
@@ -181,10 +195,10 @@ export default function Navbar({ onMenuClick, user, isLoading }: NavbarProps) {
             <div
               role="button"
               tabIndex={0}
-              className={`avatar-wrapper rounded-3 border border-2 border-white shadow-sm overflow-hidden bg-light d-flex align-items-center justify-content-center nav-avatar-box ${isRestrictedRole || isLoading ? 'pe-none opacity-100' : 'cursor-pointer-custom'}`}
+              className={`avatar-wrapper rounded-3 border border-2 border-white shadow-sm overflow-hidden bg-light d-flex align-items-center justify-content-center nav-avatar-box ${(isAdmin || isOrangTua) || isLoading ? 'pe-none opacity-100' : 'cursor-pointer-custom'}`}
               onClick={handleAvatarClick}
               onKeyDown={(e) => e.key === 'Enter' && handleAvatarClick()}
-              title={isRestrictedRole ? "" : "Klik untuk ubah foto profil"}
+              title={(isAdmin || isOrangTua) ? "" : "Klik untuk ubah foto profil"}
             >
               {isLoading ? <div className="spinner-border spinner-border-sm text-primary" role="status" /> : renderUserPhoto()}
             </div>
@@ -234,7 +248,7 @@ export default function Navbar({ onMenuClick, user, isLoading }: NavbarProps) {
                         {showRoleList && (
                           <div className="mt-1 mb-1 ms-2 border-start ps-2 animation-fadeIn">
                             {availableRoles.map((roleName: string, idx: number) => {
-                              const isSelected = (roleName || "").toLowerCase() === (currentRole || "").toLowerCase();
+                              const isSelected = (roleName || "").toLowerCase().trim() === (currentRole || "").toLowerCase().trim();
                               return (
                                 <button key={idx} type="button" disabled={loadingAction || isSelected} onClick={() => handleSwitchRole(roleName)}
                                   className={`dropdown-item small py-1 px-3 rounded-2 border-0 w-100 text-start ${isSelected ? 'bg-primary text-white fw-bold' : 'text-muted'}`}>

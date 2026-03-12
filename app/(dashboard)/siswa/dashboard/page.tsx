@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo, useCallback, memo } from 'react';
 import api from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth'; // Menambahkan import hooks
 import { 
   Award, Clock, AlertCircle, BookOpen, Calendar, 
   History, Megaphone, ArrowUpRight,
@@ -48,7 +49,8 @@ const LightMetric = memo(({ label, value }: any) => (
   </div>
 ));
 
-export default function SiswaView({ user }: SiswaViewProps) {
+export default function SiswaView() {
+  const { user } = useAuth(); // Menggunakan hooks useAuth
   const [dash, setDash] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 

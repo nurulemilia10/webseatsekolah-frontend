@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
 import { 
     LayoutDashboard, ChevronLeft, ChevronDown,
     FolderArchive, Users, Database, School, Menu, X,
@@ -13,9 +14,7 @@ import { MENU_LIST } from '@/lib/menu-list';
 interface SidebarProps {
     isMobileOpen: boolean;
     setIsMobileOpen: (open: boolean) => void;
-    user?: any;
     schoolProfile?: any;
-    loading?: boolean;
 }
 
 const GROUPS_CONFIG = [
@@ -27,7 +26,7 @@ const GROUPS_CONFIG = [
     { 
         title: "Akademik", 
         icon: <Database size={20} />, 
-        items: ["Tahun Ajaran", "Semester", "Kurikulum", "Kalender Akademik", "Jam Sekolah", "Penugasan Guru Mapel","Kenaikan Kelas",  "Kelas Walikelas"] 
+        items: ["Tahun Ajaran", "Semester", "Kurikulum", "Kalender Akademik", "Data Jam Sekolah", "Penugasan Guru Mapel","Kenaikan Kelas",  "Kelas Walikelas"] 
     },
     { 
         title: "Data Master", 
@@ -42,7 +41,7 @@ const GROUPS_CONFIG = [
     {
         title: "Ketua Jurusan",
         icon: <GraduationCap size={20} />,
-        items: ["Siswa Jurusan", "Mapel Jurusan", "Penugasan Guru Mapel", "Kelas Jurusan"]
+        items: ["Siswa Jurusan", "Mapel Jurusan", "Penugasan Guru Mapel Jueusan", "Kelas Jurusan"]
     },
     {
         title: "Wali Kelas",
@@ -67,7 +66,7 @@ const GROUPS_CONFIG = [
     {
         title: "Informasi",
         icon: <Info size={20} />,
-        items: ["Berita & Artikel","Ekstrakurikuler", "Pengumuman", "Prestasi", "Banner Hero", "Portal & PPDB", "Fasilitas & Sarpras", "Galeri & Media", "Pesan Masuk","Kontak"]
+        items: ["Berita","Ekstrakurikuler", "Pengumuman", "Prestasi", "Banner Hero", "Portal & PPDB", "Fasilitas & Sarpras", "Galeri & Media", "Pesan Masuk","Kontak"]
     },
     {
         title: "Sistem",
@@ -79,48 +78,24 @@ const GROUPS_CONFIG = [
 export default function Sidebar({ 
     isMobileOpen, 
     setIsMobileOpen, 
-    user, 
-    schoolProfile, 
-    loading 
+    schoolProfile
 }: SidebarProps) {
+    const { user, loading, currentRole, hasJabatan, isWaliKelas } = useAuth();
     const pathname = usePathname();
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
 
-    const normalize = (text: string) => String(text || "").toLowerCase().replace(/\s+/g, '');
-
-    const getUserJabatanList = useCallback((userData: any) => {
-        if (!userData || !userData.guru) return [];
-        const jabatans: string[] = [];
-        
-        if (userData.guru.jabatan) {
-            jabatans.push(normalize(userData.guru.jabatan));
-        }
-
-        if (Array.isArray(userData.guru.jabatan_struktural)) {
-            userData.guru.jabatan_struktural.forEach((j: any) => {
-                const name = typeof j === 'object' ? j.nama : j;
-                jabatans.push(normalize(name));
-            });
-        }
-
-        return jabatans;
-    }, []);
-
     useEffect(() => {
         if (user) {
-            const userJabatans = getUserJabatanList(user);
-            const isWaliKelas = !!user.guru?.kelas_wali;
-
             setOpenGroups({
                 "Utama": true,
-                "Akademik": userJabatans.some(j => j.includes("kurikulum")),
-                "Ketua Jurusan": userJabatans.some(j => j.includes("ketuajurusan")),
+                "Akademik": hasJabatan("kurikulum"),
+                "Ketua Jurusan": hasJabatan("ketuajurusan"),
                 "Wali Kelas": isWaliKelas,
-                "Guru Mapel": user.current_role?.toLowerCase() === "guru"
+                "Guru Mapel": currentRole === "guru"
             });
         }
-    }, [user, getUserJabatanList]);
+    }, [user, hasJabatan, isWaliKelas, currentRole]);
 
     useEffect(() => {
         const saved = localStorage.getItem('sidebar-collapsed');
@@ -138,9 +113,7 @@ export default function Sidebar({
     const filteredMenuGroups = useMemo(() => {
         if (!user) return [];
         
-        const currentRole = (user.current_role as string)?.toLowerCase() || "";
-        const userJabatans = getUserJabatanList(user);
-        const isWaliKelas = !!user.guru?.kelas_wali;
+        const normalize = (t: string) => String(t || "").toLowerCase().replace(/\s+/g, '');
 
         return GROUPS_CONFIG.map(group => {
             const menuItems = MENU_LIST.filter(m => {
@@ -157,7 +130,7 @@ export default function Sidebar({
                     return m.jabatan.some(j => {
                         const target = normalize(j);
                         if (target === 'walikelas') return isWaliKelas;
-                        return userJabatans.some(uj => uj === target || uj.includes(target));
+                        return hasJabatan(target);
                     });
                 }
 
@@ -165,7 +138,7 @@ export default function Sidebar({
             });
             return { ...group, menuItems };
         }).filter(group => group.menuItems.length > 0); 
-    }, [user, getUserJabatanList]);
+    }, [user, currentRole, hasJabatan, isWaliKelas]);
 
     const handleGroupClick = useCallback((title: string) => {
         setOpenGroups(prev => ({
@@ -199,9 +172,9 @@ export default function Sidebar({
                         {!isCollapsed && (
                             <div className="ms-2 min-w-0 animate-fade-in">
                                 <h6 className="sidebar-school-name text-truncate m-0 fw-bold">
-                                    {schoolProfile?.nama_sekolah || 'SISKO'}
+                                    {schoolProfile?.nama_sekolah || 'sekolah'}
                                 </h6>
-                                <span className="sidebar-panel-text text-capitalize">Panel {user?.current_role || 'Sistem'}</span>
+                                <span className="sidebar-panel-text text-capitalize">Panel {currentRole || 'Sistem'}</span>
                             </div>
                         )}
                     </div>
@@ -258,7 +231,7 @@ export default function Sidebar({
                                             const isActive = pathname === item.path;
                                             return (
                                                 <Link key={idx} href={item.path} className="text-decoration-none d-block py-1">
-                                                    <div className={`px-2 py-2 rounded-2 sidebar-item-text transition-all ${isActive ? 'bg-primary text-white fw-bold shadow-sm' : 'text-secondary hover:bg-light'}`}>
+                                                    <div className={`px-2 py-2 rounded-2 sidebar-item-text transition-all ${isActive ? 'bg-primary text-white fw-bold shadow-sm' : 'text-secondary hover-bg-light'}`}>
                                                         {item.title}
                                                     </div>
                                                 </Link>

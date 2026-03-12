@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo, useCallback, memo } from 'react';
 import api from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
 import { 
   Award, Clock, AlertCircle, BookOpen, Calendar, 
   History, Megaphone, ArrowUpRight,
@@ -48,7 +49,8 @@ const LightMetric = memo(({ label, value }: any) => (
   </div>
 ));
 
-export default function OrangtuaView({ user }: OrangtuaViewProps) {
+export default function OrangtuaView() {
+  const { user } = useAuth();
   const [dash, setDash] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedAnakIdx, setSelectedAnakIdx] = useState(0);
