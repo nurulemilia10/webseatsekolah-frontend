@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
@@ -18,75 +18,28 @@ interface SidebarProps {
 }
 
 const GROUPS_CONFIG = [
-    { 
-        title: "Utama", 
-        icon: <LayoutDashboard size={20} />, 
-        items: ["Dashboard", "User Management"] 
-    },
-    { 
-        title: "Akademik", 
-        icon: <Database size={20} />, 
-        items: ["Tahun Ajaran", "Semester", "Kurikulum", "Kalender Akademik", "Data Jam Sekolah", "Penugasan Guru Mapel","Kenaikan Kelas",  "Kelas Walikelas"] 
-    },
-    { 
-        title: "Data Master", 
-        icon: <FolderArchive size={20} />, 
-        items: [ "Data Mata Pelajaran", "Data Jurusan", "Data Kelas", "Data Guru", "Data Siswa", "Data Orang Tua"] 
-    },
-    { 
-        title: "Operasional", 
-        icon: <Users size={20} />, 
-        items: ["Monitoring Presensi Harian", "Monitoring Presensi Mapel", "Monitoring Poin Siswa" ] 
-    },
-    {
-        title: "Ketua Jurusan",
-        icon: <GraduationCap size={20} />,
-        items: ["Siswa Jurusan", "Mapel Jurusan", "Penugasan Guru Mapel Jueusan", "Kelas Jurusan"]
-    },
-    {
-        title: "Wali Kelas",
-        icon: <UserCheck size={20} />,
-        items: ["Siswa Kelas Saya", "Orang Tua Siswa", "Presensi Harian Kelas"]
-    },
-    {
-        title: "Guru Mapel",
-        icon: <BookOpen size={20} />,
-        items: ["Jam Sekolah", "Presensi Mapel", "Input Poin"]
-    },
-    {
-        title: "Siswa",
-        icon: <Users size={20} />,
-        items: ["Jadwal Mapel", "Presensi Saya", "Poin Saya"]
-    },
-    {
-        title: "Orang Tua",
-        icon: <Users size={20} />,
-        items: ["Jam Sekolah", "Presensi Anak", "Poin Anak"]
-    },
-    {
-        title: "Informasi",
-        icon: <Info size={20} />,
-        items: ["Berita","Ekstrakurikuler", "Pengumuman", "Prestasi", "Banner Hero", "Portal & PPDB", "Fasilitas & Sarpras", "Galeri & Media", "Pesan Masuk","Kontak"]
-    },
-    {
-        title: "Sistem",
-        icon: <Settings2 size={20} />,
-        items: ["Profil Sekolah", "Log Aktivitas"]
-    }
+    { title: "Utama", icon: <LayoutDashboard size={20} />, items: ["Dashboard", "User Management"] },
+    { title: "Akademik", icon: <Database size={20} />, items: ["Tahun Ajaran", "Semester", "Kurikulum", "Kalender Akademik", "Data Jam Sekolah", "Penugasan Guru Mapel","Kenaikan Kelas",  "Kelas Walikelas"] },
+    { title: "Data Master", icon: <FolderArchive size={20} />, items: [ "Data Mata Pelajaran", "Data Jurusan", "Data Kelas", "Data Guru", "Data Siswa", "Data Orang Tua"] },
+    { title: "Operasional", icon: <Users size={20} />, items: ["Monitoring Presensi Harian", "Monitoring Presensi Mapel", "Monitoring Poin Siswa" ] },
+    { title: "Ketua Jurusan", icon: <GraduationCap size={20} />, items: ["Siswa Jurusan", "Mapel Jurusan", "Penugasan Guru Mapel Jueusan", "Kelas Jurusan"] },
+    { title: "Wali Kelas", icon: <UserCheck size={20} />, items: ["Siswa Kelas Saya", "Orang Tua Siswa", "Presensi Harian Kelas"] },
+    { title: "Guru Mapel", icon: <BookOpen size={20} />, items: ["Jam Sekolah", "Presensi Mapel", "Input Poin"] },
+    { title: "Siswa", icon: <Users size={20} />, items: ["Jadwal Mapel", "Presensi Saya", "Poin Saya"] },
+    { title: "Orang Tua", icon: <Users size={20} />, items: ["Jam Sekolah", "Presensi Anak", "Poin Anak"] },
+    { title: "Informasi", icon: <Info size={20} />, items: ["Berita","Ekstrakurikuler", "Pengumuman", "Prestasi", "Banner Hero", "Portal & PPDB", "Fasilitas & Sarpras", "Galeri & Media", "Pesan Masuk","Kontak"] },
+    { title: "Sistem", icon: <Settings2 size={20} />, items: ["Profil Sekolah", "Log Aktivitas"] }
 ];
 
-export default function Sidebar({ 
-    isMobileOpen, 
-    setIsMobileOpen, 
-    schoolProfile
-}: SidebarProps) {
+export default function Sidebar({ isMobileOpen, setIsMobileOpen, schoolProfile }: SidebarProps) {
     const { user, loading, currentRole, hasJabatan, isWaliKelas } = useAuth();
     const pathname = usePathname();
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+    const isFirstRun = useRef(true);
 
     useEffect(() => {
-        if (user) {
+        if (user && isFirstRun.current) {
             setOpenGroups({
                 "Utama": true,
                 "Akademik": hasJabatan("kurikulum"),
@@ -94,6 +47,7 @@ export default function Sidebar({
                 "Wali Kelas": isWaliKelas,
                 "Guru Mapel": currentRole === "guru"
             });
+            isFirstRun.current = false;
         }
     }, [user, hasJabatan, isWaliKelas, currentRole]);
 
@@ -111,33 +65,25 @@ export default function Sidebar({
     }, [pathname, setIsMobileOpen]);
 
     const filteredMenuGroups = useMemo(() => {
-        if (!user) return [];
-        
+        if (!user || !currentRole) return [];
         const normalize = (t: string) => String(t || "").toLowerCase().replace(/\s+/g, '');
 
         return GROUPS_CONFIG.map(group => {
             const menuItems = MENU_LIST.filter(m => {
                 if (!group.items.includes(m.title)) return false;
-
-                const allowedRoles = Array.isArray(m.role) 
-                    ? m.role.map((r: any) => String(r).toLowerCase()) 
-                    : (m.role ? [String(m.role).toLowerCase()] : []);
-
-                if (!allowedRoles.includes(currentRole)) return false;
+                const roles = Array.isArray(m.role) ? m.role.map(r => String(r).toLowerCase()) : (m.role ? [String(m.role).toLowerCase()] : []);
+                if (!roles.includes(currentRole)) return false;
                 if (currentRole === 'admin') return true;
-
                 if (m.jabatan && m.jabatan.length > 0) {
                     return m.jabatan.some(j => {
                         const target = normalize(j);
-                        if (target === 'walikelas') return isWaliKelas;
-                        return hasJabatan(target);
+                        return target === 'walikelas' ? isWaliKelas : hasJabatan(target);
                     });
                 }
-
                 return true;
             });
             return { ...group, menuItems };
-        }).filter(group => group.menuItems.length > 0); 
+        }).filter(group => group.menuItems.length > 0);
     }, [user, currentRole, hasJabatan, isWaliKelas]);
 
     const handleGroupClick = useCallback((title: string) => {
@@ -150,21 +96,26 @@ export default function Sidebar({
 
     if (loading) return <aside className="bg-white border-end shadow-sm sidebar-loading opacity-50" />;
 
+    const logoSrc = schoolProfile?.logo || schoolProfile?.logo_url;
+
     return (
         <>
             {isMobileOpen && (
-                <div 
-                    className="mobile-overlay position-fixed top-0 start-0 w-100 h-100 d-lg-none" 
-                    onClick={() => setIsMobileOpen(false)}
-                />
+                <div className="mobile-overlay position-fixed top-0 start-0 w-100 h-100 d-lg-none" onClick={() => setIsMobileOpen(false)} />
             )}
 
             <aside className={`${isCollapsed ? 'collapsed' : ''} ${isMobileOpen ? 'mobile-open' : ''} transition-all`}>
                 <div className={`sidebar-header-container d-flex align-items-center p-3 border-bottom ${isCollapsed ? 'justify-content-center' : 'justify-content-between'}`}>
                     <div className="d-flex align-items-center overflow-hidden">
                         <div className="sidebar-logo-container shadow-sm">
-                            {schoolProfile?.logo ? (
-                                <img src={schoolProfile.logo} alt="Logo" className="sidebar-logo-img" />
+                            {logoSrc ? (
+                                <img 
+                                    src={logoSrc} 
+                                    alt="Logo Sekolah" 
+                                    className="sidebar-logo-img" 
+                                    loading="eager"
+                                    decoding="async"
+                                />
                             ) : (
                                 <School size={18} className="text-primary" />
                             )}
@@ -180,21 +131,21 @@ export default function Sidebar({
                     </div>
 
                     <button 
-                        type="button"
-                        onClick={() => setIsCollapsed(!isCollapsed)}
+                        type="button" 
+                        onClick={() => setIsCollapsed(!isCollapsed)} 
                         className="btn btn-sm p-1 border-0 text-secondary d-none d-lg-block hover-lift"
-                        aria-label={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-                        title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+                        title={isCollapsed ? "Buka Sidebar" : "Tutup Sidebar"}
+                        aria-label={isCollapsed ? "Buka Sidebar" : "Tutup Sidebar"}
                     >
                         {isCollapsed ? <Menu size={20} /> : <ChevronLeft size={20} />}
                     </button>
 
                     <button 
-                        type="button"
-                        onClick={() => setIsMobileOpen(false)}
+                        type="button" 
+                        onClick={() => setIsMobileOpen(false)} 
                         className="btn btn-sm p-1 border-0 text-secondary d-lg-none"
-                        aria-label="Close Sidebar"
-                        title="Close Sidebar"
+                        title="Tutup Menu"
+                        aria-label="Tutup Menu"
                     >
                         <X size={24} />
                     </button>
@@ -204,22 +155,18 @@ export default function Sidebar({
                     {filteredMenuGroups.map((group, gIdx) => (
                         <div key={gIdx} className="mb-1">
                             <div 
-                                onClick={() => handleGroupClick(group.title)}
-                                className="sidebar-group-header"
-                                role="button"
-                                tabIndex={0}
+                                onClick={() => handleGroupClick(group.title)} 
+                                className="sidebar-group-header" 
+                                role="button" 
+                                tabIndex={0} 
                                 onKeyDown={(e) => e.key === 'Enter' && handleGroupClick(group.title)}
+                                title={group.title}
                             >
                                 <span className="text-primary d-flex align-items-center">{group.icon}</span>
                                 {!isCollapsed && (
                                     <>
-                                        <span className="flex-grow-1 sidebar-school-name fw-bold opacity-75 ms-2 text-truncate">
-                                            {group.title}
-                                        </span>
-                                        <ChevronDown 
-                                            size={14} 
-                                            className={`chevron-down-icon transition-all ${openGroups[group.title] ? 'rotate-180' : ''}`} 
-                                        />
+                                        <span className="flex-grow-1 sidebar-school-name fw-bold opacity-75 ms-2 text-truncate">{group.title}</span>
+                                        <ChevronDown size={14} className={`chevron-down-icon transition-all ${openGroups[group.title] ? 'rotate-180' : ''}`} />
                                     </>
                                 )}
                             </div>

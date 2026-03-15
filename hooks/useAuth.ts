@@ -7,6 +7,8 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   const fetchUser = useCallback(() => {
+    if (typeof window === 'undefined') return;
+
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       try {
@@ -24,8 +26,10 @@ export function useAuth() {
 
   useEffect(() => {
     fetchUser();
+    
     window.addEventListener('storage', fetchUser);
     window.addEventListener('user-updated', fetchUser);
+    
     return () => {
       window.removeEventListener('storage', fetchUser);
       window.removeEventListener('user-updated', fetchUser);
@@ -38,13 +42,15 @@ export function useAuth() {
       user.guru?.nama || 
       user.siswa?.nama || 
       user.nama || 
+      user.name ||
       user.username || 
       "Pengguna"
     );
   }, [user]);
 
   const currentRole = useMemo(() => {
-    return (user?.current_role || "").toLowerCase().trim();
+    const role = user?.current_role || user?.role || "";
+    return role.toLowerCase().trim();
   }, [user]);
 
   const hasJabatan = useCallback((target: string) => {

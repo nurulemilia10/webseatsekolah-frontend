@@ -29,70 +29,86 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     
+    // 1. Tambahkan state mounted untuk mencegah Hydration Error
+    const [isMounted, setIsMounted] = useState(false);
+    
     const [schoolProfile, setSchoolProfile] = useState({ 
-        nama_sekolah: 'namasekolah', 
+        nama_sekolah: 'SIP SEKO', 
         logo: '/logo.png' 
     });
 
     const router = useRouter();
 
     useEffect(() => {
+        // Set mounted jadi true agar browser tahu sekarang aman untuk render data lokal
+        setIsMounted(true);
+
+        // Ambil data cache
         const saved = localStorage.getItem('cached_school_profile');
         if (saved) {
-            setSchoolProfile(JSON.parse(saved));
+            const parsed = JSON.parse(saved);
+            setSchoolProfile(parsed);
         }
 
         router.prefetch('/admin/dashboard');
         router.prefetch('/guru/dashboard');
         router.prefetch('/siswa/dashboard');
-        router.prefetch('/ortu/dashboard');
+        router.prefetch('/orangtua/dashboard');
 
+        // Update data terbaru dari API
         api.public.getProfilSekolah().then(res => {
             if (res.data?.data) {
                 const newData = {
-                    nama_sekolah: res.data.data.nama_sekolah || 'namasekolah',
+                    nama_sekolah: res.data.data.nama_sekolah || 'SIP SEKO',
                     logo: res.data.data.logo || '/logo.png'
                 };
                 setSchoolProfile(newData);
-                document.title = `Login | ${newData.nama_sekolah}`;
                 localStorage.setItem('cached_school_profile', JSON.stringify(newData));
             }
-        }).catch(err => console.error(err));
+        }).catch(() => null);
     }, [router]);
+
+    // Update title hanya di client
+    useEffect(() => {
+        if (isMounted) {
+            document.title = `Login | ${schoolProfile.nama_sekolah}`;
+        }
+    }, [isMounted, schoolProfile.nama_sekolah]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (loading) return;
         setLoading(true);
         setError('');
+
         try {
             const response = await api.public.loginApi({ username, password });
-            
             if (response.data.access_token) {
                 const { access_token, user } = response.data;
-                
                 localStorage.setItem('token', access_token);
-                localStorage.setItem('user', JSON.stringify(user));
+                const storageData = response.data.data || response.data.user || response.data;
+                localStorage.setItem('user', JSON.stringify(storageData));
+                window.dispatchEvent(new Event('user-updated'));
 
-                const userRole = user.roles?.[0]?.name?.toLowerCase() || 
-                                 user.role?.name?.toLowerCase() || 
-                                 user.current_role?.toLowerCase() || '';
+                const userRole = (
+                    user.roles?.[0]?.name || 
+                    user.role?.name || 
+                    user.current_role || 
+                    user.role ||
+                    ''
+                ).toLowerCase();
 
-                if (userRole.includes('admin')) {
-                    router.push('/admin/dashboard');
-                } else if (userRole.includes('guru')) {
-                    router.push('/guru/dashboard');
-                } else if (userRole.includes('siswa')) {
-                    router.push('/siswa/dashboard');
-                } else if (userRole.includes('orangtua') || userRole.includes('ortu')) {
-                    router.push('/orangtua/dashboard');
-                } else {
-                    router.push('/dashboard');
-                }
+                let targetPath = '/dashboard';
+                if (userRole.includes('admin')) targetPath = '/admin/dashboard';
+                else if (userRole.includes('guru')) targetPath = '/guru/dashboard';
+                else if (userRole.includes('siswa')) targetPath = '/siswa/dashboard';
+                else if (userRole.includes('orangtua') || userRole.includes('ortu')) targetPath = '/orangtua/dashboard';
+
+                router.push(targetPath);
             }
         } catch (err: any) {
             setError(err.response?.data?.message || 'Terjadi kesalahan sistem.');
-        } finally { 
-            setLoading(false); 
+            setLoading(false);
         }
     };
 
@@ -104,13 +120,17 @@ export default function LoginPage() {
                         <div className={styles.headerSection}>
                             <div className={styles.logoFlex}>
                                 <img 
-                                    src={schoolProfile?.logo || '/logo.png'} 
+                                    // 2. Kuncinya di sini: Gunakan nilai default JIKA belum mounted
+                                    src={isMounted ? schoolProfile.logo : '/logo.png'} 
                                     className={styles.logoImg}
                                     alt="Logo" 
                                     onError={(e) => { (e.target as HTMLImageElement).src = '/logo.png' }} 
                                 />
                                 <div className={styles.verticalDivider}>
-                                    <h5 className={styles.schoolName}>{schoolProfile?.nama_sekolah || 'SIP SEKO'}</h5>
+                                    <h5 className={styles.schoolName}>
+                                        {/* 3. Nama sekolah juga sama */}
+                                        {isMounted ? schoolProfile.nama_sekolah : 'nama sekolah'}
+                                    </h5>
                                     <span className={styles.subName}>Sistem Informasi Sekolah</span>
                                 </div>
                             </div>
@@ -153,7 +173,7 @@ export default function LoginPage() {
                         </form>
 
                         <div className={styles.footerText}>
-                            &copy; {new Date().getFullYear()} {schoolProfile?.nama_sekolah || 'SIP SEKO'}
+                            &copy; {new Date().getFullYear()} {isMounted ? schoolProfile.nama_sekolah : 'SIP SEKO'}
                         </div>
                     </div>
                 </div>

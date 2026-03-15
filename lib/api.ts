@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const Api = axios.create({
-    baseURL: 'http://127.0.0.1:8000',
+    baseURL: 'http://webseatsekolah13.test',
     headers: {
         'Accept': 'application/json',
     }
@@ -14,6 +14,26 @@ Api.interceptors.request.use((config) => {
     }
     return config;
 });
+
+let isRedirecting = false;
+
+Api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            if (!isRedirecting) {
+                isRedirecting = true;
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                
+                if (typeof window !== 'undefined') {
+                    window.location.href = '/login';
+                }
+            }
+        }
+        return Promise.reject(error);
+    }
+);
 
 const createResource = (path: string) => ({
     getAll: (params?: any) => Api.get(path, { params }),
@@ -66,14 +86,13 @@ const api = {
         updateProfilSekolah: (data: any) => Api.put('/api/admin/profil-sekolah', data),
         getApiSetting: () => Api.get('/api/admin/api-setting-list'),
         updateDataKontak: (data: any) => Api.put('/api/admin/data-kontak', data),
-        updatePpdbLink: (data: any) => Api.put('/api/admin/ppdb-link', data),
         getKenaikanKelas: () => Api.get('/api/admin/kenaikan-kelas'),
         generateKelas: (data: any) => Api.post('/api/admin/kelas/generate', data),
         prosesKenaikanMassal: (data: any) => Api.post('/api/admin/kenaikan-kelas/proses', data),
         cloneWaliKelas: (data: any) => Api.post('/api/admin/walikelas/kelas-copy', data),
         bulkUpdateTingkat: (data: any) => Api.post('/api/admin/walikelas/naik-tingkat-kelas', data),
         prepareNewYear: (data: any) => Api.post('/api/admin/walikelas/kelas-create', data),
-        
+
         kelaswalikelas: createResource('/api/admin/kelaswalikelas'),
         tingkatan: createResource('/api/admin/tingkatan'),
         user: createResource('/api/admin/user'),
@@ -91,10 +110,17 @@ const api = {
         ekstrakurikuler: createResource('/api/admin/ekstrakurikuler'),
         banner: createResource('/api/admin/banner'),
         album: createResource('/api/admin/album'),
-        media: createResource('/api/admin/media'),
         jabatan: createResource('/api/admin/jabatan'),
         struktur_jabatan: createResource('/api/admin/struktur_jabatan'),
-
+        
+        ppdb: {
+                  get: () => Api.get('/api/admin/ppdb-link'), 
+                  update: (data: any) => Api.put('/api/admin/ppdb-link', data),
+        },
+        media: {
+        ...createResource('/api/admin/media'),
+        massDelete: (data: any) => Api.post('/api/admin/media/mass-destroy', data), 
+        },
         siswa: {
             ...createResource('/api/admin/siswa'),
             import: (data: any) => Api.post('/api/admin/siswa/import', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
@@ -146,11 +172,12 @@ const api = {
             ...createResource('/api/admin/poin_siswa'),
             export: () => Api.get('/api/admin/poin-siswa/export', { responseType: 'blob' }),
         },
-        pesan: {
-            ...createResource('/api/admin/pesan'),
-            updateStatus: (id: any, status: any) => Api.patch(`/api/admin/pesan/${id}/status`, { status }),
-            markAllRead: () => Api.post('/api/admin/pesan/mark-all-read'),
-        }
+       pesan: {
+    ...createResource('/api/admin/pesan'),
+    show: (id: any) => Api.get(`/api/admin/pesan/${id}`),
+    updateStatus: (id: any, data: any = {}) => Api.patch(`/api/admin/pesan/${id}/status`, data),
+    markAllRead: () => Api.patch('/api/admin/pesan/mark-all-read'),
+     }
     },
 
     guru: {
@@ -216,7 +243,10 @@ const api = {
         sarpras: {
             fasilitas: createResource('/api/guru/sarpras/fasilitas'),
             album: createResource('/api/guru/sarpras/album'),
-            media: createResource('/api/guru/sarpras/media'),
+            media: {
+        ...createResource('/api/guru/sarpras/media'),
+        massDelete: (data: any) => Api.post('/api/guru/sarpras/media/mass-destroy', data),
+    },
         },
 
         humas: {
@@ -225,10 +255,14 @@ const api = {
             prestasi: createResource('/api/guru/humas/prestasi'),
             banner: createResource('/api/guru/humas/banner'),
             portal: createResource('/api/guru/humas/portal'),
-            updatePpdbLink: (data: any) => Api.put('/api/guru/humas/ppdb-link', data),
+
+            ppdb: {
+                  get: () => Api.get('/api/guru/humas/ppdb-link'), 
+                  update: (data: any) => Api.put('/api/guru/humas/ppdb-link', data),
+         },
             pesan: {
                 ...createResource('/api/guru/humas/pesan'),
-                updateStatus: (id: any, status: any) => Api.patch(`/api/guru/humas/pesan/${id}/status`, { status }),
+                updateStatus: (id: any, data: any = {}) => Api.patch(`/api/guru/humas/pesan/${id}/status`, data),
                 markAllRead: () => Api.post('/api/guru/humas/pesan/mark-all-read'),
             }
         },

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useCallback, useEffect } from 'react';
 import api from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import { LogOut, Key, Menu, ChevronDown, ShieldCheck, RefreshCw, X, ChevronRight } from 'lucide-react';
@@ -27,6 +27,43 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
   const [passData, setPassData] = useState({ old: '', new: '', confirm: '' });
   const [passError, setPassError] = useState('');
   const [showRoleList, setShowRoleList] = useState(false);
+  const [localUser, setLocalUser] = useState<any>(null);
+
+  const fetchLocal = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('user');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          setLocalUser(parsed.data || parsed);
+        } catch (e) {
+          console.error("Failed to parse user from localStorage", e);
+        }
+      }
+    }
+  }, []);
+
+  const syncUserData = useCallback(async () => {
+    try {
+      const resMe = await api.auth.me();
+      const updatedUser = resMe.data.data || resMe.data;
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      window.dispatchEvent(new Event('user-updated'));
+    } catch (err) {
+      console.error(err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchLocal();
+    syncUserData();
+    window.addEventListener('user-updated', fetchLocal);
+    window.addEventListener('storage', fetchLocal);
+    return () => {
+      window.removeEventListener('user-updated', fetchLocal);
+      window.removeEventListener('storage', fetchLocal);
+    };
+  }, [fetchLocal, syncUserData]);
 
   const Toast = useMemo(() => Swal.mixin({
     toast: true,
@@ -57,11 +94,7 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       
-      const resMe = await api.auth.me();
-      const updatedUser = resMe.data.data || resMe.data;
-      
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      window.dispatchEvent(new Event('user-updated'));
+      await syncUserData();
 
       Toast.fire({ 
         icon: 'success', 
@@ -162,8 +195,21 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
   };
 
   const renderUserPhoto = () => {
-    const avatarFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName || 'User')}&background=FFD700&color=000&bold=true`;
-    const photoSrc = user?.foto || user?.data?.foto || avatarFallback;
+    const activeData = localUser || user;
+    const nameToUse = activeData?.name || activeData?.nama || activeData?.guru?.nama || displayName || 'User';
+    const avatarFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(nameToUse)}&background=FFD700&color=000&bold=true`;
+    
+    const rawFoto = activeData?.foto || activeData?.data?.foto || activeData?.user?.foto;
+    const baseUrl = 'http://webseatsekolah13.test/storage/';
+
+    if (!rawFoto || rawFoto === "" || rawFoto === "null") {
+      return <img src={avatarFallback} alt="Profil" className="w-100 h-100 object-fit-cover" />;
+    }
+
+    let photoSrc = rawFoto.includes('http') 
+      ? rawFoto 
+      : `${baseUrl}${rawFoto.replace(/^public\//, '')}`;
+
     return (
       <img 
         src={photoSrc} 
@@ -195,12 +241,12 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
             <div
               role="button"
               tabIndex={0}
-              className={`avatar-wrapper rounded-3 border border-2 border-white shadow-sm overflow-hidden bg-light d-flex align-items-center justify-content-center nav-avatar-box ${(isAdmin || isOrangTua) || isLoading ? 'pe-none opacity-100' : 'cursor-pointer-custom'}`}
+              className={`avatar-wrapper rounded-3 border border-2 border-white shadow-sm overflow-hidden bg-light d-flex align-items-center justify-content-center nav-avatar-box ${(isAdmin || isOrangTua) || (isLoading && !localUser) ? 'pe-none opacity-100' : 'cursor-pointer-custom'}`}
               onClick={handleAvatarClick}
               onKeyDown={(e) => e.key === 'Enter' && handleAvatarClick()}
               title={(isAdmin || isOrangTua) ? "" : "Klik untuk ubah foto profil"}
             >
-              {isLoading ? <div className="spinner-border spinner-border-sm text-primary" role="status" /> : renderUserPhoto()}
+              {isLoading && !localUser ? <div className="spinner-border spinner-border-sm text-primary" role="status" /> : renderUserPhoto()}
             </div>
 
             <input type="file" ref={fileInputRef} className="d-none" accept="image/*" onChange={handleUpdateFoto} title="Unggah Foto Profil" aria-label="Unggah Foto Profil" />
@@ -212,7 +258,7 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
                 onClick={() => { setIsOpen(!isOpen); setShowRoleList(false); }}
               >
                 <div className="text-end d-none d-md-block">
-                  <span className="mb-0 fw-black text-dark small d-block">{isLoading ? 'Loading...' : displayName}</span>
+                  <span className="mb-0 fw-black text-dark small d-block">{(isLoading && !localUser) ? 'Loading...' : (localUser?.nama || localUser?.name || localUser?.guru?.nama || displayName)}</span>
                   <div className="d-flex align-items-center justify-content-end gap-1">
                     <span className="online-indicator rounded-circle bg-success online-dot-mini"></span>
                     <span className="text-muted text-online-kecil">online</span>
@@ -230,7 +276,7 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
                         <ShieldCheck size={12} className="text-primary" />
                         <span className="fw-black text-muted text-uppercase nav-login-status-label">Status Login</span>
                       </div>
-                      <p className="mb-0 small fw-bold text-truncate text-primary text-uppercase">{currentRole || "PENGGUNA"}</p>
+                      <p className="mb-0 small fw-bold text-truncate text-primary text-uppercase">{currentRole || localUser?.current_role || "PENGGUNA"}</p>
                     </div>
 
                     {availableRoles.length > 1 && (

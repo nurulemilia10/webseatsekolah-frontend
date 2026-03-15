@@ -45,7 +45,7 @@ export const MENU_LIST: MenuItem[] = [
   { title: 'Pesan Masuk', path: '/admin/pesan', role: ['Admin', 'Guru'], jabatan: ['Waka Humas'] },
   
   { title: 'Fasilitas & Sarpras', path: '/admin/fasilitas', role: ['Admin', 'Guru'], jabatan: ['Waka Sarpras'] },
-  { title: 'Galeri & Media', path: '/admin/media', role: ['Admin', 'Guru'], jabatan: ['Waka Sarpras'] },
+  { title: 'Galeri & Media', path: '/admin/album', role: ['Admin', 'Guru'], jabatan: ['Waka Sarpras'] },
   
   { title: 'Data Mata Pelajaran Jurusan', path: '/admin/mapel', role: ['Guru'], jabatan: ['Ketua Jurusan'] },
   { title: 'Penugasan Guru Mapel Jurusan', path: '/admin/guru-mapel', role: ['Guru'], jabatan: ['Ketua Jurusan',] },
