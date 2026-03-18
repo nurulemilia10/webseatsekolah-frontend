@@ -27,7 +27,7 @@ const GROUPS_CONFIG = [
     { title: "Guru Mapel", icon: <BookOpen size={20} />, items: ["Jam Sekolah", "Presensi Mapel", "Input Poin"] },
     { title: "Siswa", icon: <Users size={20} />, items: ["Jadwal Mapel", "Presensi Saya", "Poin Saya"] },
     { title: "Orang Tua", icon: <Users size={20} />, items: ["Jam Sekolah", "Presensi Anak", "Poin Anak"] },
-    { title: "Informasi", icon: <Info size={20} />, items: ["Berita","Ekstrakurikuler", "Pengumuman", "Prestasi", "Banner Hero", "Portal & PPDB", "Fasilitas & Sarpras", "Galeri & Media", "Pesan Masuk","Kontak"] },
+    { title: "Informasi", icon: <Info size={20} />, items: ["Berita","Ekstrakurikuler", "Pengumuman", "Prestasi", "Banner Hero", "Portal & PPDB", "Fasilitas & Sarpras", "Galeri & Media", "Pesan Masuk","Kontak","Struktur Jabatan"] },
     { title: "Sistem", icon: <Settings2 size={20} />, items: ["Profil Sekolah", "Log Aktivitas"] }
 ];
 

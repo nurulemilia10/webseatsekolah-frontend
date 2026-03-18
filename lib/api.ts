@@ -81,11 +81,10 @@ const api = {
 
     admin: {
         getDashboard: () => Api.get('/api/admin/dashboard'),
-        getLogs: () => Api.get('/api/admin/log'),
+        getLogAktivitas: (params: any) => Api.get('/api/admin/log', { params }),
         updateSettingGeneral: (data: any) => Api.put('/api/admin/setting/general', data),
         updateProfilSekolah: (data: any) => Api.put('/api/admin/profil-sekolah', data),
-        getApiSetting: () => Api.get('/api/admin/api-setting-list'),
-        updateDataKontak: (data: any) => Api.put('/api/admin/data-kontak', data),
+
         getKenaikanKelas: () => Api.get('/api/admin/kenaikan-kelas'),
         generateKelas: (data: any) => Api.post('/api/admin/kelas/generate', data),
         prosesKenaikanMassal: (data: any) => Api.post('/api/admin/kenaikan-kelas/proses', data),
@@ -100,7 +99,7 @@ const api = {
         jurusan: createResource('/api/admin/jurusan'),
         kurikulum: createResource('/api/admin/kurikulum'),
         kalender: createResource('/api/admin/kalender'),
-        tahun_ajaran: createResource('/api/admin/tahun_ajaran'),
+        tahunAjaran: createResource('/api/admin/tahun_ajaran'),
         semester: createResource('/api/admin/semester'),
         portal: createResource('/api/admin/portal'),
         berita: createResource('/api/admin/berita'),
@@ -113,13 +112,25 @@ const api = {
         jabatan: createResource('/api/admin/jabatan'),
         struktur_jabatan: createResource('/api/admin/struktur_jabatan'),
         
+        Setting: {
+            get: () => Api.get('/api/admin/setting/general'),
+            update: (data: any) => Api.post('/api/admin/setting/general', data),
+        },
+        ProfilSekolah: {
+            get: () => Api.get('/api/admin/profil-sekolah'),
+            update: (data: any) => Api.post('/api/admin/profil-sekolah', data),
+        },
+        Datakontak: {
+           get: () => Api.get('/api/admin/data-kontak'),
+           update: (data: any) => Api.put('/api/admin/data-kontak', data),
+        },
         ppdb: {
-                  get: () => Api.get('/api/admin/ppdb-link'), 
-                  update: (data: any) => Api.put('/api/admin/ppdb-link', data),
+           get: () => Api.get('/api/admin/ppdb-link'), 
+           update: (data: any) => Api.put('/api/admin/ppdb-link', data),
         },
         media: {
-        ...createResource('/api/admin/media'),
-        massDelete: (data: any) => Api.post('/api/admin/media/mass-destroy', data), 
+             ...createResource('/api/admin/media'),
+             massDelete: (data: any) => Api.post('/api/admin/media/mass-destroy', data), 
         },
         siswa: {
             ...createResource('/api/admin/siswa'),
@@ -141,7 +152,7 @@ const api = {
             import: (data: any) => Api.post('/api/admin/guru-mapel/import', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
             export: () => Api.get('/api/admin/guru-mapel/export', { responseType: 'blob' }),
         },
-        jam_sekolah: {
+        jamSekolah: {
             ...createResource('/api/admin/jam_sekolah'),
             import: (data: any) => Api.post('/api/admin/jam-sekolah/import', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
             export: () => Api.get('/api/admin/jam-sekolah/export', { responseType: 'blob' }),
@@ -183,7 +194,7 @@ const api = {
     guru: {
         getDashboard: () => Api.get('/api/guru/dashboard'),
         getPoinSiswa: () => Api.get('/api/guru/poin-siswa'),
-        jam_sekolah: {
+        jamSekolah: {
             ...createResource('/api/guru/jam_sekolah'),
             export: () => Api.get('/api/guru/jam-sekolah/export', { responseType: 'blob' }),
         },
@@ -195,7 +206,7 @@ const api = {
                 import: (data: any) => Api.post('/api/guru/kurikulum/mapel/import', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
                 export: () => Api.get('/api/guru/kurikulum/mapel/export', { responseType: 'blob' }),
             },
-            jam_sekolah: {
+            jamSekolah: {
                 ...createResource('/api/guru/kurikulum/jam_sekolah'),
                 import: (data: any) => Api.post('/api/guru/kurikulum/jam-sekolah/import', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
                 export: () => Api.get('/api/guru/kurikulum/jam-sekolah/export', { responseType: 'blob' }),
@@ -268,14 +279,21 @@ const api = {
         },
 
         kepsek: {
-            updateProfilSekolah: (data: any) => Api.put('/api/guru/kepsek/profil-sekolah', data),
             getLogs: () => Api.get('/api/guru/kepsek/log'),
-            updateSettingGeneral: (data: any) => Api.put('/api/guru/kepsek/setting/general', data),
             listKelas: () => Api.get('/api/guru/kepsek/list-kelas'),
             listSiswa: () => Api.get('/api/guru/kepsek/list-siswa'),
             jadwalHariIni: () => Api.get('/api/guru/kepsek/jadwal-hari-ini'),
             siswaByJadwal: (id: any) => Api.get(`/api/guru/kepsek/siswa-by-jadwal/${id}`),
             monitoringPoinSiswa: () => Api.get('/api/guru/kepsek/monitoring-poin-siswa'),
+
+             Setting: {
+               get: () => Api.get('/api/guru/kepsek/setting/general'),
+               update: (data: any) => Api.post('/api/guru/kepsek/setting/general', data),
+            },
+            ProfilSekolah: {
+               get: () => Api.get('/api/guru/kepsek/profil-sekolah'),
+               update: (data: any) => Api.post('/api/guru/kepsek/profil-sekolah', data),
+            },
             poin_siswa: {
                 ...createResource('/api/guru/kepsek/poin_siswa'),
                 export: () => Api.get('/api/guru/kepsek/poin-siswa/export', { responseType: 'blob' }),
@@ -340,7 +358,7 @@ const api = {
         getDashboard: () => Api.get('/api/siswa/dashboard'),
         getPresensiSaya: () => Api.get('/api/siswa/presensi-saya'),
         getPoinSaya: () => Api.get('/api/siswa/poin-saya'),
-        jam_sekolah: {
+        jamSekolah: {
             ...createResource('/api/siswa/jam_sekolah'),
             export: () => Api.get('/api/siswa/jam-sekolah/export', { responseType: 'blob' }),
         },
@@ -355,7 +373,7 @@ const api = {
         getListAnak: () => Api.get('/api/ortu/list-anak'),
         getPresensiAnak: () => Api.get('/api/ortu/presensi-anak'),
         getPoinAnak: () => Api.get('/api/ortu/poin-anak'),
-        jam_sekolah: {
+        jamSekolah: {
             ...createResource('/api/ortu/jam_sekolah'),
             export: () => Api.get('/api/ortu/jam-sekolah/export', { responseType: 'blob' }),
         },

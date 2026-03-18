@@ -42,6 +42,7 @@ export const MENU_LIST: MenuItem[] = [
   { title: 'Kontak', path: '/admin/kontak', role: ['Admin']},
   { title: 'Portal & PPDB', path: '/admin/portal-ppdb', role: ['Admin', 'Guru'], jabatan: ['Waka Humas'] },
   { title: 'Banner', path: '/admin/banner', role: ['Admin', 'Guru'], jabatan: ['Waka Humas'] },
+  { title: 'Struktur Jabatan', path: '/admin/jabatan', role: ['Admin'] },
   { title: 'Pesan Masuk', path: '/admin/pesan', role: ['Admin', 'Guru'], jabatan: ['Waka Humas'] },
   
   { title: 'Fasilitas & Sarpras', path: '/admin/fasilitas', role: ['Admin', 'Guru'], jabatan: ['Waka Sarpras'] },

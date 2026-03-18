@@ -687,3 +687,102 @@ aside.collapsed .sidebar-group-header {
     max-width: 150px;
   }
 }
+.ui-search-select-container {
+    position: relative;
+}
+
+.ui-search-select-dropdown {
+    position: absolute;
+    width: 100%;
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    z-index: 1060 !important;
+    top: 100%;
+    margin-top: 4px;
+    overflow: hidden;
+}
+
+.ui-search-select-wrapper {
+    max-height: 160px;
+    overflow-y: auto;
+}
+
+.ui-search-select-item {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid #f8f9fa;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.ui-search-select-item:last-child {
+    border-bottom: none;
+}
+
+.ui-search-select-item:hover {
+    background-color: #f8f9fa;
+}
+
+.ui-search-select-item .title-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #212529;
+    display: block;
+}
+
+.ui-search-select-item .sub-label {
+    font-size: 9px;
+    color: #6c757d;
+    display: block;
+}
+
+.modal-body {
+    overflow: visible !important;
+}
+.ui-ttd-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 20px;
+}
+
+.ui-ttd-image {
+    max-height: 18px;
+    max-width: 45px;
+    width: auto;
+    object-fit: contain;
+}
+
+.ui-preview-foto {
+    position: relative;
+    cursor: pointer;
+}
+
+.ui-preview-foto:hover .ui-preview-overlay {
+    opacity: 1;
+}
+
+.ui-preview-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 8px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.ui-btn-delete-preview {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: white !important;
+    border-radius: 50%;
+    padding: 2px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
