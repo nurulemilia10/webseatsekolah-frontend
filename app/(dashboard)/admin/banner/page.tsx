@@ -1,0 +1,336 @@
+"use client";
+
+import React, { useState, useEffect, useCallback, useId, memo, useMemo } from 'react';
+import { 
+  Plus, Edit2, Loader2, Image as ImageIcon, Trash2, Link as LinkIcon, Calendar, Crop
+} from 'lucide-react';
+import Cropper from 'react-easy-crop';
+import api from '@/lib/api';
+import Swal from 'sweetalert2';
+import { useAuth } from '@/hooks/useAuth';
+import { getCroppedImg, getBase64FromUrl } from '@/app/utils/imageUtils';
+
+const BannerRow = memo(({ banner, onEdit, onDelete }: { banner: any, onEdit: (b: any) => void, onDelete: (id: number) => void }) => (
+  <tr>
+    <td className="ps-3 py-2">
+      <div className="d-flex align-items-center">
+        <div className="ui-thumb-container flex-shrink-0">
+          {banner.foto_url ? (
+            <img src={`${banner.foto_url}?t=${Date.now()}`} alt={banner.judul || "Banner"} className="w-100 h-100 object-cover block" />
+          ) : (
+            <div className="d-flex align-items-center justify-content-center w-100 h-100">
+              <ImageIcon size={10} className="text-muted" />
+            </div>
+          )}
+        </div>
+        <div className="ms-2 text-dark fw-medium text-[11px] text-wrap-custom max-w-title">
+          {banner.judul || 'Tanpa Judul'}
+        </div>
+      </div>
+    </td>
+    <td className="py-2 text-muted text-[10px] d-none d-md-table-cell">
+      <div className="d-flex align-items-center">
+        <LinkIcon size={11} className="me-1" />
+        <span className="text-truncate max-w-[150px] d-inline-block">{banner.url_link || '-'}</span>
+      </div>
+    </td>
+    <td className="py-2 text-end pe-3">
+      <div className="d-flex justify-content-end gap-1">
+        <button onClick={() => onEdit(banner)} className="btn btn-sm p-1 text-primary border-0 shadow-none" aria-label="Edit Banner">
+          <span className="bg-light p-1 rounded-3 d-inline-flex"><Edit2 size={11}/></span>
+        </button>
+        <button onClick={() => onDelete(banner.id)} className="btn btn-sm p-1 text-danger border-0 shadow-none" aria-label="Hapus Banner">
+          <span className="bg-danger bg-opacity-10 p-1 rounded-3 d-inline-flex"><Trash2 size={11}/></span>
+        </button>
+      </div>
+    </td>
+  </tr>
+));
+
+BannerRow.displayName = 'BannerRow';
+
+export default function ManajemenBanner() {
+  const { user, loading: authLoading } = useAuth();
+  const [data, setData] = useState<any[]>([]);
+  const [meta, setMeta] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [showForm, setShowForm] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [currentId, setCurrentId] = useState<number | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [tempImage, setTempImage] = useState<string | null>(null);
+  const [originalImage, setOriginalImage] = useState<string | null>(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  
+  const [formData, setFormData] = useState({ judul: '', url_link: '', aktif_sampai: '', foto: null as File | null });
+  const [errors, setErrors] = useState<any>({});
+
+  const judulId = useId();
+  const linkId = useId();
+  const tglId = useId();
+  const fotoId = useId();
+
+  const Toast = useMemo(() => Swal.mixin({
+    toast: true,
+    position: 'top',
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+  }), []);
+
+  const fetchData = useCallback(async (page = 1) => {
+    if (authLoading || !user) return;
+    setLoading(true);
+    try {
+      const res = await api.admin.banner.getAll({ page });
+      if (res?.data) {
+        setData(res.data.data || []);
+        setMeta(res.data.meta || null);
+        setCurrentPage(page);
+      }
+    } catch (e) { console.error(e); } finally { setLoading(false); }
+  }, [authLoading, user]);
+
+  useEffect(() => { fetchData(1); }, [fetchData]);
+
+  const onCropComplete = useCallback((_: any, clippedPixels: any) => { setCroppedAreaPixels(clippedPixels); }, []);
+
+  const handleApplyCrop = async () => {
+    if (tempImage && croppedAreaPixels) {
+      try {
+        const croppedBlob = await getCroppedImg(tempImage, croppedAreaPixels);
+        const file = new File([croppedBlob], "banner_foto.jpg", { type: "image/jpeg" });
+        if (photoPreview && photoPreview.startsWith('blob:')) URL.revokeObjectURL(photoPreview);
+        const newUrl = URL.createObjectURL(croppedBlob);
+        setFormData(prev => ({ ...prev, foto: file }));
+        setPhotoPreview(newUrl);
+        setTempImage(null);
+      } catch (e) { Toast.fire({ icon: 'error', title: 'Gagal memotong gambar' }); }
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setOriginalImage(reader.result as string);
+        setTempImage(reader.result as string);
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    }
+  };
+
+  const handleCloseForm = useCallback(() => {
+    if (photoPreview && photoPreview.startsWith('blob:')) URL.revokeObjectURL(photoPreview);
+    setShowForm(false); setIsEdit(false); setCurrentId(null); setTempImage(null);
+    setOriginalImage(null); setPhotoPreview(null); setErrors({});
+    setFormData({ judul: '', url_link: '', aktif_sampai: '', foto: null });
+  }, [photoPreview]);
+
+  const handleEditClick = useCallback(async (b: any) => {
+    setIsEdit(true); setCurrentId(b.id);
+    setFormData({ 
+      judul: b.judul || '', 
+      url_link: b.url_link || '', 
+      aktif_sampai: b.aktif_sampai ? b.aktif_sampai.split(' ')[0] : '', 
+      foto: null 
+    });
+    setPhotoPreview(b.foto_url || null);
+    setShowForm(true);
+    if (b.foto_url) {
+      try { const base64 = await getBase64FromUrl(b.foto_url); setOriginalImage(base64); } catch (e) { console.error(e); }
+    }
+  }, []);
+
+  const handleDelete = async (id: number) => {
+    const result = await Swal.fire({
+      title: 'Hapus Banner?',
+      text: "Banner akan dihapus permanen.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      confirmButtonText: 'Ya, Hapus!',
+      reverseButtons: true
+    });
+
+    if (result.isConfirmed) {
+      const previousData = [...data];
+      setData(prev => prev.filter(item => item.id !== id));
+      try {
+        const res = await api.admin.banner.delete(id);
+        if (res.status === 200 || res.data?.success) {
+          Toast.fire({ icon: 'success', title: 'Banner berhasil dihapus' });
+          if (meta) setMeta({ ...meta, total: meta.total - 1 });
+        } else { throw new Error(); }
+      } catch (e: any) {
+        setData(previousData);
+        Toast.fire({ icon: 'error', title: 'Gagal menghapus banner' });
+      }
+    }
+  };
+
+  const handleSave = async () => {
+    setErrors({});
+    setIsSubmitting(true);
+    const payload = new FormData();
+    payload.append('judul', formData.judul);
+    payload.append('url_link', formData.url_link);
+    if (formData.aktif_sampai) payload.append('aktif_sampai', formData.aktif_sampai);
+    if (formData.foto) payload.append('foto', formData.foto);
+
+    try {
+      let res;
+      if (isEdit && currentId) {
+        payload.append('_method', 'PUT');
+        res = await api.admin.banner.update(currentId, payload);
+      } else {
+        res = await api.admin.banner.create(payload);
+      }
+
+      if (res.status === 200 || res.status === 201 || res.data?.success) { 
+        Toast.fire({ icon: 'success', title: res.data?.message || 'Banner disimpan' });
+        handleCloseForm(); 
+        fetchData(isEdit ? currentPage : 1); 
+      }
+    } catch (e: any) { 
+      if (e.response?.status === 422) {
+        setErrors(e.response.data.errors);
+      } else {
+        Toast.fire({ icon: 'error', title: 'Terjadi kesalahan sistem' });
+      }
+    } finally { setIsSubmitting(false); }
+  };
+
+  if (authLoading) return null;
+
+  return (
+    <div className="container-fluid py-3 px-2 px-md-3">
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <div className="d-flex align-items-center">
+          <ImageIcon size={16} className="text-primary me-2" />
+          <h6 className="mb-0 fw-bold text-dark text-uppercase text-[12px] tracking-wider">Manajemen Banner</h6>
+        </div>
+        <button onClick={() => setShowForm(true)} className="btn btn-primary btn-sm px-2 px-md-3 shadow-sm rounded-3 py-1.5 text-[10px]">
+          <Plus size={13} className="me-1"/> <span>Tambah Banner</span>
+        </button>
+      </div>
+
+      <div className="card border-0 shadow-sm rounded-3 overflow-hidden">
+        <div className="table-responsive">
+          <table className="table table-hover align-middle mb-0">
+            <thead className="bg-light">
+              <tr className="text-[9px]">
+                <th className="ps-3 border-0 py-2.5 fw-bold text-muted text-uppercase">Banner</th>
+                <th className="border-0 py-2.5 fw-bold text-muted text-uppercase d-none d-md-table-cell">URL Link</th>
+                <th className="border-0 py-2.5 text-end pe-3 fw-bold text-muted text-uppercase">Aksi</th>
+              </tr>
+            </thead>
+            <tbody className="border-top-0">
+              {loading ? (
+                <tr>
+                  <td colSpan={3} className="text-center py-5">
+                    <Loader2 className="text-primary animate-spin mb-2 mx-auto" size={20} />
+                    <div className="text-muted text-[10px]">Memuat data...</div>
+                  </td>
+                </tr>
+              ) : data.length === 0 ? (
+                <tr>
+                  <td colSpan={3} className="text-center py-5 text-muted text-[10px]">Belum ada banner terpasang.</td>
+                </tr>
+              ) : data.map((b) => (
+                <BannerRow key={b.id} banner={b} onEdit={handleEditClick} onDelete={handleDelete} />
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="card-footer bg-white border-top py-2 rounded-bottom-3">
+          <div className="d-flex justify-content-between align-items-center">
+            <div className="text-muted text-[9px] fw-medium">Total: {meta?.total || 0}</div>
+            {meta && meta.last_page > 1 && (
+              <nav>
+                <ul className="pagination pagination-sm mb-0">
+                  <li className={`page-item ${meta.current_page === 1 ? 'disabled' : ''}`}>
+                    <button className="page-link border rounded-3 mx-1 ui-pagination-square shadow-none" onClick={() => fetchData(meta.current_page - 1)} aria-label="Previous">&lt;</button>
+                  </li>
+                  <li className="page-item active">
+                    <span className="page-link border rounded-3 mx-1 ui-pagination-square bg-primary text-white border-primary shadow-none">{meta.current_page}</span>
+                  </li>
+                  <li className={`page-item ${meta.current_page === meta.last_page ? 'disabled' : ''}`}>
+                    <button className="page-link border rounded-3 mx-1 ui-pagination-square shadow-none" onClick={() => fetchData(meta.current_page + 1)} aria-label="Next">&gt;</button>
+                  </li>
+                </ul>
+              </nav>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {showForm && (
+        <div className="modal fade show d-block bg-black/40 z-[1050]">
+          <div className="modal-dialog modal-dialog-centered px-3 modal-max-width mx-auto">
+            <div className="modal-content border-0 shadow-lg rounded-3 overflow-hidden">
+              <div className="modal-header border-0 pb-0 px-3 pt-3">
+                <h6 className="modal-title fw-bold text-dark text-[12px]">
+                  {tempImage ? "Potong Foto Banner" : (isEdit ? "Edit Banner" : "Tambah Banner Baru")}
+                </h6>
+                <button onClick={handleCloseForm} className="btn-close shadow-none scale-75" aria-label="Close"></button>
+              </div>
+              <div className="modal-body p-3 pt-2">
+                {tempImage ? (
+                  <div className="ui-cropper-wrapper">
+                    <Cropper image={tempImage} crop={crop} zoom={zoom} aspect={16 / 9} onCropChange={setCrop} onCropComplete={onCropComplete} onZoomChange={setZoom} />
+                    <div className="position-absolute bottom-0 start-0 w-100 p-2 d-flex gap-2 z-index-10">
+                        <button onClick={handleApplyCrop} className="btn btn-primary btn-sm flex-grow-1 fw-bold text-[10px] py-1.5 rounded-3 shadow">
+                          <Crop size={11} className="me-1"/> Terapkan Potongan
+                        </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="mb-2">
+                      <label className="form-label text-dark mb-1 fw-semibold text-[10px]" htmlFor={judulId}>Judul Banner</label>
+                      <input id={judulId} type="text" className="form-control bg-light border-0 shadow-none py-1.5 px-3 text-[10px] rounded-3" value={formData.judul} onChange={(e) => setFormData({...formData, judul: e.target.value})} />
+                      {errors.judul && <div className="text-danger mt-1 text-[8px]">{errors.judul[0]}</div>}
+                    </div>
+                    <div className="mb-2">
+                      <label className="form-label text-dark mb-1 fw-semibold text-[10px]" htmlFor={linkId}>URL Link (Opsional)</label>
+                      <input id={linkId} type="url" placeholder="https://..." className="form-control bg-light border-0 shadow-none py-1.5 px-3 text-[10px] rounded-3" value={formData.url_link} onChange={(e) => setFormData({...formData, url_link: e.target.value})} />
+                    </div>
+                    <div className="mb-2">
+                      <label className="form-label text-dark mb-1 fw-semibold text-[10px]" htmlFor={tglId}>Aktif Sampai</label>
+                      <input id={tglId} type="date" className="form-control bg-light border-0 shadow-none py-1.5 px-3 text-[10px] rounded-3" value={formData.aktif_sampai} onChange={(e) => setFormData({...formData, aktif_sampai: e.target.value})} />
+                    </div>
+                    <div className="mb-2">
+                      <label className="form-label text-dark mb-1 fw-semibold text-[10px]" htmlFor={fotoId}>Foto Banner</label>
+                      <input id={fotoId} type="file" accept="image/*" className="form-control bg-light border-0 shadow-none py-1.5 px-3 text-[10px] rounded-3" onChange={handleFileChange} />
+                      {photoPreview && (
+                        <div className="ui-preview-foto" onClick={() => originalImage && setTempImage(originalImage)}>
+                          <img src={photoPreview} alt="Preview" />
+                          <div className="ui-preview-overlay"><span>Klik untuk sesuaikan ukuran</span></div>
+                          <button type="button" className="btn-close ui-btn-delete-preview shadow-none" onClick={(e) => { e.stopPropagation(); setFormData({...formData, foto: null}); setPhotoPreview(null); setOriginalImage(null); }} aria-label="Hapus Preview"></button>
+                        </div>
+                      )}
+                      {errors.foto && <div className="text-danger mt-1 text-[8px]">{errors.foto[0]}</div>}
+                    </div>
+                  </>
+                )}
+              </div>
+              {!tempImage && (
+                <div className="modal-footer border-0 p-3 pt-0">
+                  <button onClick={handleSave} className="btn btn-primary btn-sm w-100 fw-bold shadow-sm py-2 text-[11px] rounded-3" disabled={isSubmitting}>
+                    {isSubmitting ? <Loader2 size={12} className="animate-spin" /> : (isEdit ? "Perbarui Banner" : "Simpan Banner")}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

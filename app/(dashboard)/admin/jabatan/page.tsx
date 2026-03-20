@@ -144,7 +144,7 @@ export default function ManajemenOrganisasi() {
   const fetchGuru = useCallback(async (q = '') => {
     setLoadingGuru(true);
     try {
-      const res = await api.admin.guru.getAll({ q, per_page: 10 });
+      const res = await api.admin.guruStaf.getAll({ q, per_page: 10 });
       setGuruOptions(res.data?.data || []);
     } catch (e) { console.error(e); } finally { setLoadingGuru(false); }
   }, []);

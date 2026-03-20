@@ -20,14 +20,14 @@ interface SidebarProps {
 const GROUPS_CONFIG = [
     { title: "Utama", icon: <LayoutDashboard size={20} />, items: ["Dashboard", "User Management"] },
     { title: "Akademik", icon: <Database size={20} />, items: ["Tahun Ajaran", "Semester", "Kurikulum", "Kalender Akademik", "Data Jam Sekolah", "Penugasan Guru Mapel","Kenaikan Kelas",  "Kelas Walikelas"] },
-    { title: "Data Master", icon: <FolderArchive size={20} />, items: [ "Data Mata Pelajaran", "Data Jurusan", "Data Kelas", "Data Guru", "Data Siswa", "Data Orang Tua"] },
+    { title: "Data Master", icon: <FolderArchive size={20} />, items: [ "Data Mata Pelajaran", "Data Kelas", "Data Guru", "Data Siswa", "Data Orang Tua"] },
     { title: "Operasional", icon: <Users size={20} />, items: ["Monitoring Presensi Harian", "Monitoring Presensi Mapel", "Monitoring Poin Siswa" ] },
     { title: "Ketua Jurusan", icon: <GraduationCap size={20} />, items: ["Siswa Jurusan", "Mapel Jurusan", "Penugasan Guru Mapel Jueusan", "Kelas Jurusan"] },
     { title: "Wali Kelas", icon: <UserCheck size={20} />, items: ["Siswa Kelas Saya", "Orang Tua Siswa", "Presensi Harian Kelas"] },
     { title: "Guru Mapel", icon: <BookOpen size={20} />, items: ["Jam Sekolah", "Presensi Mapel", "Input Poin"] },
     { title: "Siswa", icon: <Users size={20} />, items: ["Jadwal Mapel", "Presensi Saya", "Poin Saya"] },
     { title: "Orang Tua", icon: <Users size={20} />, items: ["Jam Sekolah", "Presensi Anak", "Poin Anak"] },
-    { title: "Informasi", icon: <Info size={20} />, items: ["Berita","Ekstrakurikuler", "Pengumuman", "Prestasi", "Banner Hero", "Portal & PPDB", "Fasilitas & Sarpras", "Galeri & Media", "Pesan Masuk","Kontak","Struktur Jabatan"] },
+    { title: "Informasi", icon: <Info size={20} />, items: ["Berita","Ekstrakurikuler", "Pengumuman", "Prestasi", "Banner", "Portal & PPDB", "Fasilitas & Sarpras", "Galeri & Media", "Pesan Masuk","Kontak","Struktur Jabatan","Jurusan"] },
     { title: "Sistem", icon: <Settings2 size={20} />, items: ["Profil Sekolah", "Log Aktivitas"] }
 ];
 

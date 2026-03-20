@@ -24,8 +24,7 @@ export const MENU_LIST: MenuItem[] = [
   { title: 'Kelas Walikelas', path: '/admin/kelas-walikelas', role: ['Admin'] },
   { title: 'Kenaikan Kelas', path: '/admin/kenaikan-kelas', role: ['Admin', 'Guru'], jabatan: ['Waka Kesiswaan'] },
   
-  { title: 'Data Mata Pelajaran', path: '/admin/mapel', role: ['Admin', 'Guru'], jabatan: ['Waka Kurikulum'] },
-  { title: 'Data Jurusan', path: '/admin/jurusan', role: ['Admin']},
+  { title: 'Data Mata Pelajaran', path: '/admin/matapelajaran', role: ['Admin', 'Guru'], jabatan: ['Waka Kurikulum'] },
   { title: 'Data Kelas', path: '/admin/kelas', role: ['Admin']  },
   { title: 'Data Guru', path: '/admin/guru', role: ['Admin'] },
   { title: 'Data Siswa', path: '/admin/siswa', role: ['Admin', 'Guru'], jabatan: ['Waka Kesiswaan'] },
@@ -36,6 +35,7 @@ export const MENU_LIST: MenuItem[] = [
   { title: 'Monitoring Presensi Mapel', path: '/admin/presensi-mapel', role: ['Admin', 'Guru'], jabatan: ['Waka Kesiswaan','Kepala Sekolah'] },
   
   { title: 'Ekstrakurikuler', path: '/admin/ekstrakurikuler', role: ['Admin', 'Guru'], jabatan: ['Waka Kesiswaan'] },
+  { title: 'Jurusan', path: '/admin/jurusan', role: ['Admin']},
   { title: 'Berita', path: '/admin/berita', role: ['Admin', 'Guru'], jabatan: ['Waka Humas'] },
   { title: 'Pengumuman', path: '/admin/pengumuman', role: ['Admin', 'Guru'], jabatan: ['Waka Humas'] },
   { title: 'Prestasi', path: '/admin/prestasi', role: ['Admin', 'Guru'], jabatan: ['Waka Humas'] },
