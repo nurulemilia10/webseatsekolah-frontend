@@ -145,8 +145,10 @@ const api = {
         guruStaf: {
             ...createResource('/api/admin/guru'),
             import: (data: any) => Api.post('/api/admin/guru/import', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
-            export: () => Api.get('/api/admin/guru/export', { responseType: 'blob' }),
-        },
+            export: (params?: any) => Api.get('/api/admin/guru/export', { responseType: 'blob', params }),
+            bulkDelete: (ids: any[]) => Api.post('/api/admin/guru/bulk-delete', { ids }),
+            importPreview: (data: any) => Api.post('/api/admin/guru/import-preview', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+},
         guruMapel: {
            ...createResource('/api/admin/guru_mapel'),
            import: (data: any) => Api.post('/api/admin/guru-mapel/import', data, { headers: { 'Content-Type': 'multipart/form-data' }  }),
@@ -162,18 +164,20 @@ const api = {
             bulkDelete: (ids: string[]) => Api.post('/api/admin/jam-sekolah/bulk-delete', { ids }),
             export: (params?: any) => Api.get('/api/admin/jam-sekolah/export', { responseType: 'blob',  params  }),
        },
-        kelas: {
-            ...createResource('/api/admin/kelas'),
-            import: (data: any) => Api.post('/api/admin/kelas/import', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
-            export: () => Api.get('/api/admin/kelas/export', { responseType: 'blob' }),
-        },
+       kelas: {
+           ...createResource('/api/admin/kelas'),
+           import: (data: any) => Api.post('/api/admin/kelas/import', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+           importPreview: (data: any) => Api.post('/api/admin/kelas/import-preview', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+           export: (params?: any) => Api.get('/api/admin/kelas/export', { responseType: 'blob', params }),
+           bulkDelete: (ids: string[]) => Api.post('/api/admin/kelas/bulk-delete', { ids }),
+       },
         mapel: {
            ...createResource('/api/admin/mapel'),
            import: (data: any) => Api.post('/api/admin/mapel/import', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
            importPreview: (data: any) => Api.post('/api/admin/mapel/import-preview', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
            export: (params?: any) => Api.get('/api/admin/mapel/export', { responseType: 'blob', params }),
            bulkDelete: (ids: string[]) => Api.delete('/api/admin/mapel/bulk-delete', { data: { ids } }),
-},
+        },
         presensi: {
             ...createResource('/api/admin/presensi'),
             export: () => Api.get('/api/admin/presensi/export', { responseType: 'blob' }),
