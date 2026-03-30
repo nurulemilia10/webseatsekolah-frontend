@@ -875,3 +875,25 @@ aside.collapsed .sidebar-group-header {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
 }
+/* Paksa struktur modal agar fleksibel dan tidak melebihi layar */
+.modal.show .modal-content {
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: 90vh !important; /* Batasi tinggi maksimal 90% layar */
+  overflow: hidden !important;
+}
+
+/* Jadikan Body Modal area yang bisa di-scroll */
+.modal.show .modal-body {
+  flex: 1 1 auto !important;
+  overflow-y: auto !important; /* Aktifkan scroll vertikal */
+  overflow-x: hidden !important; /* Sembunyikan scroll horizontal */
+  min-height: 0 !important; /* Trik penting agar flexbox scroll bekerja */
+  -webkit-overflow-scrolling: touch; /* Halus di iPhone/iPad */
+}
+
+/* Pastikan Header dan Footer tidak mengecil */
+.modal.show .modal-header,
+.modal.show .modal-footer {
+  flex-shrink: 0 !important;
+}

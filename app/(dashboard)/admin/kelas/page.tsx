@@ -191,9 +191,17 @@ export default function ManajemenKelas() {
   const filterStatusId = useId();
   const tingkatanNamaId = useId();
 
-  const hasImportConflict = useMemo(() => {
-    return previewData?.some(item => item.is_duplicate || !item.jurusan_exists || !item.tingkatan_exists);
+  const processedPreviewData = useMemo(() => {
+    if (!previewData) return [];
+    return previewData.map(item => {
+      const hasConflict = item.is_duplicate || !item.jurusan_found || !item.tingkatan_found;
+      return { ...item, hasConflict };
+    });
   }, [previewData]);
+
+  const hasImportConflict = useMemo(() => {
+    return processedPreviewData.some(item => item.hasConflict);
+  }, [processedPreviewData]);
 
   const Toast = useMemo(() => Swal.mixin({
     toast: true,
@@ -255,14 +263,10 @@ export default function ManajemenKelas() {
         per_page: tingkatanPagination.perPage
       };
       const res = await api.admin.tingkatan.getAll(params);
-      
-      // PERBAIKAN DI SINI: Menggunakan logika ekstraksi data yang fleksibel
       const rawData = res.data?.success ? res.data.data : (res.data?.data || res.data || []);
       
       if (Array.isArray(rawData)) {
         setTingkatanData(rawData);
-        
-        // Cek apakah ada meta pagination, jika tidak set manual
         if (res.data?.meta) {
           setTingkatanPagination({
             perPage: res.data.meta.per_page,
@@ -842,7 +846,7 @@ export default function ManajemenKelas() {
       </div>
       )}
 
-      {previewData && activePage === 'kelas' && (
+      {processedPreviewData && processedPreviewData.length > 0 && activePage === 'kelas' && (
           <div className="modal fade show d-block bg-transparent z-[1070]">
             <div className="modal-dialog modal-lg modal-dialog-centered px-3">
               <div className="modal-content border-0 shadow-lg rounded-3">
@@ -859,13 +863,13 @@ export default function ManajemenKelas() {
                       <div className="d-flex align-items-center gap-2">
                         {hasImportConflict ? <XCircle size={14} className="text-danger" /> : <AlertCircle size={14} className="text-muted" />}
                         <span className={`text-xxs fw-bold ${hasImportConflict ? 'text-danger' : 'text-muted'}`}>
-                          {hasImportConflict ? 'Terdapat data duplikat atau jurusan/tingkatan tidak ditemukan. Mohon perbaiki file Anda.' : `${previewData.length} baris data ditemukan.`}
+                          {hasImportConflict ? 'Terdapat data duplikat atau jurusan/tingkatan tidak ditemukan. Mohon perbaiki file Anda.' : `${processedPreviewData.length} baris data siap diimpor.`}
                         </span>
                       </div>
                       {hasImportConflict && (
                         <div className="d-none d-md-flex align-items-center gap-2 border-start ps-2">
                            <AlertCircle size={12} className="text-danger" />
-                           <span className="text-[10px] text-danger fw-medium">{previewData.length} baris total</span>
+                           <span className="text-[10px] text-danger fw-medium">{processedPreviewData.length} baris total</span>
                         </div>
                       )}
                     </div>
@@ -881,24 +885,27 @@ export default function ManajemenKelas() {
                         </tr>
                       </thead>
                       <tbody className="text-xs-custom">
-                        {previewData.map((item, idx) => (
-                          <tr key={idx} className={item.is_duplicate || !item.jurusan_exists || !item.tingkatan_exists ? 'bg-danger bg-opacity-10' : ''}>
+                        {processedPreviewData.map((item, idx) => (
+                          <tr key={idx} className={item.hasConflict ? 'bg-danger bg-opacity-10' : ''}>
                             <td className={`ps-3 py-[6px] fw-medium ${item.is_duplicate ? 'text-danger' : ''}`}>
                                 <div className="d-flex align-items-center gap-1">
                                     {item.nama_kelas || '-'}
-                                    {item.is_duplicate && <span title="Sudah terdaftar"><XCircle size={10} className="text-danger" /></span>}
+                                    {item.is_duplicate && <span title="Nama kelas sudah terdaftar"><XCircle size={10} className="text-danger" /></span>}
                                 </div>
                             </td>
-                            <td className={`py-[6px] ${!item.jurusan_exists ? 'text-danger fw-bold' : 'text-muted'}`}>
+                            <td className={`py-[6px] ${!item.jurusan_found ? 'bg-danger bg-opacity-25 text-danger fw-bold' : 'text-muted'}`}>
                                 <div className="d-flex align-items-center gap-1">
                                     {item.jurusan || 'Umum'}
-                                    {!item.jurusan_exists && <span title="Jurusan tidak ditemukan"><XCircle size={10} className="text-danger" /></span>}
+                                    {!item.jurusan_found && <span title="Jurusan tidak ditemukan"><XCircle size={10} className="text-danger" /></span>}
                                 </div>
                             </td>
-                            <td className="py-[6px] text-center text-capitalize">
-                              <span className={`badge fw-medium border text-xxs px-2 py-[2px] ${!item.tingkatan_exists ? 'bg-danger text-white border-danger' : 'bg-light text-dark'}`}>
-                                {item.tingkatan || '-'}
-                              </span>
+                            <td className={`py-[6px] text-center ${!item.tingkatan_found ? 'bg-danger bg-opacity-25 text-danger fw-bold' : ''}`}>
+                              <div className="d-flex align-items-center justify-content-center gap-1">
+                                <span className={`badge fw-medium border text-xxs px-2 py-[2px] ${!item.tingkatan_found ? 'bg-transparent border-danger text-danger' : 'bg-light text-dark'}`}>
+                                    {item.tingkatan || '-'}
+                                </span>
+                                {!item.tingkatan_found && <span title="Tingkatan tidak ditemukan"><XCircle size={10} className="text-danger" /></span>}
+                              </div>
                             </td>
                           </tr>
                         ))}

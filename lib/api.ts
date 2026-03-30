@@ -135,12 +135,16 @@ const api = {
         siswa: {
             ...createResource('/api/admin/siswa'),
             import: (data: any) => Api.post('/api/admin/siswa/import', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
-            export: () => Api.get('/api/admin/siswa/export', { responseType: 'blob' }),
+            export: (params?: any) => Api.get('/api/admin/siswa/export', { params, responseType: 'blob' }),
+            importPreview: (data: any) => Api.post('/api/admin/siswa/import-preview', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+            bulkDelete: (ids: string[]) => Api.post('/api/admin/siswa/bulk-delete', { ids }),
         },
         orangtua: {
             ...createResource('/api/admin/orangtua'),
             import: (data: any) => Api.post('/api/admin/orangtua/import', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
-            export: () => Api.get('/api/admin/orangtua/export', { responseType: 'blob' }),
+            importPreview: (data: any) => Api.post('/api/admin/orangtua/import-preview', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+            export: (params?: any) => Api.get('/api/admin/orangtua/export', { params, responseType: 'blob' }),
+            bulkDelete: (ids: string[]) => Api.post('/api/admin/orangtua/bulk-delete', { ids }),
         },
         guruStaf: {
             ...createResource('/api/admin/guru'),

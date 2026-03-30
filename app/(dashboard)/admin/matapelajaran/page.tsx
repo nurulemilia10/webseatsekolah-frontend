@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useId, memo, useMemo } from 'react';
 import { 
-  Plus, Edit2, Loader2, BookOpen, Trash2, FileDown, FileUp, ChevronLeft, ChevronRight, Eye, Search, Filter, RefreshCw, CheckCircle2, AlertCircle
+  Plus, Edit2, Loader2, BookOpen, Trash2, FileDown, FileUp, ChevronLeft, ChevronRight, Eye, Search, Filter, RefreshCw, CheckCircle2, AlertCircle, XCircle
 } from 'lucide-react';
 import api from '@/lib/api';
 import Swal from 'sweetalert2';
@@ -118,6 +118,18 @@ export default function ManajemenMataPelajaran() {
   const filterJurusanId = useId();
   const filterKategoriId = useId();
   const filterStatusId = useId();
+
+  const processedPreviewData = useMemo(() => {
+    if (!previewData) return [];
+    return previewData.map(item => {
+      const hasConflict = !item.jurusan_found || item.is_duplicate_internal || item.is_duplicate_database;
+      return { ...item, hasConflict };
+    });
+  }, [previewData]);
+
+  const hasImportConflict = useMemo(() => {
+    return processedPreviewData.some(item => item.hasConflict);
+  }, [processedPreviewData]);
 
   const Toast = useMemo(() => Swal.mixin({
     toast: true,
@@ -265,7 +277,7 @@ export default function ManajemenMataPelajaran() {
   };
 
   const confirmImport = async () => {
-    if (!importFile) return;
+    if (!importFile || hasImportConflict) return;
     setIsSubmitting(true);
     Swal.fire({ title: 'Mengimpor Data...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
     try {
@@ -329,22 +341,6 @@ export default function ManajemenMataPelajaran() {
   };
 
   const activeFilterCount = Object.values(filters).filter(v => v !== '').length + (search ? 1 : 0);
-
-  const getDuplicateIndexes = useMemo(() => {
-    if (!previewData) return new Set();
-    const seen = new Map();
-    const duplicates = new Set();
-    previewData.forEach((item, index) => {
-      const key = `${(item.nama_mata_pelajaran || '').toLowerCase()}|${(item.jurusan || 'umum').toLowerCase()}`;
-      if (seen.has(key)) {
-        duplicates.add(index);
-        duplicates.add(seen.get(key));
-      } else {
-        seen.set(key, index);
-      }
-    });
-    return duplicates;
-  }, [previewData]);
 
   if (authLoading) return null;
 
@@ -553,24 +549,26 @@ export default function ManajemenMataPelajaran() {
         )}
       </div>
 
-      {previewData && (
+      {processedPreviewData && processedPreviewData.length > 0 && (
          <div className="modal fade show d-block bg-transparent z-modal-preview">
-                  <div className="modal-dialog modal-lg modal-dialog-centered px-3">
-                    <div className="modal-content border-0 shadow-lg rounded-3">
-                      <div className="modal-header border-0 pb-0 px-3 pt-3">
-                        <div className="d-flex align-items-center">
-                          <Eye size={16} className="text-primary me-2" />
-                          <h6 className="modal-title fw-bold text-dark text-md-custom">Preview Import Data</h6>
-                        </div>
+          <div className="modal-dialog modal-lg modal-dialog-centered px-3">
+            <div className="modal-content border-0 shadow-lg rounded-3">
+              <div className="modal-header border-0 pb-0 px-3 pt-3">
+                <div className="d-flex align-items-center">
+                  <Eye size={16} className="text-primary me-2" />
+                  <h6 className="modal-title fw-bold text-dark text-md-custom">Preview Import Data</h6>
+                </div>
                 <button onClick={() => setPreviewData(null)} className="btn-close scale-75 shadow-none" aria-label="Tutup Preview"></button>
               </div>
 
               <div className="modal-body p-3">
-                <div className={`alert border-0 rounded-3 d-flex flex-column gap-1 mb-3 py-2 px-3 ${getDuplicateIndexes.size > 0 ? 'alert-danger bg-danger bg-opacity-10' : 'alert-light bg-light'}`}>
+                <div className={`alert border-0 rounded-3 d-flex flex-column gap-1 mb-3 py-2 px-3 ${hasImportConflict ? 'alert-danger bg-danger bg-opacity-10' : 'alert-light bg-light'}`}>
                   <div className="d-flex align-items-center gap-2">
-                    <AlertCircle size={14} className={getDuplicateIndexes.size > 0 ? 'text-danger' : 'text-muted'} />
-                    <span className={`text-xxs fw-medium ${getDuplicateIndexes.size > 0 ? 'text-danger' : 'text-muted'}`}>
-                      {previewData.length} baris data. {getDuplicateIndexes.size > 0 && `Ada duplikat.`}
+                    {hasImportConflict ? <XCircle size={14} className="text-danger" /> : <AlertCircle size={14} className="text-muted" />}
+                    <span className={`text-xxs fw-medium ${hasImportConflict ? 'text-danger' : 'text-muted'}`}>
+                      {hasImportConflict 
+                        ? 'Terdapat konflik data (Duplikat file/database atau Jurusan tidak ditemukan).' 
+                        : `${processedPreviewData.length} baris data siap diimpor.`}
                     </span>
                   </div>
                 </div>
@@ -582,23 +580,37 @@ export default function ManajemenMataPelajaran() {
                         <th className="ps-3 py-2 border-0">Mapel</th>
                         <th className="py-2 border-0">Jurusan</th>
                         <th className="py-2 border-0 text-center">Kategori</th>
+                        <th className="py-2 border-0 text-center">Tipe</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {previewData.map((item, idx) => {
-                        const isDup = getDuplicateIndexes.has(idx);
-                        return (
-                          <tr key={idx} className={`${isDup ? 'bg-danger bg-opacity-10' : ''}`}>
-                            <td className={`ps-3 py-[6px] fw-medium ${isDup ? 'text-danger' : ''}`}>{item.nama_mata_pelajaran || '-'}</td>
-                            <td className={`py-[6px] ${isDup ? 'text-danger' : 'text-muted'}`}>{item.jurusan || 'Umum'}</td>
-                            <td className="py-[6px] text-center text-capitalize">
-                              <span className={`badge fw-medium border text-xxs px-2 py-[2px] ${isDup ? 'bg-danger text-white border-danger' : 'bg-light text-dark'}`}>
-                                {item.kategori_mapel || item.kategori || 'adaptif'}
-                              </span>
-                            </td>
-                          </tr>
-                        );
-                      })}
+                      {processedPreviewData.map((item, idx) => (
+                        <tr key={idx} className={item.hasConflict ? 'bg-danger bg-opacity-10' : ''}>
+                          <td className={`ps-3 py-[6px] fw-medium ${item.is_duplicate_internal || item.is_duplicate_database ? 'text-danger' : ''}`}>
+                            <div className="d-flex align-items-center gap-1">
+                              {item.nama_mata_pelajaran || '-'}
+                              {item.is_duplicate_internal && <span title="Duplikat dalam file"><XCircle size={10} className="text-danger" /></span>}
+                              {item.is_duplicate_database && <span title="Sudah ada di database"><AlertCircle size={10} className="text-danger" /></span>}
+                            </div>
+                          </td>
+                          <td className={`py-[6px] ${!item.jurusan_found ? 'bg-danger bg-opacity-25 text-danger fw-bold' : 'text-muted'}`}>
+                            <div className="d-flex align-items-center gap-1">
+                              {item.jurusan || 'Semua Jurusan'}
+                              {!item.jurusan_found && <span title="Jurusan tidak ditemukan"><XCircle size={10} className="text-danger" /></span>}
+                            </div>
+                          </td>
+                          <td className="py-[6px] text-center text-capitalize">
+                            <span className={`badge fw-medium border text-xxs px-2 py-[2px] ${item.hasConflict ? 'bg-danger text-white border-danger' : 'bg-light text-dark'}`}>
+                              {item.kategori_mapel || item.kategori || 'adaptif'}
+                            </span>
+                          </td>
+                          <td className="py-[6px] text-center text-capitalize">
+                             <span className={`badge fw-medium border text-xxs px-2 py-[2px] ${item.hasConflict ? 'bg-danger text-white border-danger' : 'bg-light text-dark'}`}>
+                              {item.tipe_mapel || 'umum'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
@@ -612,7 +624,11 @@ export default function ManajemenMataPelajaran() {
                     </button>
                   </div>
                   <div className="col-6">
-                    <button onClick={confirmImport} className="btn btn-primary btn-sm w-100 py-2 rounded-3 shadow-none fw-bold d-flex align-items-center justify-content-center gap-2 text-xxs" disabled={isSubmitting}>
+                    <button 
+                      onClick={confirmImport} 
+                      className={`btn btn-primary btn-sm w-100 py-2 rounded-3 shadow-none fw-bold d-flex align-items-center justify-content-center gap-2 text-xxs ${hasImportConflict ? 'opacity-50 cursor-not-allowed' : ''}`} 
+                      disabled={isSubmitting || hasImportConflict}
+                    >
                       {isSubmitting ? <Loader2 size={12} className="animate-spin" /> : (
                         <>
                           <CheckCircle2 size={12} />

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useId, memo, useMemo } from 'react';
 import { 
-  Plus, Edit2, Loader2, Clock, Trash2, FileDown, FileUp, Filter, ChevronLeft, ChevronRight, Calendar, Eye, Check, X, AlertTriangle
+  Plus, Edit2, Loader2, Clock, Trash2, FileDown, FileUp, Filter, ChevronLeft, ChevronRight, Calendar, Eye, Check, X, AlertTriangle, XCircle, AlertCircle, CheckCircle2
 } from 'lucide-react';
 import api from '@/lib/api';
 import Swal from 'sweetalert2';
@@ -126,6 +126,8 @@ export default function ManajemenJamSekolah() {
   const selesaiId = useId();
   const jenisId = useId();
   const ketId = useId();
+  const taFilterId = useId();
+  const semFilterId = useId();
 
   const Toast = useMemo(() => Swal.mixin({
     toast: true,
@@ -135,16 +137,9 @@ export default function ManajemenJamSekolah() {
     timerProgressBar: true,
   }), []);
 
-  const hasConflict = useMemo(() => {
+  const hasError = useMemo(() => {
     if (!previewData) return false;
-    return previewData.some((p, idx) => {
-      return previewData.some((other, oIdx) => {
-        if (idx === oIdx || p.hari !== other.hari) return false;
-        const isTimeOverlap = (p.waktu_mulai < other.waktu_selesai && p.waktu_selesai > other.waktu_mulai);
-        const isDuplicateJam = (p.jam_ke && other.jam_ke && p.jam_ke.toString() === other.jam_ke.toString());
-        return isTimeOverlap || isDuplicateJam;
-      });
-    });
+    return previewData.some(p => !p.is_valid);
   }, [previewData]);
 
   const tahunAjarans = useMemo(() => {
@@ -314,7 +309,7 @@ export default function ManajemenJamSekolah() {
   };
 
   const confirmImport = async () => {
-    if (!importFile || hasConflict) return;
+    if (!importFile || hasError) return;
     setIsSubmitting(true);
     Swal.fire({ title: 'Mengimpor Data...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
     try {
@@ -376,6 +371,17 @@ export default function ManajemenJamSekolah() {
 
   return (
     <div className="container-fluid py-3 px-2 px-md-3">
+      <style jsx global>{`
+        .max-h-300 { max-height: 300px; }
+        .z-modal-preview { z-index: 1070; }
+        .z-modal-form { z-index: 1100; }
+        .w-40px { width: 40px; }
+        .badge-pelajaran { background-color: rgba(var(--bs-primary-rgb), 0.1); color: var(--bs-primary); }
+        .badge-istirahat { background-color: rgba(255, 193, 7, 0.15); color: #856404; }
+        .badge-kegiatan { background-color: rgba(25, 135, 84, 0.1); color: #198754; }
+        .text-9px { font-size: 9px; }
+        .text-11px { font-size: 11px; }
+      `}</style>
       <div className="card border-0 shadow-sm rounded-3 mb-3">
         <div className="card-body p-2 p-md-3">
           <div className="d-flex flex-column flex-md-row align-items-md-center gap-3">
@@ -389,6 +395,7 @@ export default function ManajemenJamSekolah() {
                 <div className="position-relative">
                   <Calendar size={12} className="position-absolute top-50 start-0 ms-2 translate-middle-y text-muted" />
                   <select 
+                    id={taFilterId}
                     className="form-select form-select-sm ps-4 border-0 bg-light text-xs-custom rounded-3 fw-medium w-[120px] w-md-[150px] shadow-none"
                     value={filterTahunAjaranId}
                     onChange={(e) => {
@@ -396,6 +403,7 @@ export default function ManajemenJamSekolah() {
                       setFilterSemesterId('');
                     }}
                     aria-label="Filter Tahun Ajaran"
+                    title="Pilih Tahun Ajaran"
                   >
                     <option value="">Tahun Ajaran</option>
                     {tahunAjarans.map(ta => <option key={ta.id} value={ta.id}>{ta.nama}</option>)}
@@ -405,6 +413,7 @@ export default function ManajemenJamSekolah() {
                 <div className="position-relative">
                   <Filter size={12} className="position-absolute top-50 start-0 ms-2 translate-middle-y text-muted" />
                   <select 
+                    id={semFilterId}
                     className="form-select form-select-sm ps-4 border-0 bg-light text-xs-custom rounded-3 fw-medium w-[110px] w-md-[130px] shadow-none"
                     value={filterSemesterId}
                     disabled={!filterTahunAjaranId}
@@ -414,6 +423,7 @@ export default function ManajemenJamSekolah() {
                       if (newId) fetchData(newId, 1);
                     }}
                     aria-label="Filter Semester"
+                    title="Pilih Semester"
                   >
                     <option value="">Semester</option>
                     {filteredSemesterOptions.map(s => <option key={s.id} value={s.id}>{s.nama}</option>)}
@@ -469,6 +479,7 @@ export default function ManajemenJamSekolah() {
                     checked={data.length > 0 && selectedIds.length === data.length}
                     onChange={handleSelectAll}
                     aria-label="Pilih semua data di halaman ini"
+                    title="Pilih Semua"
                   />
                 </th>
                 <th className="border-0 py-2.5 fw-bold text-muted text-uppercase">Hari</th>
@@ -513,7 +524,7 @@ export default function ManajemenJamSekolah() {
               >
                 <ChevronLeft size={14} />
               </button>
-              <button className="btn btn-primary btn-sm px-2 text-xs-custom" aria-current="page">
+              <button className="btn btn-primary btn-sm px-2 text-xs-custom" aria-current="page" title={`Halaman ${pagination.currentPage}`} aria-label={`Halaman ${pagination.currentPage}`}>
                 {pagination.currentPage}
               </button>
               <button 
@@ -530,62 +541,82 @@ export default function ManajemenJamSekolah() {
         )}
       </div>
 
-      {previewData && (
+      {previewData && previewData.length > 0 && (
         <div className="modal fade show d-block bg-transparent z-modal-preview">
           <div className="modal-dialog modal-lg modal-dialog-centered px-3">
             <div className="modal-content border-0 shadow-lg rounded-3">
               <div className="modal-header border-0 pb-0 px-3 pt-3">
                 <div className="d-flex align-items-center">
                   <Eye size={16} className="text-primary me-2" />
-                  <h6 className="modal-title fw-bold text-dark text-md-custom">Preview Import Data</h6>
+                  <h6 className="modal-title fw-bold text-dark text-md-custom">Preview Import Jam Sekolah</h6>
                 </div>
-                <button onClick={() => setPreviewData(null)} className="btn-close scale-75 shadow-none" aria-label="Tutup Preview"></button>
+                <button onClick={() => setPreviewData(null)} className="btn-close scale-75 shadow-none" aria-label="Tutup preview" title="Tutup"></button>
               </div>
               <div className="modal-body p-3">
-                <div className={`alert ${hasConflict ? 'alert-danger' : 'alert-info'} py-2 px-3 border-0 rounded-3 mb-3 d-flex align-items-center gap-2`}>
-                  <AlertTriangle size={14} />
-                  <p className="text-xs-custom mb-0">
-                    {hasConflict 
-                      ? "Terdeteksi jadwal bentrok atau jam duplikat! Harap perbaiki file sebelum konfirmasi." 
-                      : `Ditemukan ${previewData.length} baris data. Semua terlihat aman.`}
-                  </p>
+                <div className={`alert ${hasError ? 'alert-danger' : 'alert-light bg-light'} border-0 rounded-3 py-2 px-3 mb-3`}>
+                  <div className="d-flex align-items-center gap-2">
+                    {hasError ? <XCircle size={14} className="text-danger" /> : <AlertCircle size={14} className="text-muted" />}
+                    <span className={`text-xxs fw-bold ${hasError ? 'text-danger' : 'text-muted'}`}>
+                      {hasError 
+                        ? 'Terdapat data error. Mohon perbaiki file Anda.' 
+                        : `${previewData.length} baris data siap diimpor.`}
+                    </span>
+                  </div>
                 </div>
+                
                 <div className="table-responsive border rounded-3 max-h-300">
                   <table className="table table-sm table-hover mb-0">
                     <thead className="bg-light sticky-top">
                       <tr className="text-xxs">
-                        <th className="py-2 px-3">Hari</th>
-                        <th className="py-2 text-center">Ke-</th>
-                        <th className="py-2">Waktu</th>
-                        <th className="py-2">Jenis</th>
-                        <th className="py-2">Keterangan</th>
+                        <th className="py-2 ps-3 border-0">Hari</th>
+                        <th className="py-2 text-center border-0">Ke-</th>
+                        <th className="py-2 border-0">Waktu</th>
+                        <th className="py-2 border-0">Jenis</th>
+                        <th className="py-2 border-0">Keterangan</th>
+                        <th className="py-2 pe-3 border-0">Catatan</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="text-11px">
                       {previewData.map((p, idx) => {
-                        const isConflict = previewData.some((other, oIdx) => {
-                          if (idx === oIdx || p.hari !== other.hari) return false;
-                          const timeOverlap = (p.waktu_mulai < other.waktu_selesai && p.waktu_selesai > other.waktu_mulai);
-                          const duplicateJam = (p.jam_ke && other.jam_ke && p.jam_ke.toString() === other.jam_ke.toString());
-                          return timeOverlap || duplicateJam;
-                        });
+                        const rowErrors = p.errors || [];
+                        const isInvalid = !p.is_valid;
+                        const hasHariError = rowErrors.some((e: string) => e.toLowerCase().includes('hari'));
+                        const hasJamError = rowErrors.some((e: string) => e.toLowerCase().includes('jam ke') || e.toLowerCase().includes('duplikat') || e.toLowerCase().includes('sudah ada'));
+                        const hasWaktuError = rowErrors.some((e: string) => e.toLowerCase().includes('waktu'));
+                        const hasJenisError = rowErrors.some((e: string) => e.toLowerCase().includes('jenis'));
+                        
                         return (
-                          <tr key={idx} className={`text-xs-custom ${isConflict ? 'table-danger' : ''}`}>
-                            <td className="py-2 px-3 fw-medium">
-                              <div className="d-flex align-items-center gap-1">
-                                {isConflict && <AlertTriangle size={10} className="text-danger" />}
-                                {p.hari}
-                              </div>
-                            </td>
-                            <td className={`py-2 text-center ${isConflict ? 'text-danger fw-bold' : ''}`}>{p.jam_ke || '-'}</td>
-                            <td className="py-2">{p.waktu_mulai} - {p.waktu_selesai}</td>
-                            <td className="py-2">
-                              <span className={`badge ${p.jenis === 'Pelajaran' ? 'badge-pelajaran' : p.jenis === 'Istirahat' ? 'badge-istirahat' : 'badge-kegiatan'}`}>
-                                {p.jenis}
-                              </span>
-                            </td>
-                            <td className="py-2 text-muted italic">{p.keterangan || '-'}</td>
-                          </tr>
+                           <tr key={idx} className={isInvalid ? 'bg-danger bg-opacity-10' : ''}>
+                              <td className={`ps-3 py-[6px] ${hasHariError ? 'bg-danger bg-opacity-25 text-danger fw-bold' : ''}`}>
+                                  <div className="d-flex align-items-center gap-1">
+                                      {p.hari || '-'}
+                                      {hasHariError && <XCircle size={10} className="text-danger" />}
+                                  </div>
+                              </td>
+                              <td className={`py-[6px] text-center ${hasJamError ? 'bg-danger bg-opacity-25 text-danger fw-bold' : ''}`}>
+                                  {p.jam_ke || '-'}
+                              </td>
+                              <td className={`py-[6px] ${hasWaktuError ? 'bg-danger bg-opacity-25 text-danger fw-bold' : 'text-muted'}`}>
+                                  {p.waktu_mulai || '-'} - {p.waktu_selesai || '-'}
+                              </td>
+                              <td className={`py-[6px] ${hasJenisError ? 'bg-danger bg-opacity-25' : ''}`}>
+                                  <span className={`badge ${p.jenis === 'Pelajaran' ? 'badge-pelajaran' : p.jenis === 'Istirahat' ? 'badge-istirahat' : 'badge-kegiatan'} ${hasJenisError ? 'border border-danger' : ''}`}>
+                                      {p.jenis || '-'}
+                                  </span>
+                              </td>
+                              <td className="py-[6px] text-muted italic">
+                                  {p.keterangan || '-'}
+                              </td>
+                               <td className="py-[6px] pe-3 text-9px">
+                                  {rowErrors.length > 0 && (
+                                    <div className="text-danger">
+                                        {rowErrors.map((err: string, ei: number) => (
+                                          <div key={ei}>{err}</div>
+                                        ))}
+                                    </div>
+                                  )}
+                               </td>
+                            </tr>
                         );
                       })}
                     </tbody>
@@ -593,26 +624,19 @@ export default function ManajemenJamSekolah() {
                 </div>
               </div>
               <div className="modal-footer border-0 p-3 pt-0">
-                <div className="row w-100 g-2">
+                  <div className="row w-100 g-2">
                   <div className="col-6">
-                    <button onClick={() => setPreviewData(null)} className="btn btn-light btn-sm w-100 py-2 text-sm-custom rounded-3 d-flex align-items-center justify-content-center gap-2 border shadow-none">
-                      <X size={14}/> Batal
-                    </button>
+                    <button onClick={() => setPreviewData(null)} className="btn btn-light btn-sm w-100 py-2 rounded-3 fw-bold text-muted border text-11px" aria-label="Batal impor" title="Batal">Batal</button>
                   </div>
                   <div className="col-6">
                     <button 
                       onClick={confirmImport} 
-                      className="btn btn-primary btn-sm w-100 py-2 text-sm-custom rounded-3 d-flex align-items-center justify-content-center gap-2 shadow-none" 
-                      disabled={isSubmitting || hasConflict}
+                      className={`btn btn-primary btn-sm w-100 py-2 rounded-3 shadow-none fw-bold d-flex align-items-center justify-content-center gap-2 text-11px ${hasError ? 'opacity-50 cursor-not-allowed' : ''}`} 
+                      disabled={isSubmitting || hasError}
+                      aria-label="Konfirmasi impor"
+                      title="Konfirmasi"
                     >
-                      {isSubmitting ? (
-                        <Loader2 size={14} className="animate-spin" />
-                      ) : (
-                        <>
-                          <Check size={14}/> 
-                          {hasConflict ? "Data Bentrok" : "Konfirmasi Import"}
-                        </>
-                      )}
+                      {isSubmitting ? <Loader2 size={12} className="animate-spin" /> : <><CheckCircle2 size={12} /> Konfirmasi</>}
                     </button>
                   </div>
                 </div>
@@ -628,34 +652,34 @@ export default function ManajemenJamSekolah() {
             <div className="modal-content border-0 shadow-lg rounded-3">
               <div className="modal-header border-0 pb-0 px-3 pt-3">
                 <h6 className="modal-title fw-bold text-dark text-md-custom">{isEdit ? "Edit Jam" : "Tambah Jam"}</h6>
-                <button onClick={handleCloseForm} className="btn-close scale-75 shadow-none" aria-label="Tutup Form"></button>
+                <button onClick={handleCloseForm} className="btn-close scale-75 shadow-none" aria-label="Tutup Form" title="Tutup"></button>
               </div>
               <div className="modal-body p-3">
                 <div className="row g-2">
                   <div className="col-8">
                     <label className="form-label text-xs-custom fw-semibold" htmlFor={hariId}>Hari</label>
-                    <select id={hariId} className="form-select bg-light border-0 py-1.5 text-xs-custom rounded-3 shadow-none" value={formData.hari} onChange={(e) => setFormData({...formData, hari: e.target.value})}>
+                    <select id={hariId} className="form-select bg-light border-0 py-1.5 text-xs-custom rounded-3 shadow-none" value={formData.hari} onChange={(e) => setFormData({...formData, hari: e.target.value})} aria-label="Pilih Hari" title="Pilih Hari">
                       {['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'].map(h => <option key={h} value={h}>{h}</option>)}
                     </select>
                   </div>
                   <div className="col-4">
                     <label className="form-label text-xs-custom fw-semibold" htmlFor={jamKeId}>Jam Ke-</label>
-                    <input id={jamKeId} type="number" className="form-control bg-light border-0 py-1.5 text-xs-custom rounded-3 shadow-none" value={formData.jam_ke} onChange={(e) => setFormData({...formData, jam_ke: e.target.value})} />
+                    <input id={jamKeId} type="number" className="form-control bg-light border-0 py-1.5 text-xs-custom rounded-3 shadow-none" value={formData.jam_ke} onChange={(e) => setFormData({...formData, jam_ke: e.target.value})} aria-label="Masukkan Jam Ke" title="Jam Ke" />
                   </div>
                 </div>
                 <div className="row g-2 mt-1">
                   <div className="col-6">
                     <label className="form-label text-xs-custom fw-semibold" htmlFor={mulaiId}>Mulai</label>
-                    <input id={mulaiId} type="time" className="form-control bg-light border-0 py-1.5 text-xs-custom rounded-3 shadow-none" value={formData.waktu_mulai} onChange={(e) => setFormData({...formData, waktu_mulai: e.target.value})} />
+                    <input id={mulaiId} type="time" className="form-control bg-light border-0 py-1.5 text-xs-custom rounded-3 shadow-none" value={formData.waktu_mulai} onChange={(e) => setFormData({...formData, waktu_mulai: e.target.value})} aria-label="Waktu Mulai" title="Waktu Mulai" />
                   </div>
                   <div className="col-6">
                     <label className="form-label text-xs-custom fw-semibold" htmlFor={selesaiId}>Selesai</label>
-                    <input id={selesaiId} type="time" className="form-control bg-light border-0 py-1.5 text-xs-custom rounded-3 shadow-none" value={formData.waktu_selesai} onChange={(e) => setFormData({...formData, waktu_selesai: e.target.value})} />
+                    <input id={selesaiId} type="time" className="form-control bg-light border-0 py-1.5 text-xs-custom rounded-3 shadow-none" value={formData.waktu_selesai} onChange={(e) => setFormData({...formData, waktu_selesai: e.target.value})} aria-label="Waktu Selesai" title="Waktu Selesai" />
                   </div>
                 </div>
                 <div className="mt-2">
                   <label className="form-label text-xs-custom fw-semibold" htmlFor={jenisId}>Jenis</label>
-                  <select id={jenisId} className="form-select bg-light border-0 py-1.5 text-xs-custom rounded-3 shadow-none" value={formData.jenis} onChange={(e) => setFormData({...formData, jenis: e.target.value})}>
+                  <select id={jenisId} className="form-select bg-light border-0 py-1.5 text-xs-custom rounded-3 shadow-none" value={formData.jenis} onChange={(e) => setFormData({...formData, jenis: e.target.value})} aria-label="Pilih Jenis" title="Pilih Jenis">
                     <option value="Pelajaran">Pelajaran</option>
                     <option value="Istirahat">Istirahat</option>
                     <option value="Upacara">Upacara</option>
@@ -664,11 +688,11 @@ export default function ManajemenJamSekolah() {
                 </div>
                 <div className="mt-2">
                   <label className="form-label text-xs-custom fw-semibold" htmlFor={ketId}>Keterangan</label>
-                  <input id={ketId} type="text" className="form-control bg-light border-0 py-1.5 text-xs-custom rounded-3 shadow-none" value={formData.keterangan} onChange={(e) => setFormData({...formData, keterangan: e.target.value})} placeholder="Opsional" />
+                  <input id={ketId} type="text" className="form-control bg-light border-0 py-1.5 text-xs-custom rounded-3 shadow-none" value={formData.keterangan} onChange={(e) => setFormData({...formData, keterangan: e.target.value})} placeholder="Opsional" aria-label="Masukkan Keterangan" title="Keterangan" />
                 </div>
               </div>
               <div className="modal-footer border-0 p-3 pt-0">
-                <button onClick={handleSave} className="btn btn-primary btn-sm w-100 py-2 text-sm-custom rounded-3 shadow-none" disabled={isSubmitting}>
+                <button onClick={handleSave} className="btn btn-primary btn-sm w-100 py-2 text-sm-custom rounded-3 shadow-none" disabled={isSubmitting} aria-label={isEdit ? "Perbarui data jam" : "Simpan data jam"} title={isEdit ? "Perbarui" : "Simpan"}>
                   {isSubmitting ? <Loader2 size={12} className="animate-spin mx-auto" /> : (isEdit ? "Update" : "Simpan")}
                 </button>
               </div>
