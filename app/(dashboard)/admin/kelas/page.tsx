@@ -150,7 +150,7 @@ export default function ManajemenKelas() {
   const [filters, setFilters] = useState({
     jurusan_id: '',
     tingkatan_id: '',
-    is_active: ''
+    is_active: '1'
   });
 
   const [pagination, setPagination] = useState({
@@ -523,11 +523,11 @@ export default function ManajemenKelas() {
   };
 
   const resetFilters = () => {
-    setFilters({ jurusan_id: '', tingkatan_id: '', is_active: '' });
+    setFilters({ jurusan_id: '', tingkatan_id: '', is_active: '1' });
     setSearch('');
   };
 
-  const activeFilterCount = Object.values(filters).filter(v => v !== '').length + (search ? 1 : 0);
+  const activeFilterCount = [filters.jurusan_id, filters.tingkatan_id].filter(v => v !== '').length + (search ? 1 : 0);
 
   if (authLoading) return null;
 
@@ -644,7 +644,6 @@ export default function ManajemenKelas() {
                     value={filters.is_active}
                     onChange={(e) => setFilters({...filters, is_active: e.target.value})}
                   >
-                    <option value="">Semua Status</option>
                     <option value="1">Aktif</option>
                     <option value="0">Non-Aktif</option>
                   </select>

@@ -159,7 +159,7 @@ const api = {
            importPreview: (data: any) => Api.post('/api/admin/guru-mapel/import-preview', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
            export: (params?: any) => Api.get('/api/admin/guru-mapel/export', { params,responseType: 'blob' }),
            getJamByHari: (hari: string) => Api.get('/api/admin/guru-mapel/jam-by-hari', { params: { hari } }),
-           bulkDestroy: (ids: number[]) => Api.delete('/api/admin/guru-mapel/bulk-delete', { data: { ids } }),
+           bulkDelete: (ids: number[]) => Api.delete('/api/admin/guru-mapel/bulk-delete', { data: { ids } }),
        },
         jamSekolah: {
             ...createResource('/api/admin/jam_sekolah'),

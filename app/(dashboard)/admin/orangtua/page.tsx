@@ -80,7 +80,10 @@ const OrangtuaRow = memo(({
       result = result.filter((a: any) => String(a.kelas?.jurusan?.id || a.kelas?.jurusan_id) === String(activeFilters.jurusan_id));
     }
     if (activeFilters.tingkatan_id) {
-      result = result.filter((a: any) => String(a.kelas?.tingkatan?.id || a.kelas?.tingkatan_id) === String(activeFilters.tingkatan_id));
+      const hasTingkatan = result.some((a: any) => a.kelas?.tingkatan);
+      if (hasTingkatan) {
+        result = result.filter((a: any) => String(a.kelas?.tingkatan?.id || a.kelas?.tingkatan_id) === String(activeFilters.tingkatan_id));
+      }
     }
     return result;
   }, [item.anak, activeFilters]);
@@ -193,7 +196,7 @@ export default function ManajemenOrangtua() {
   const abortRef = useRef<AbortController | null>(null);
 
   const [filters, setFilters] = useState({
-    is_active: '',
+    is_active: '1',
     tingkatan_id: '',
     jurusan_id: '',
     kelas_id: ''
@@ -604,11 +607,11 @@ export default function ManajemenOrangtua() {
   };
 
   const resetFilters = () => {
-    setFilters({ is_active: '', tingkatan_id: '', jurusan_id: '', kelas_id: '' });
+    setFilters({ is_active: '1', tingkatan_id: '', jurusan_id: '', kelas_id: '' });
     setSearch('');
   };
 
-  const activeFilterCount = Object.values(filters).filter(v => v !== '').length + (search ? 1 : 0);
+  const activeFilterCount = Object.entries(filters).filter(([key, v]) => v !== '' && key !== 'is_active').length + (search ? 1 : 0) + (filters.is_active !== '1' ? 1 : 0);
 
   if (authLoading) return null;
 
@@ -652,7 +655,7 @@ export default function ManajemenOrangtua() {
                   <input
                     type="text"
                     className="form-control form-control-sm ps-4 border-0 bg-light rounded-2 shadow-none"
-                    placeholder="Cari nama, telepon, NIS..."
+                    placeholder="Cari Nama/Telepon/NIS..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                   />
@@ -752,30 +755,23 @@ export default function ManajemenOrangtua() {
                   </div>
 
                   <div className="col-6 col-md-4 col-lg col-xl-2">
-                    <label htmlFor={filterIds.status} className="text-xxs fw-bold text-muted text-uppercase mb-0.5">Status Aktif</label>
+                    <label htmlFor={filterIds.status} className="text-xxs fw-bold text-muted text-uppercase mb-0.5">Status</label>
                     <select
                       id={filterIds.status}
                       className="form-select form-select-sm bg-light border-0 rounded-2 shadow-none"
                       value={filters.is_active}
                       onChange={(e) => setFilters({...filters, is_active: e.target.value})}
                     >
-                      <option value="">Semua</option>
                       <option value="1">Aktif</option>
                       <option value="0">Non-Aktif</option>
                     </select>
                   </div>
 
-                  <div className="col-6 col-md-4 col-lg col-xl-2 ms-auto">
-                    <button
-                      onClick={resetFilters}
-                      className="btn btn-sm btn-outline-secondary border-0 rounded-2 d-flex align-items-center gap-1 shadow-none text-dark bg-light py-1 px-1.5 w-100 justify-content-center"
-                      aria-label="Reset filter"
-                      title="Reset"
-                    >
-                      <RefreshCw size={9}/>
-                      <span className="text-10px">Reset</span>
-                    </button>
-                  </div>
+                  <div className="col-12 col-md-2 d-flex gap-1">
+                   <button onClick={resetFilters} className="btn btn-sm btn-outline-secondary border-0 rounded-3 w-100 d-flex align-items-center justify-content-center gap-1 shadow-none text-dark bg-light py-2 py-md-1" title="Reset Filter">
+                         <RefreshCw size={13}/> <span>Reset</span>
+                       </button>
+                     </div>
                 </div>
               </div>
             )}

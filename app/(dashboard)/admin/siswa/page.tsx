@@ -236,7 +236,7 @@ export default function ManajemenSiswa() {
     tingkatan_id: '',
     kelas_id: '',
     jenis_kelamin: '',
-    is_active: '',
+    is_active: '1',
     agama: '',
     tahun_angkatan: ''
   });
@@ -379,7 +379,14 @@ export default function ManajemenSiswa() {
     if (authLoading || !user) return;
     setLoading(true);
     try {
-      const params = { page, per_page: pagination.perPage, search: search, ...filters };
+      const params: Record<string, any> = { page, per_page: pagination.perPage, search: search };
+      if (filters.jurusan_id) params.jurusan_id = filters.jurusan_id;
+      if (filters.tingkatan_id) params.tingkatan_id = filters.tingkatan_id;
+      if (filters.kelas_id) params.kelas_id = filters.kelas_id;
+      if (filters.jenis_kelamin) params.jenis_kelamin = filters.jenis_kelamin;
+      if (filters.agama) params.agama = filters.agama;
+      if (filters.tahun_angkatan) params.tahun_angkatan = filters.tahun_angkatan;
+      if (filters.is_active) params.is_active = filters.is_active;
       const res = await api.admin.siswa.getAll(params);
       if (res?.data?.success) {
         setData(res.data.data || []);
@@ -667,14 +674,14 @@ export default function ManajemenSiswa() {
       tingkatan_id: '',
       kelas_id: '',
       jenis_kelamin: '',
-      is_active: '',
+      is_active: '1',
       agama: '',
       tahun_angkatan: ''
     });
     setSearch('');
   };
 
-  const activeFilterCount = Object.values(filters).filter(v => v !== '').length + (search ? 1 : 0);
+  const activeFilterCount = Object.entries(filters).filter(([key, v]) => v !== '' && key !== 'is_active').length + (search ? 1 : 0) + (filters.is_active !== '1' ? 1 : 0);
 
   if (authLoading) return null;
 
@@ -725,7 +732,7 @@ export default function ManajemenSiswa() {
                   <input
                     type="text"
                     className="form-control form-control-sm ps-4 border-0 bg-light rounded-2 shadow-none"
-                    placeholder="Cari..."
+                    placeholder="Cari Nama/NIS..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                   />
@@ -863,27 +870,21 @@ export default function ManajemenSiswa() {
                   </div>
 
                   <div className="col-6 col-md-4 col-lg col-xl-2">
-                    <label htmlFor={filterIds.status} className="text-xxs fw-bold text-muted text-uppercase mb-0.5">Status Aktif</label>
-                    <select
-                      id={filterIds.status}
-                      className="form-select form-select-sm bg-light border-0 rounded-2 shadow-none"
-                      value={filters.is_active}
-                      onChange={(e) => setFilters({...filters, is_active: e.target.value})}
-                    >
-                      <option value="">Semua</option>
-                      <option value="1">Aktif</option>
-                      <option value="0">Non-Aktif</option>
-                    </select>
-                  </div>
-
-                  <div className="col-12">
-                    <button
-                      onClick={resetFilters}
-                      className="btn btn-sm btn-outline-secondary border-0 rounded-2 d-flex align-items-center gap-1 shadow-none text-dark bg-light py-0.5 px-1.5"
-                    >
-                      <RefreshCw size={9}/>
-                      <span className="text-10px">Reset</span>
-                    </button>
+                    <label htmlFor={filterIds.status} className="text-xxs fw-bold text-muted text-uppercase mb-0.5">Status</label>
+                    <div className="d-flex gap-1">
+                      <select
+                        id={filterIds.status}
+                        className="form-select form-select-sm bg-light border-0 rounded-2 shadow-none flex-grow-1"
+                        value={filters.is_active}
+                        onChange={(e) => setFilters({...filters, is_active: e.target.value})}
+                      >
+                        <option value="1">Aktif</option>
+                        <option value="0">Non-Aktif</option>
+                      </select>
+                      <button onClick={resetFilters} className="btn btn-sm btn-outline-secondary border-0 rounded-3 w-100 d-flex align-items-center justify-content-center gap-1 shadow-none text-dark bg-light py-2 py-md-1" title="Reset Filter">
+                        <RefreshCw size={13}/> <span>Reset</span>
+                        </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1063,7 +1064,7 @@ export default function ManajemenSiswa() {
                              : (jkVal || '-');
 
                          return (
-                          <tr key={idx} className={item.hasConflict ? 'bg-danger bg-opacity-10' : ''}>
+                          <tr key={idx} className={item.hasConflict ? 'bg-danger bg-opacity-10' : ''} title={item.import_notes || undefined}>
                             <td className={`ps-3 py-[6px] ${item.isNisError ? 'bg-danger bg-opacity-25 text-danger fw-bold' : ''}`}>
                                 <div className="d-flex align-items-center gap-1">
                                     {item.nis || '-'}

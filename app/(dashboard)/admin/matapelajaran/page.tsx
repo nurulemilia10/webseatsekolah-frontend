@@ -92,7 +92,7 @@ export default function ManajemenMataPelajaran() {
   const [filters, setFilters] = useState({
     jurusan_id: '',
     kategori_mapel: '',
-    is_active: ''
+    is_active: '1'
   });
 
   const [pagination, setPagination] = useState({
@@ -336,11 +336,11 @@ export default function ManajemenMataPelajaran() {
   };
 
   const resetFilters = () => {
-    setFilters({ jurusan_id: '', kategori_mapel: '', is_active: '' });
+    setFilters({ jurusan_id: '', kategori_mapel: '', is_active: '1' });
     setSearch('');
   };
 
-  const activeFilterCount = Object.values(filters).filter(v => v !== '').length + (search ? 1 : 0);
+  const activeFilterCount = [filters.jurusan_id, filters.kategori_mapel].filter(v => v !== '').length + (search ? 1 : 0);
 
   if (authLoading) return null;
 
@@ -434,7 +434,6 @@ export default function ManajemenMataPelajaran() {
                     value={filters.is_active}
                     onChange={(e) => setFilters({...filters, is_active: e.target.value})}
                   >
-                    <option value="">Semua Status</option>
                     <option value="1">Aktif</option>
                     <option value="0">Non-Aktif</option>
                   </select>

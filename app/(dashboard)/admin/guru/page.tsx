@@ -110,13 +110,13 @@ const GuruRow = memo(({
           </div>
         </div>
       </td>
-      <td className="py-1 text-xxs text-muted d-none d-sm-table-cell">
+      <td className="py-1 text-xxs text-muted">
         {item.nip || '-'}
       </td>
       <td className="py-1 text-xxs text-muted d-none d-md-table-cell">
         {item.nuptk || '-'}
       </td>
-      <td className="py-1 text-xxs">
+      <td className="py-1 text-xxs d-none d-md-table-cell">
         {displayJK}
       </td>
       <td className="py-1 text-xxs d-none d-xl-table-cell">
@@ -226,7 +226,7 @@ export default function ManajemenGuru() {
     jurusan_id: '',
     jenis_kelamin: '',
     agama: '',
-    is_active: ''
+    is_active: '1'
   });
 
   const [pagination, setPagination] = useState({
@@ -285,33 +285,15 @@ export default function ManajemenGuru() {
   const processedPreviewData = useMemo(() => {
     if (!previewData) return [];
 
-    const nipCounts: Record<string, number> = {};
-    const nuptkCounts: Record<string, number> = {};
-    const emailCounts: Record<string, number> = {};
-
-    previewData.forEach(item => {
-      if (item.nip) {
-        nipCounts[item.nip] = (nipCounts[item.nip] || 0) + 1;
-      }
-      if (item.nuptk) {
-        nuptkCounts[item.nuptk] = (nuptkCounts[item.nuptk] || 0) + 1;
-      }
-      if (item.email) {
-        emailCounts[item.email.toLowerCase()] = (emailCounts[item.email.toLowerCase()] || 0) + 1;
-      }
-    });
-
     return previewData.map(item => {
-      const isNipDupInFile = item.nip ? nipCounts[item.nip] > 1 : false;
-      const isNuptkDupInFile = item.nuptk ? nuptkCounts[item.nuptk] > 1 : false;
-      const isEmailDupInFile = item.email ? emailCounts[item.email.toLowerCase()] > 1 : false;
+      const notes = (item.import_notes || '').toLowerCase();
+      const isNipError = notes.includes('nip');
+      const isNuptkError = notes.includes('nuptk');
+      const isEmailError = notes.includes('email');
+      const isJurusanError = notes.includes('jurusan');
+      const isNamaError = notes.includes('nama');
 
-      const isNipError = isNipDupInFile;
-      const isNuptkError = isNuptkDupInFile;
-      const isEmailError = item.email_conflict || isEmailDupInFile;
-      const isJurusanError = item.jurusan_found === false;
-
-      const hasConflict = isNipError || isNuptkError || isEmailError || isJurusanError || !item.is_valid;
+      const hasConflict = !item.is_valid;
 
       return {
         ...item,
@@ -319,6 +301,7 @@ export default function ManajemenGuru() {
         isNuptkError,
         isEmailError,
         isJurusanError,
+        isNamaError,
         hasConflict
       };
     });
@@ -356,7 +339,13 @@ export default function ManajemenGuru() {
     if (authLoading || !user) return;
     setLoading(true);
     try {
-      const params = { page, per_page: pagination.perPage, q: search, ...filters };
+      const params: Record<string, any> = { page, per_page: pagination.perPage, q: search };
+      if (filters.jabatan_fungsional) params.jabatan_fungsional = filters.jabatan_fungsional;
+      if (filters.status_kepegawaian) params.status_kepegawaian = filters.status_kepegawaian;
+      if (filters.jurusan_id) params.jurusan_id = filters.jurusan_id;
+      if (filters.jenis_kelamin) params.jenis_kelamin = filters.jenis_kelamin;
+      if (filters.agama) params.agama = filters.agama;
+      if (filters.is_active) params.is_active = filters.is_active;
       const res = await api.admin.guruStaf.getAll(params);
       if (res?.data?.success) {
         setData(res.data.data || []);
@@ -649,12 +638,12 @@ export default function ManajemenGuru() {
       jurusan_id: '',
       jenis_kelamin: '',
       agama: '',
-      is_active: ''
+      is_active: '1'
     });
     setSearch('');
   };
 
-  const activeFilterCount = Object.values(filters).filter(v => v !== '').length + (search ? 1 : 0);
+  const activeFilterCount = Object.entries(filters).filter(([key, v]) => v !== '' && key !== 'is_active').length + (search ? 1 : 0) + (filters.is_active !== '1' ? 1 : 0);
 
   if (authLoading) return null;
 
@@ -705,7 +694,7 @@ export default function ManajemenGuru() {
                   <input
                     type="text"
                     className="form-control form-control-sm ps-4 border-0 bg-light rounded-2 shadow-none"
-                    placeholder="Cari..."
+                    placeholder="Cari Nama/NIP..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                   />
@@ -781,7 +770,7 @@ export default function ManajemenGuru() {
                       value={filters.status_kepegawaian}
                       onChange={(e) => setFilters({...filters, status_kepegawaian: e.target.value})}
                     >
-                      <option value="">Semua</option>
+                      <option value="">Pilih</option>
                       <option value="PNS">PNS</option>
                       <option value="PPPK">PPPK</option>
                       <option value="Honorer">Honorer</option>
@@ -797,7 +786,7 @@ export default function ManajemenGuru() {
                       value={filters.jurusan_id}
                       onChange={(e) => setFilters({...filters, jurusan_id: e.target.value})}
                     >
-                      <option value="">Semua</option>
+                      <option value="">Pilih</option>
                       {jurusans.map((j: any) => (
                         <option key={j.id} value={j.id}>{j.nama || j.nama_jurusan}</option>
                       ))}
@@ -812,7 +801,7 @@ export default function ManajemenGuru() {
                       value={filters.jenis_kelamin}
                       onChange={(e) => setFilters({...filters, jenis_kelamin: e.target.value})}
                     >
-                      <option value="">Semua</option>
+                      <option value="">Pilih</option>
                       <option value="Laki-laki">Laki-laki</option>
                       <option value="Perempuan">Perempuan</option>
                     </select>
@@ -826,7 +815,7 @@ export default function ManajemenGuru() {
                       value={filters.agama}
                       onChange={(e) => setFilters({...filters, agama: e.target.value})}
                     >
-                      <option value="">Semua</option>
+                      <option value="">Pilih</option>
                       <option value="Islam">Islam</option>
                       <option value="Kristen">Kristen</option>
                       <option value="Katolik">Katolik</option>
@@ -837,27 +826,22 @@ export default function ManajemenGuru() {
                   </div>
 
                   <div className="col-6 col-md-4 col-lg-2">
-                    <label htmlFor={filterIds.status} className="text-xxs fw-bold text-muted text-uppercase mb-0.5">Status Aktif</label>
+                    <label htmlFor={filterIds.status} className="text-xxs fw-bold text-muted text-uppercase mb-0.5">Status</label>
                     <select
                       id={filterIds.status}
                       className="form-select form-select-sm bg-light border-0 rounded-2 shadow-none"
                       value={filters.is_active}
                       onChange={(e) => setFilters({...filters, is_active: e.target.value})}
                     >
-                      <option value="">Semua</option>
                       <option value="1">Aktif</option>
                       <option value="0">Non-Aktif</option>
                     </select>
                   </div>
 
-                  <div className="col-12">
-                    <button
-                      onClick={resetFilters}
-                      className="btn btn-sm btn-outline-secondary border-0 rounded-2 d-flex align-items-center gap-1 shadow-none text-dark bg-light py-0.5 px-1.5"
-                    >
-                      <RefreshCw size={9}/>
-                      <span className="text-10px">Reset</span>
-                    </button>
+                  <div className="col-12 col-md-2 d-flex gap-1">
+                      <button onClick={resetFilters} className="btn btn-sm btn-outline-secondary border-0 rounded-3 w-100 d-flex align-items-center justify-content-center gap-1 shadow-none text-dark bg-light py-2 py-md-1" title="Reset Filter">
+                        <RefreshCw size={13}/> <span>Reset</span>
+                      </button>
                   </div>
                 </div>
               </div>
@@ -891,9 +875,9 @@ export default function ManajemenGuru() {
                   />
                 </th>
                 <th className="border-0 py-1.5">Nama</th>
-                <th className="border-0 py-1.5 d-none d-sm-table-cell">NIP</th>
+                <th className="border-0 py-1.5">NIP</th>
                 <th className="border-0 py-1.5 d-none d-md-table-cell">NUPTK</th>
-                <th className="border-0 py-1.5">JK</th>
+                <th className="border-0 py-1.5 d-none d-md-table-cell">JK</th>
                 <th className="border-0 py-1.5 d-none d-xl-table-cell">TTL</th>
                 <th className="border-0 py-1.5 d-none d-xxl-table-cell">Agama</th>
                 <th className="border-0 py-1.5 d-none d-xxl-table-cell">Alamat</th>
@@ -1037,7 +1021,7 @@ export default function ManajemenGuru() {
                              : (jkVal || '-');
 
                          return (
-                          <tr key={idx} className={item.hasConflict ? 'bg-danger bg-opacity-10' : ''}>
+                          <tr key={idx} className={item.hasConflict ? 'bg-danger bg-opacity-10' : ''} title={item.import_notes || undefined}>
                             <td className={`ps-3 py-[6px] ${item.isNipError ? 'bg-danger bg-opacity-25 text-danger fw-bold' : ''}`}>
                                 <div className="d-flex align-items-center gap-1">
                                     {item.nip || '-'}
@@ -1050,7 +1034,12 @@ export default function ManajemenGuru() {
                                     {item.isNuptkError && <XCircle size={10} className="text-danger" />}
                                 </div>
                             </td>
-                            <td className="py-[6px] text-dark">{item.nama || '-'}</td>
+                            <td className={`py-[6px] ${item.isNamaError ? 'bg-danger bg-opacity-25 text-danger fw-bold' : 'text-dark'}`}>
+                                <div className="d-flex align-items-center gap-1">
+                                    {item.nama || '-'}
+                                    {item.isNamaError && <XCircle size={10} className="text-danger" />}
+                                </div>
+                            </td>
                             <td className="py-[6px] text-muted">{item.jabatan_fungsional || '-'}</td>
                             <td className="py-[6px] text-muted">{item.status_kepegawaian || '-'}</td>
                             <td className={`py-[6px] ${item.isJurusanError ? 'bg-danger bg-opacity-25 text-danger fw-bold' : 'text-muted'}`}>
