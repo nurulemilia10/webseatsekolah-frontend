@@ -117,14 +117,14 @@ export default function GuruView() {
         <div className="col-lg-8">
           <div className={`${styles.card} p-3`}>
             <h6 className="fw-black mb-3 d-flex align-items-center gap-2">
-              <GraduationCap size={18} className="text-primary" /> Kalender Akademik
+              <GraduationCap size={18} className="text-warning" /> Kalender Akademik
             </h6>
             <div className="row g-2">
               {agenda.map((item: any, i: number) => item && (
                 <div key={i} className="col-md-6">
                   <div className="p-2 rounded-2xl border border-light bg-light bg-opacity-25 d-flex align-items-center justify-content-between hover-lift">
                     <div className="d-flex align-items-center gap-3">
-                      <div className={`avatar-32 rounded-circle d-flex align-items-center justify-content-center ${item.status === 'Sedang Berlangsung' ? 'bg-success' : 'bg-primary'} text-white`}>
+                      <div className={`avatar-32 rounded-circle d-flex align-items-center justify-content-center ${item.status === 'Sedang Berlangsung' ? 'bg-success' : 'bg-warning'} text-white`}>
                         <Calendar size={14} />
                       </div>
                       <div>
@@ -145,13 +145,13 @@ export default function GuruView() {
           <div className={`${styles.card} p-3`}>
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h6 className="fw-black mb-0">Pengumuman</h6>
-              <Megaphone size={16} className="text-primary opacity-50" />
+              <Megaphone size={16} className="text-warning opacity-50" />
             </div>
             <div className="vstack gap-0">
               {announcements.map((p: any, i: number) => (
                 <div key={i} className="py-2 border-bottom border-light last:border-0 cursor-pointer group">
-                  <div className="fw-black text-primary xx-small-text text-uppercase tracking-widest mb-0">{formatDateOnly(p.tanggal_publikasi)}</div>
-                  <div className="fw-bold text-dark small leading-snug group-hover:text-primary transition-colors">{p.judul}</div>
+                  <div className="fw-black text-warning xx-small-text text-uppercase tracking-widest mb-0">{formatDateOnly(p.tanggal_publikasi)}</div>
+                  <div className="fw-bold text-dark small leading-snug group-hover:text-warning transition-colors">{p.judul}</div>
                 </div>
               ))}
               {announcements.length === 0 && <div className="py-3 text-muted x-small-text text-center">Belum ada pengumuman.</div>}
@@ -198,7 +198,7 @@ export default function GuruView() {
                       </td>
                       <td className="px-3 text-end border-0">
                         <button 
-                          className="btn btn-sm btn-light rounded-circle p-1"
+                          className="btn btn-sm btn-warning rounded-circle p-1"
                           title="Lihat Detail Berita"
                           aria-label="Lihat Detail Berita"
                         >
@@ -215,7 +215,7 @@ export default function GuruView() {
 
         <div className="col-lg-4">
           <div className={`${styles.card} p-3 position-relative overflow-hidden`}>
-             <div className="pos-abs-top-end opacity-10 translate-25-n25 text-primary">
+             <div className="pos-abs-top-end opacity-10 translate-25-n25 text-warning">
                 <GraduationCap size={140} />
              </div>
              <div className="position-relative z-1 d-flex flex-column h-100">
@@ -225,7 +225,7 @@ export default function GuruView() {
                     <div className="fw-black text-dark h5 text-uppercase tracking-widest mb-0 leading-tight">
                         {dash?.manajerial?.role_jabatan || 'GURU PENGAJAR'}
                     </div>
-                    <div className="xx-small-text text-primary text-uppercase fw-bold tracking-widest opacity-75">
+                    <div className="xx-small-text text-warning text-uppercase fw-bold tracking-widest opacity-75">
                         Status Penugasan Aktif
                     </div>
                 </div>

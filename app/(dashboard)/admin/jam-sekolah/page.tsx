@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useId, memo, useMemo } from 'react';
 import { 
-  Plus, Edit2, Loader2, Clock, Trash2, FileDown, FileUp, Filter, ChevronLeft, ChevronRight, Calendar, Eye, Check, X, AlertTriangle, XCircle, AlertCircle, CheckCircle2
+  Plus, Edit2, Loader2, Clock, Trash2, FileDown, FileUp, Filter, ChevronLeft, Calendar, Eye, XCircle, AlertCircle, CheckCircle2
 } from 'lucide-react';
 import api from '@/lib/api';
 import Swal from 'sweetalert2';
@@ -35,7 +35,7 @@ const JamSekolahRow = memo(({
     <td className="py-2">
       <div className="d-flex align-items-center">
         <div className="flex-shrink-0 bg-light rounded p-1.5 d-flex align-items-center justify-content-center">
-          <Clock size={13} className="text-primary" />
+          <Clock size={13} className="text-warning" />
         </div>
         <div className="ms-2">
           <div className="text-dark fw-bold text-sm-custom mb-0">{item.hari}</div>
@@ -57,7 +57,7 @@ const JamSekolahRow = memo(({
       </div>
     </td>
     <td className="py-2 text-muted text-xs-custom d-none d-md-table-cell">
-      <span className={`badge ${item.jenis === 'Pelajaran' ? 'bg-primary' : 'bg-warning text-dark'} bg-opacity-10 border-0 text-xxs`}>
+      <span className={`badge ${item.jenis === 'Pelajaran' ? 'bg-warning text-dark' : 'bg-warning text-dark'} bg-opacity-10 border-0 text-xxs`}>
         {item.jenis}
       </span>
     </td>
@@ -68,7 +68,7 @@ const JamSekolahRow = memo(({
       <div className="d-flex justify-content-end gap-1">
         <button 
           onClick={() => onEdit(item)} 
-          className="btn btn-sm p-1 text-primary border-0 shadow-none"
+          className="btn btn-sm p-1 text-warning border-0 shadow-none"
           title="Edit Data"
           aria-label="Edit Data"
         >
@@ -376,7 +376,7 @@ export default function ManajemenJamSekolah() {
         .z-modal-preview { z-index: 1070; }
         .z-modal-form { z-index: 1100; }
         .w-40px { width: 40px; }
-        .badge-pelajaran { background-color: rgba(var(--bs-primary-rgb), 0.1); color: var(--bs-primary); }
+        .badge-pelajaran { background-color: rgba(255, 193, 7, 0.15); color: #856404; }
         .badge-istirahat { background-color: rgba(255, 193, 7, 0.15); color: #856404; }
         .badge-kegiatan { background-color: rgba(25, 135, 84, 0.1); color: #198754; }
         .text-9px { font-size: 9px; }
@@ -386,7 +386,7 @@ export default function ManajemenJamSekolah() {
         <div className="card-body p-2 p-md-3">
           <div className="d-flex flex-column flex-md-row align-items-md-center gap-3">
             <div className="d-flex align-items-center">
-              <Clock size={16} className="text-primary me-2" />
+              <Clock size={16} className="text-warning me-2" />
               <h6 className="mb-0 fw-bold text-dark text-uppercase text-md-custom">Jam Sekolah</h6>
             </div>
             
@@ -443,7 +443,7 @@ export default function ManajemenJamSekolah() {
                   <span className="d-none d-lg-inline">Import</span>
                   <input type="file" className="d-none" accept=".xlsx, .xls, .csv" onChange={handleImportRequest} />
                 </label>
-                <button onClick={() => setShowForm(true)} className="btn btn-primary btn-sm px-2 shadow-sm rounded-3 py-1.5 d-flex align-items-center gap-1 text-xs-custom" title="Tambah Data Baru" aria-label="Tambah Data Baru">
+                <button onClick={() => setShowForm(true)} className="btn btn-warning btn-sm px-2 shadow-sm rounded-3 py-1.5 d-flex align-items-center gap-1 text-xs-custom" title="Tambah Data Baru" aria-label="Tambah Data Baru">
                   <Plus size={13}/>
                   <span>Tambah</span>
                 </button>
@@ -492,7 +492,7 @@ export default function ManajemenJamSekolah() {
             </thead>
             <tbody className="border-top-0">
               {loading ? (
-                <tr><td colSpan={7} className="text-center py-5"><Loader2 className="text-primary animate-spin mx-auto" size={20} /></td></tr>
+                <tr><td colSpan={7} className="text-center py-5"><Loader2 className="text-warning animate-spin mx-auto" size={20} /></td></tr>
               ) : data.length === 0 ? (
                 <tr><td colSpan={7} className="text-center py-5 text-muted text-xs-custom">Tidak ada data.</td></tr>
               ) : data.map((item) => (
@@ -510,33 +510,56 @@ export default function ManajemenJamSekolah() {
         </div>
         
         {!loading && data.length > 0 && (
-          <div className="d-flex justify-content-between align-items-center p-3 border-top bg-white">
-            <div className="d-flex align-items-center gap-3">
-              <div className="text-xs-custom text-muted">Total: {pagination.total} data</div>
+          <div className="d-flex justify-content-between align-items-center px-3 py-2 border-top bg-white">
+            <div className="text-muted text-[9px] fw-medium">
+              Menampilkan {data.length} dari {pagination.total} data
             </div>
-            <div className="d-flex gap-1">
-              <button 
-                className="btn btn-light btn-sm p-1" 
-                disabled={pagination.currentPage === 1} 
+            <nav className="d-flex align-items-center gap-1">
+              <button
+                className="btn btn-light btn-sm border shadow-none p-1 rounded-2"
+                disabled={pagination.currentPage === 1}
                 onClick={() => handlePageChange(pagination.currentPage - 1)}
-                title="Halaman Sebelumnya"
-                aria-label="Halaman Sebelumnya"
+                title="Previous"
+                aria-label="Previous"
               >
-                <ChevronLeft size={14} />
+                <ChevronLeft size={12} />
               </button>
-              <button className="btn btn-primary btn-sm px-2 text-xs-custom" aria-current="page" title={`Halaman ${pagination.currentPage}`} aria-label={`Halaman ${pagination.currentPage}`}>
-                {pagination.currentPage}
-              </button>
-              <button 
-                className="btn btn-light btn-sm p-1" 
-                disabled={pagination.currentPage === pagination.lastPage} 
+              <div className="d-flex gap-1">
+                {(() => {
+                  const pages = [];
+                  const cp = pagination.currentPage;
+                  const lp = Math.max(1, pagination.lastPage);
+                  pages.push(1);
+                  if (cp > 3) pages.push('ellipsis-1');
+                  for (let i = Math.max(2, cp - 1); i <= Math.min(lp - 1, cp + 1); i++) {
+                    pages.push(i);
+                  }
+                  if (cp < lp - 2) pages.push('ellipsis-2');
+                  if (lp > 1) pages.push(lp);
+                  return pages.map((p, idx) => {
+                    if (typeof p === 'string') return <span key={`e-${idx}`} className="px-1 text-muted text-[10px]">...</span>;
+                    return (
+                      <button
+                        key={p}
+                        onClick={() => handlePageChange(p)}
+                        className={`btn btn-sm px-2 py-1 rounded-2 fw-bold text-[10px] border-0 ${cp === p ? 'btn-warning text-white' : 'btn-light text-dark'}`}
+                      >
+                        {p}
+                      </button>
+                    );
+                  });
+                })()}
+              </div>
+              <button
+                className="btn btn-light btn-sm border shadow-none p-1 rounded-2"
+                disabled={pagination.currentPage === pagination.lastPage}
                 onClick={() => handlePageChange(pagination.currentPage + 1)}
-                title="Halaman Selanjutnya"
-                aria-label="Halaman Selanjutnya"
+                title="Next"
+                aria-label="Next"
               >
-                <ChevronRight size={14} />
+                <ChevronLeft size={12} className="rotate-180" />
               </button>
-            </div>
+            </nav>
           </div>
         )}
       </div>
@@ -547,7 +570,7 @@ export default function ManajemenJamSekolah() {
             <div className="modal-content border-0 shadow-lg rounded-3">
               <div className="modal-header border-0 pb-0 px-3 pt-3">
                 <div className="d-flex align-items-center">
-                  <Eye size={16} className="text-primary me-2" />
+                  <Eye size={16} className="text-warning me-2" />
                   <h6 className="modal-title fw-bold text-dark text-md-custom">Preview Import Jam Sekolah</h6>
                 </div>
                 <button onClick={() => setPreviewData(null)} className="btn-close scale-75 shadow-none" aria-label="Tutup preview" title="Tutup"></button>
@@ -631,7 +654,7 @@ export default function ManajemenJamSekolah() {
                   <div className="col-6">
                     <button 
                       onClick={confirmImport} 
-                      className={`btn btn-primary btn-sm w-100 py-2 rounded-3 shadow-none fw-bold d-flex align-items-center justify-content-center gap-2 text-11px ${hasError ? 'opacity-50 cursor-not-allowed' : ''}`} 
+                      className={`btn btn-warning btn-sm w-100 py-2 rounded-3 shadow-none fw-bold d-flex align-items-center justify-content-center gap-2 text-11px ${hasError ? 'opacity-50 cursor-not-allowed' : ''}`} 
                       disabled={isSubmitting || hasError}
                       aria-label="Konfirmasi impor"
                       title="Konfirmasi"
@@ -692,7 +715,7 @@ export default function ManajemenJamSekolah() {
                 </div>
               </div>
               <div className="modal-footer border-0 p-3 pt-0">
-                <button onClick={handleSave} className="btn btn-primary btn-sm w-100 py-2 text-sm-custom rounded-3 shadow-none" disabled={isSubmitting} aria-label={isEdit ? "Perbarui data jam" : "Simpan data jam"} title={isEdit ? "Perbarui" : "Simpan"}>
+                <button onClick={handleSave} className="btn btn-warning btn-sm w-100 py-2 text-sm-custom rounded-3 shadow-none" disabled={isSubmitting} aria-label={isEdit ? "Perbarui data jam" : "Simpan data jam"} title={isEdit ? "Perbarui" : "Simpan"}>
                   {isSubmitting ? <Loader2 size={12} className="animate-spin mx-auto" /> : (isEdit ? "Update" : "Simpan")}
                 </button>
               </div>

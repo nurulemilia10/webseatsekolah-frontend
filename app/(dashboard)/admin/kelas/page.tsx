@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useId, memo, useMemo } from 'react';
 import { 
-  Plus, Edit2, Loader2, Users, Trash2, FileDown, FileUp, ChevronLeft, ChevronRight, Eye, Search, Filter, RefreshCw, CheckCircle2, AlertCircle, UserCheck, User, XCircle, Layers
+  Plus, Edit2, Loader2, Users, Trash2, FileDown, FileUp, ChevronLeft, Eye, Search, Filter, RefreshCw, CheckCircle2, AlertCircle, UserCheck, User, XCircle, Layers
 } from 'lucide-react';
 import api from '@/lib/api';
 import Swal from 'sweetalert2';
@@ -35,7 +35,7 @@ const KelasRow = memo(({
     <td className="py-2">
       <div className="d-flex align-items-center">
         <div className="flex-shrink-0 bg-light rounded p-[6px] d-flex align-items-center justify-content-center">
-          <Users size={13} className="text-primary" />
+          <Users size={13} className="text-warning" />
         </div>
         <div className="ms-2">
           <div className="text-dark fw-bold text-sm-custom mb-0">{item.nama_kelas}</div>
@@ -63,7 +63,7 @@ const KelasRow = memo(({
     </td>
     <td className="py-2 text-center d-none d-lg-table-cell">
       <div className="d-flex align-items-center justify-content-center gap-1 text-muted">
-        <UserCheck size={12} className="text-info" />
+        <UserCheck size={12} className="text-warning" />
         <span className="fw-bold text-dark">{item.total_siswa ?? 0}</span>
         <span className="text-xxs text-muted">Siswa</span>
       </div>
@@ -81,7 +81,7 @@ const KelasRow = memo(({
     </td>
     <td className="py-2 text-end pe-3">
       <div className="d-flex justify-content-end gap-1">
-        <button onClick={() => onEdit(item)} className="btn btn-sm p-1 text-primary border-0 shadow-none" aria-label="Edit data">
+        <button onClick={() => onEdit(item)} className="btn btn-sm p-1 text-warning border-0 shadow-none" aria-label="Edit data">
           <span className="bg-light p-1 rounded-3 d-inline-flex"><Edit2 size={11}/></span>
         </button>
         <button onClick={() => onDelete(item.id)} className="btn btn-sm p-1 text-danger border-0 shadow-none" aria-label="Hapus data">
@@ -107,7 +107,7 @@ const TingkatanRow = memo(({
     <td className="ps-3 py-2">
       <div className="d-flex align-items-center">
         <div className="flex-shrink-0 bg-light rounded p-[6px] d-flex align-items-center justify-content-center">
-          <Layers size={13} className="text-primary" />
+          <Layers size={13} className="text-warning" />
         </div>
         <div className="ms-2">
           <div className="text-dark fw-bold text-sm-custom mb-0">{item.nama_tingkatan}</div>
@@ -116,7 +116,7 @@ const TingkatanRow = memo(({
     </td>
     <td className="py-2 text-end pe-3">
       <div className="d-flex justify-content-end gap-1">
-        <button onClick={() => onEdit(item)} className="btn btn-sm p-1 text-primary border-0 shadow-none" aria-label="Edit data">
+        <button onClick={() => onEdit(item)} className="btn btn-sm p-1 text-warning border-0 shadow-none" aria-label="Edit data">
           <span className="bg-light p-1 rounded-3 d-inline-flex"><Edit2 size={11}/></span>
         </button>
         <button onClick={() => onDelete(item.id)} className="btn btn-sm p-1 text-danger border-0 shadow-none" aria-label="Hapus data">
@@ -539,14 +539,14 @@ export default function ManajemenKelas() {
             <div className="d-flex align-items-center gap-2">
                 <button 
                     onClick={() => setActivePage('kelas')} 
-                    className={`btn btn-sm d-flex align-items-center gap-1 ${activePage === 'kelas' ? 'btn-primary' : 'btn-light'}`}
+                    className={`btn btn-sm d-flex align-items-center gap-1 ${activePage === 'kelas' ? 'btn-warning' : 'btn-light'}`}
                 >
                     <Users size={14} />
                     <span className="fw-bold">Kelas</span>
                 </button>
                 <button 
                     onClick={() => setActivePage('tingkatan')} 
-                    className={`btn btn-sm d-flex align-items-center gap-1 ${activePage === 'tingkatan' ? 'btn-primary' : 'btn-light'}`}
+                    className={`btn btn-sm d-flex align-items-center gap-1 ${activePage === 'tingkatan' ? 'btn-warning' : 'btn-light'}`}
                 >
                     <Layers size={14} />
                     <span className="fw-bold">Tingkatan</span>
@@ -569,12 +569,12 @@ export default function ManajemenKelas() {
 
               <button 
                 onClick={() => setShowFilters(!showFilters)} 
-                className={`btn btn-sm px-2 py-[6px] rounded-3 border d-flex align-items-center gap-1 transition-all ${showFilters || activeFilterCount > 0 ? 'btn-primary border-primary' : 'btn-light'}`}
+                className={`btn btn-sm px-2 py-[6px] rounded-3 border d-flex align-items-center gap-1 transition-all ${showFilters || activeFilterCount > 0 ? 'btn-warning border-warning' : 'btn-light'}`}
                 aria-label="Tampilkan filter"
               >
                 <Filter size={13}/>
                 <span className="d-none d-lg-inline">Filter</span>
-                {activeFilterCount > 0 && <span className="badge bg-white text-primary rounded-circle ms-1 p-1 text-[8px]">{activeFilterCount}</span>}
+                {activeFilterCount > 0 && <span className="badge bg-white text-warning rounded-circle ms-1 p-1 text-[8px]">{activeFilterCount}</span>}
               </button>
 
               <div className="vr d-none d-md-block mx-1"></div>
@@ -589,7 +589,7 @@ export default function ManajemenKelas() {
                   <span className="d-none d-lg-inline">Impor</span>
                   <input type="file" className="d-none" accept=".xlsx, .xls, .csv" onChange={handleImportRequest} />
                 </label>
-                <button onClick={() => setShowForm(true)} className="btn btn-primary btn-sm px-2 shadow-sm rounded-3 py-[6px] d-flex align-items-center gap-1">
+                <button onClick={() => setShowForm(true)} className="btn btn-warning btn-sm px-2 shadow-sm rounded-3 py-[6px] d-flex align-items-center gap-1">
                   <Plus size={13}/>
                   <span>Tambah</span>
                 </button>
@@ -600,7 +600,7 @@ export default function ManajemenKelas() {
             {activePage === 'tingkatan' && (
             <div className="d-flex flex-wrap align-items-center gap-2 justify-content-end">
               <div className="d-flex gap-1">
-                <button onClick={() => setTingkatanShowForm(true)} className="btn btn-primary btn-sm px-2 shadow-sm rounded-3 py-[6px] d-flex align-items-center gap-1">
+                <button onClick={() => setTingkatanShowForm(true)} className="btn btn-warning btn-sm px-2 shadow-sm rounded-3 py-[6px] d-flex align-items-center gap-1">
                   <Plus size={13}/>
                   <span>Tambah</span>
                 </button>
@@ -693,7 +693,7 @@ export default function ManajemenKelas() {
             </thead>
             <tbody className="border-top-0">
               {loading ? (
-                <tr><td colSpan={7} className="text-center py-5"><Loader2 className="text-primary animate-spin mx-auto" size={20} /></td></tr>
+                <tr><td colSpan={7} className="text-center py-5"><Loader2 className="text-warning animate-spin mx-auto" size={20} /></td></tr>
               ) : data.length === 0 ? (
                 <tr><td colSpan={7} className="text-center py-5 text-muted">Tidak ada data ditemukan.</td></tr>
               ) : data.map((item) => (
@@ -711,52 +711,54 @@ export default function ManajemenKelas() {
         </div>
         
         {!loading && data.length > 0 && (
-          <div className="d-flex justify-content-between align-items-center p-3 border-top bg-white">
-            <div className="text-muted text-xxs fw-medium">
+          <div className="d-flex justify-content-between align-items-center px-3 py-2 border-top bg-white">
+            <div className="text-muted text-[9px] fw-medium">
               Menampilkan {data.length} dari {pagination.total} data
             </div>
             <nav className="d-flex align-items-center gap-1">
-              <button 
-                className="btn btn-light btn-sm border-0 shadow-none p-[6px] rounded-3" 
-                disabled={pagination.currentPage === 1} 
+              <button
+                className="btn btn-light btn-sm border shadow-none p-1 rounded-2"
+                disabled={pagination.currentPage === 1}
                 onClick={() => handlePageChange(pagination.currentPage - 1)}
-                aria-label="Halaman sebelumnya"
+                title="Previous"
+                aria-label="Previous"
               >
-                <ChevronLeft size={16} />
+                <ChevronLeft size={12} />
               </button>
-              
-              <div className="d-flex gap-1 mx-1">
-                {[...Array(pagination.lastPage)].map((_, i) => {
-                  const pageNumber = i + 1;
-                  if (
-                    pageNumber === 1 || 
-                    pageNumber === pagination.lastPage || 
-                    (pageNumber >= pagination.currentPage - 1 && pageNumber <= pagination.currentPage + 1)
-                  ) {
+              <div className="d-flex gap-1">
+                {(() => {
+                  const pages = [];
+                  const cp = pagination.currentPage;
+                  const lp = Math.max(1, pagination.lastPage);
+                  pages.push(1);
+                  if (cp > 3) pages.push('ellipsis-1');
+                  for (let i = Math.max(2, cp - 1); i <= Math.min(lp - 1, cp + 1); i++) {
+                    pages.push(i);
+                  }
+                  if (cp < lp - 2) pages.push('ellipsis-2');
+                  if (lp > 1) pages.push(lp);
+                  return pages.map((p, idx) => {
+                    if (typeof p === 'string') return <span key={`e-${idx}`} className="px-1 text-muted text-[10px]">...</span>;
                     return (
-                      <button 
-                        key={pageNumber}
-                        onClick={() => handlePageChange(pageNumber)}
-                        className={`btn btn-sm px-[10px] py-1 rounded-3 fw-bold ${pagination.currentPage === pageNumber ? 'btn-primary' : 'btn-light'}`}
+                      <button
+                        key={p}
+                        onClick={() => handlePageChange(p)}
+                        className={`btn btn-sm px-2 py-1 rounded-2 fw-bold text-[10px] border-0 ${cp === p ? 'btn-warning text-white' : 'btn-light text-dark'}`}
                       >
-                        {pageNumber}
+                        {p}
                       </button>
                     );
-                  }
-                  if (pageNumber === pagination.currentPage - 2 || pageNumber === pagination.currentPage + 2) {
-                    return <span key={pageNumber} className="px-1 text-muted">...</span>;
-                  }
-                  return null;
-                })}
+                  });
+                })()}
               </div>
-
-              <button 
-                className="btn btn-light btn-sm border-0 shadow-none p-[6px] rounded-3" 
-                disabled={pagination.currentPage === pagination.lastPage} 
+              <button
+                className="btn btn-light btn-sm border shadow-none p-1 rounded-2"
+                disabled={pagination.currentPage === pagination.lastPage}
                 onClick={() => handlePageChange(pagination.currentPage + 1)}
-                aria-label="Halaman selanjutnya"
+                title="Next"
+                aria-label="Next"
               >
-                <ChevronRight size={16} />
+                <ChevronLeft size={12} className="rotate-180" />
               </button>
             </nav>
           </div>
@@ -776,7 +778,7 @@ export default function ManajemenKelas() {
             </thead>
             <tbody className="border-top-0">
               {tingkatanLoading ? (
-                <tr><td colSpan={2} className="text-center py-5"><Loader2 className="text-primary animate-spin mx-auto" size={20} /></td></tr>
+                <tr><td colSpan={2} className="text-center py-5"><Loader2 className="text-warning animate-spin mx-auto" size={20} /></td></tr>
               ) : tingkatanData.length === 0 ? (
                 <tr><td colSpan={2} className="text-center py-5 text-muted">Tidak ada data ditemukan.</td></tr>
               ) : tingkatanData.map((item) => (
@@ -792,52 +794,54 @@ export default function ManajemenKelas() {
         </div>
         
         {!tingkatanLoading && tingkatanData.length > 0 && (
-          <div className="d-flex justify-content-between align-items-center p-3 border-top bg-white">
-            <div className="text-muted text-xxs fw-medium">
+          <div className="d-flex justify-content-between align-items-center px-3 py-2 border-top bg-white">
+            <div className="text-muted text-[9px] fw-medium">
               Menampilkan {tingkatanData.length} dari {tingkatanPagination.total} data
             </div>
             <nav className="d-flex align-items-center gap-1">
-              <button 
-                className="btn btn-light btn-sm border-0 shadow-none p-[6px] rounded-3" 
-                disabled={tingkatanPagination.currentPage === 1} 
+              <button
+                className="btn btn-light btn-sm border shadow-none p-1 rounded-2"
+                disabled={tingkatanPagination.currentPage === 1}
                 onClick={() => handleTingkatanPageChange(tingkatanPagination.currentPage - 1)}
-                aria-label="Halaman sebelumnya"
+                title="Previous"
+                aria-label="Previous"
               >
-                <ChevronLeft size={16} />
+                <ChevronLeft size={12} />
               </button>
-              
-              <div className="d-flex gap-1 mx-1">
-                {[...Array(tingkatanPagination.lastPage)].map((_, i) => {
-                  const pageNumber = i + 1;
-                  if (
-                    pageNumber === 1 || 
-                    pageNumber === tingkatanPagination.lastPage || 
-                    (pageNumber >= tingkatanPagination.currentPage - 1 && pageNumber <= tingkatanPagination.currentPage + 1)
-                  ) {
+              <div className="d-flex gap-1">
+                {(() => {
+                  const pages = [];
+                  const cp = tingkatanPagination.currentPage;
+                  const lp = Math.max(1, tingkatanPagination.lastPage);
+                  pages.push(1);
+                  if (cp > 3) pages.push('ellipsis-1');
+                  for (let i = Math.max(2, cp - 1); i <= Math.min(lp - 1, cp + 1); i++) {
+                    pages.push(i);
+                  }
+                  if (cp < lp - 2) pages.push('ellipsis-2');
+                  if (lp > 1) pages.push(lp);
+                  return pages.map((p, idx) => {
+                    if (typeof p === 'string') return <span key={`e-${idx}`} className="px-1 text-muted text-[10px]">...</span>;
                     return (
-                      <button 
-                        key={pageNumber}
-                        onClick={() => handleTingkatanPageChange(pageNumber)}
-                        className={`btn btn-sm px-[10px] py-1 rounded-3 fw-bold ${tingkatanPagination.currentPage === pageNumber ? 'btn-primary' : 'btn-light'}`}
+                      <button
+                        key={p}
+                        onClick={() => handleTingkatanPageChange(p)}
+                        className={`btn btn-sm px-2 py-1 rounded-2 fw-bold text-[10px] border-0 ${cp === p ? 'btn-warning text-white' : 'btn-light text-dark'}`}
                       >
-                        {pageNumber}
+                        {p}
                       </button>
                     );
-                  }
-                  if (pageNumber === tingkatanPagination.currentPage - 2 || pageNumber === tingkatanPagination.currentPage + 2) {
-                    return <span key={pageNumber} className="px-1 text-muted">...</span>;
-                  }
-                  return null;
-                })}
+                  });
+                })()}
               </div>
-
-              <button 
-                className="btn btn-light btn-sm border-0 shadow-none p-[6px] rounded-3" 
-                disabled={tingkatanPagination.currentPage === tingkatanPagination.lastPage} 
+              <button
+                className="btn btn-light btn-sm border shadow-none p-1 rounded-2"
+                disabled={tingkatanPagination.currentPage === tingkatanPagination.lastPage}
                 onClick={() => handleTingkatanPageChange(tingkatanPagination.currentPage + 1)}
-                aria-label="Halaman selanjutnya"
+                title="Next"
+                aria-label="Next"
               >
-                <ChevronRight size={16} />
+                <ChevronLeft size={12} className="rotate-180" />
               </button>
             </nav>
           </div>
@@ -851,7 +855,7 @@ export default function ManajemenKelas() {
               <div className="modal-content border-0 shadow-lg rounded-3">
                 <div className="modal-header border-0 pb-0 px-3 pt-3">
                   <div className="d-flex align-items-center">
-                    <Eye size={16} className="text-primary me-2" />
+                    <Eye size={16} className="text-warning me-2" />
                     <h6 className="modal-title fw-bold text-dark text-md-custom">Preview Import Kelas</h6>
                   </div>
                   <button onClick={() => setPreviewData(null)} className="btn-close scale-75 shadow-none" aria-label="Tutup"></button>
@@ -920,7 +924,7 @@ export default function ManajemenKelas() {
                     <div className="col-6">
                       <button 
                         onClick={confirmImport} 
-                        className={`btn btn-primary btn-sm w-100 py-2 rounded-3 shadow-none fw-bold d-flex align-items-center justify-content-center gap-2 text-xxs ${hasImportConflict ? 'opacity-50 cursor-not-allowed' : ''}`} 
+                        className={`btn btn-warning btn-sm w-100 py-2 rounded-3 shadow-none fw-bold d-flex align-items-center justify-content-center gap-2 text-xxs ${hasImportConflict ? 'opacity-50 cursor-not-allowed' : ''}`} 
                         disabled={isSubmitting || hasImportConflict}
                       >
                         {isSubmitting ? <Loader2 size={12} className="animate-spin" /> : <><CheckCircle2 size={12} /> Konfirmasi</>}
@@ -939,8 +943,8 @@ export default function ManajemenKelas() {
             <div className="modal-content border-0 shadow-lg rounded-4 border">
               <div className="modal-header border-0 pb-0 px-4 pt-4">
                 <h6 className="modal-title fw-bold text-dark d-flex align-items-center gap-2">
-                  <div className="bg-primary bg-opacity-10 p-[6px] rounded-3">
-                    {isEdit ? <Edit2 size={15} className="text-primary"/> : <Plus size={15} className="text-primary"/>}
+                  <div className="bg-warning bg-opacity-10 p-[6px] rounded-3">
+                    {isEdit ? <Edit2 size={15} className="text-warning"/> : <Plus size={15} className="text-warning"/>}
                   </div>
                   {isEdit ? "Edit Data Kelas" : "Tambah Kelas Baru"}
                 </h6>
@@ -977,7 +981,7 @@ export default function ManajemenKelas() {
                 </div>
               </div>
               <div className="modal-footer border-0 p-4 pt-0">
-                <button onClick={handleSave} className="btn btn-primary btn-sm w-100 py-[10px] rounded-3 shadow-sm fw-bold d-flex align-items-center justify-content-center gap-2" disabled={isSubmitting}>
+                <button onClick={handleSave} className="btn btn-warning btn-sm w-100 py-[10px] rounded-3 shadow-sm fw-bold d-flex align-items-center justify-content-center gap-2" disabled={isSubmitting}>
                   {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : (isEdit ? "Perbarui Data" : "Simpan Data Kelas")}
                 </button>
               </div>
@@ -992,8 +996,8 @@ export default function ManajemenKelas() {
             <div className="modal-content border-0 shadow-lg rounded-4 border">
               <div className="modal-header border-0 pb-0 px-4 pt-4">
                 <h6 className="modal-title fw-bold text-dark d-flex align-items-center gap-2">
-                  <div className="bg-primary bg-opacity-10 p-[6px] rounded-3">
-                    {tingkatanIsEdit ? <Edit2 size={15} className="text-primary"/> : <Plus size={15} className="text-primary"/>}
+                  <div className="bg-warning bg-opacity-10 p-[6px] rounded-3">
+                    {tingkatanIsEdit ? <Edit2 size={15} className="text-warning"/> : <Plus size={15} className="text-warning"/>}
                   </div>
                   {tingkatanIsEdit ? "Edit Data Tingkatan" : "Tambah Tingkatan Baru"}
                 </h6>
@@ -1006,7 +1010,7 @@ export default function ManajemenKelas() {
                 </div>
               </div>
               <div className="modal-footer border-0 p-4 pt-0">
-                <button onClick={handleTingkatanSave} className="btn btn-primary btn-sm w-100 py-[10px] rounded-3 shadow-sm fw-bold d-flex align-items-center justify-content-center gap-2" disabled={tingkatanIsSubmitting}>
+                <button onClick={handleTingkatanSave} className="btn btn-warning btn-sm w-100 py-[10px] rounded-3 shadow-sm fw-bold d-flex align-items-center justify-content-center gap-2" disabled={tingkatanIsSubmitting}>
                   {tingkatanIsSubmitting ? <Loader2 size={14} className="animate-spin" /> : (tingkatanIsEdit ? "Perbarui Data" : "Simpan Data Tingkatan")}
                 </button>
               </div>

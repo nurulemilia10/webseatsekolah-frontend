@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useId, memo, useMemo } from 'react';
 import { 
-  Plus, Edit2, Loader2, FolderOpen, Trash2, Calendar, Crop, ArrowLeft, Image as ImageIcon, Video, X, Maximize2, CheckSquare, Square 
+  Plus, Edit2, Loader2, FolderOpen, Trash2, Calendar, Crop, ArrowLeft, Image as ImageIcon, Video, X, Maximize2, CheckSquare, Square, ChevronLeft
 } from 'lucide-react';
 import Cropper from 'react-easy-crop';
 import api from '@/lib/api';
@@ -46,7 +46,7 @@ const AlbumRow = memo(({ album, onEdit, onDelete, onOpen }: { album: any, onEdit
     </td>
     <td className="py-2 text-end pe-3">
       <div className="d-flex justify-content-end gap-1" onClick={(e) => e.stopPropagation()}>
-        <button title="Edit Album" onClick={() => onEdit(album)} className="btn btn-sm p-1 text-primary border-0 shadow-none">
+        <button title="Edit Album" onClick={() => onEdit(album)} className="btn btn-sm p-1 text-warning border-0 shadow-none">
           <span className="bg-light p-1 rounded-3 d-inline-flex"><Edit2 size={11}/></span>
         </button>
         <button title="Hapus Album" onClick={() => onDelete(album.id)} className="btn btn-sm p-1 text-danger border-0 shadow-none">
@@ -320,6 +320,8 @@ export default function ManajemenAlbum() {
     fetchMedia(album.id);
   };
 
+  const handlePageChange = (page: number) => fetchData(page);
+
   if (authLoading) return null;
 
   if (view === 'media') {
@@ -338,7 +340,7 @@ export default function ManajemenAlbum() {
           <div className="d-flex gap-2">
             {mediaData.length > 0 && (
               <button title="Pilih Semua" onClick={toggleSelectAll} className="btn btn-light btn-sm px-2 border shadow-none rounded-3 text-[10px]">
-                {selectedMediaIds.length === mediaData.length ? <CheckSquare size={13} className="text-primary" /> : <Square size={13} />}
+                {selectedMediaIds.length === mediaData.length ? <CheckSquare size={13} className="text-warning" /> : <Square size={13} />}
               </button>
             )}
             {selectedMediaIds.length > 0 && (
@@ -346,7 +348,7 @@ export default function ManajemenAlbum() {
                 <Trash2 size={13} className="me-1"/> Hapus ({selectedMediaIds.length})
               </button>
             )}
-            <button onClick={() => setShowForm(true)} className="btn btn-primary btn-sm px-3 shadow-sm rounded-3 py-1.5 text-[10px]">
+            <button onClick={() => setShowForm(true)} className="btn btn-warning btn-sm px-3 shadow-sm rounded-3 py-1.5 text-[10px]">
               <Plus size={13} className="me-1"/> <span>Tambah Media</span>
             </button>
           </div>
@@ -354,7 +356,7 @@ export default function ManajemenAlbum() {
 
         {loading ? (
           <div className="text-center py-5">
-            <Loader2 className="text-primary animate-spin mb-2 mx-auto" size={20} />
+            <Loader2 className="text-warning animate-spin mb-2 mx-auto" size={20} />
             <div className="text-muted text-[10px]">Memuat media...</div>
           </div>
         ) : (
@@ -364,7 +366,7 @@ export default function ManajemenAlbum() {
             ) : mediaData.map((m) => (
               <div key={m.id} className="col">
                 <div 
-                  className={`card border-0 shadow-sm rounded-2 overflow-hidden h-100 group position-relative border cursor-pointer ${selectedMediaIds.includes(m.id) ? 'ring-2 ring-primary border-primary' : 'bg-light'}`}
+                  className={`card border-0 shadow-sm rounded-2 overflow-hidden h-100 group position-relative border cursor-pointer ${selectedMediaIds.includes(m.id) ? 'ring-2 ring-warning border-warning' : 'bg-light'}`}
                   onClick={() => toggleSelectMedia(m.id)}
                 >
                   <div className="ratio ratio-1x1 position-relative">
@@ -384,7 +386,6 @@ export default function ManajemenAlbum() {
                       />
                     )}
 
-                    {/* Overlay Lihat Selengkapnya saat Hover */}
                     <div 
                       className="position-absolute bottom-0 start-0 w-100 p-1 bg-dark bg-opacity-60 opacity-0 group-hover:opacity-100 transition-opacity d-flex align-items-center justify-content-center gap-1 z-10" 
                       onClick={(e) => { 
@@ -397,10 +398,8 @@ export default function ManajemenAlbum() {
                     </div>
                   </div>
 
-                  {/* Bagian Aksi & Checkbox (Di luar Card/Area Foto) */}
                   <div className="card-body p-1 bg-white border-top">
                     <div className="d-flex justify-content-center gap-1">
-                      {/* Checkbox Button */}
                       <button 
                         type="button"
                         title="Pilih"
@@ -408,12 +407,11 @@ export default function ManajemenAlbum() {
                           e.stopPropagation();
                           toggleSelectMedia(m.id);
                         }}
-                        className={`btn btn-sm p-0 rounded-1 border-0 d-flex align-items-center justify-content-center w-[22px] h-[22px] ${selectedMediaIds.includes(m.id) ? 'btn-primary' : 'btn-light border'}`}
+                        className={`btn btn-sm p-0 rounded-1 border-0 d-flex align-items-center justify-content-center w-[22px] h-[22px] ${selectedMediaIds.includes(m.id) ? 'btn-warning' : 'btn-light border'}`}
                       >
                         {selectedMediaIds.includes(m.id) ? <CheckSquare size={15}/> : <Square size={15} className="text-muted"/>}
                       </button>
 
-                      {/* Delete Button */}
                       <button 
                         type="button"
                         title="Hapus Media"
@@ -434,7 +432,6 @@ export default function ManajemenAlbum() {
           </div>
         )}
 
-        {/* Modal Preview Media Tetap Sama */}
         {previewMedia && (
           <div className="modal fade show d-block bg-black-80 z-2000" onClick={() => setPreviewMedia(null)}>
             <div className="modal-dialog modal-dialog-centered modal-lg p-3" onClick={e => e.stopPropagation()}>
@@ -447,7 +444,7 @@ export default function ManajemenAlbum() {
                     <div className="bg-dark rounded-4 p-4 p-md-5">
                        <Video size={64} className="text-white opacity-20 mb-3" />
                        <h6 className="text-white text-[12px] mb-3">{previewMedia.media_path}</h6>
-                       <a href={previewMedia.media_path} target="_blank" className="btn btn-primary btn-sm rounded-3 px-4">Buka Video</a>
+                       <a href={previewMedia.media_path} target="_blank" className="btn btn-warning btn-sm rounded-3 px-4">Buka Video</a>
                     </div>
                   ) : (
                     <img 
@@ -468,7 +465,6 @@ export default function ManajemenAlbum() {
           </div>
         )}
 
-        {/* Modal Form Tambah Media Tetap Sama */}
         {showForm && (
           <div className="modal fade show d-block bg-black-40 z-1050">
             <div className="modal-dialog modal-dialog-centered px-3 modal-max-width mx-auto">
@@ -481,10 +477,10 @@ export default function ManajemenAlbum() {
                   <div className="mb-2">
                     <label className="form-label text-dark mb-1 fw-semibold text-[10px]">Jenis Media</label>
                     <div className="d-flex gap-2">
-                      <button type="button" onClick={() => setMediaForm({...mediaForm, jenis_media: 'foto'})} className={`btn btn-sm flex-grow-1 text-[10px] rounded-3 py-1.5 ${mediaForm.jenis_media === 'foto' ? 'btn-primary shadow-sm' : 'btn-light border'}`}>
+                      <button type="button" onClick={() => setMediaForm({...mediaForm, jenis_media: 'foto'})} className={`btn btn-sm flex-grow-1 text-[10px] rounded-3 py-1.5 ${mediaForm.jenis_media === 'foto' ? 'btn-warning shadow-sm' : 'btn-light border'}`}>
                         <ImageIcon size={12} className="me-1" /> Foto
                       </button>
-                      <button type="button" onClick={() => setMediaForm({...mediaForm, jenis_media: 'video'})} className={`btn btn-sm flex-grow-1 text-[10px] rounded-3 py-1.5 ${mediaForm.jenis_media === 'video' ? 'btn-primary shadow-sm' : 'btn-light border'}`}>
+                      <button type="button" onClick={() => setMediaForm({...mediaForm, jenis_media: 'video'})} className={`btn btn-sm flex-grow-1 text-[10px] rounded-3 py-1.5 ${mediaForm.jenis_media === 'video' ? 'btn-warning shadow-sm' : 'btn-light border'}`}>
                         <Video size={12} className="me-1" /> Video
                       </button>
                     </div>
@@ -519,7 +515,7 @@ export default function ManajemenAlbum() {
                   )}
                 </div>
                 <div className="modal-footer border-0 p-3 pt-0">
-                  <button onClick={handleSaveMedia} className="btn btn-primary btn-sm w-100 fw-bold shadow-sm py-2 text-[11px] rounded-3" disabled={isSubmitting}>
+                  <button onClick={handleSaveMedia} className="btn btn-warning btn-sm w-100 fw-bold shadow-sm py-2 text-[11px] rounded-3" disabled={isSubmitting}>
                     {isSubmitting ? <Loader2 size={12} className="animate-spin" /> : "Simpan Media"}
                   </button>
                 </div>
@@ -531,15 +527,14 @@ export default function ManajemenAlbum() {
     );
   }
 
-  // Render Manajemen Album (view: album) tetap sama seperti kode awal kamu
   return (
     <div className="container-fluid py-3 px-2 px-md-3">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <div className="d-flex align-items-center">
-          <FolderOpen size={16} className="text-primary me-2" />
+          <FolderOpen size={16} className="text-warning me-2" />
           <h6 className="mb-0 fw-bold text-dark text-uppercase text-[12px] tracking-wider">Manajemen Album Galeri</h6>
         </div>
-        <button onClick={() => setShowForm(true)} className="btn btn-primary btn-sm px-2 px-md-3 shadow-sm rounded-3 py-1.5 text-[10px]">
+        <button onClick={() => setShowForm(true)} className="btn btn-warning btn-sm px-2 px-md-3 shadow-sm rounded-3 py-1.5 text-[10px]">
           <Plus size={13} className="me-1"/> <span>Tambah Album</span>
         </button>
       </div>
@@ -559,7 +554,7 @@ export default function ManajemenAlbum() {
               {loading ? (
                 <tr>
                   <td colSpan={4} className="text-center py-5">
-                    <Loader2 className="text-primary animate-spin mb-2 mx-auto" size={20} />
+                    <Loader2 className="text-warning animate-spin mb-2 mx-auto" size={20} />
                     <div className="text-muted text-[10px]">Memuat data album...</div>
                   </td>
                 </tr>
@@ -573,27 +568,60 @@ export default function ManajemenAlbum() {
             </tbody>
           </table>
         </div>
-        
-        <div className="card-footer bg-white border-top py-2 rounded-bottom-3">
-          <div className="d-flex justify-content-between align-items-center">
-            <div className="text-muted text-[9px] fw-medium">Total: {meta?.total || 0}</div>
-            {meta && meta.last_page > 1 && (
-              <nav aria-label="Navigasi Halaman">
-                <ul className="pagination pagination-sm mb-0">
-                  <li className={`page-item ${meta.current_page === 1 ? 'disabled' : ''}`}>
-                    <button title="Halaman Sebelumnya" aria-label="Halaman Sebelumnya" className="page-link border rounded-3 mx-1 ui-pagination-square shadow-none" onClick={() => fetchData(meta.current_page - 1)}>&lt;</button>
-                  </li>
-                  <li className="page-item active">
-                    <span className="page-link border rounded-3 mx-1 ui-pagination-square bg-primary text-white border-primary shadow-none" aria-current="page">{meta.current_page}</span>
-                  </li>
-                  <li className={`page-item ${meta.current_page === meta.last_page ? 'disabled' : ''}`}>
-                    <button title="Halaman Selanjutnya" aria-label="Halaman Selanjutnya" className="page-link border rounded-3 mx-1 ui-pagination-square shadow-none" onClick={() => fetchData(meta.current_page + 1)}>&gt;</button>
-                  </li>
-                </ul>
-              </nav>
-            )}
+
+        {!loading && data.length > 0 && meta && (
+          <div className="d-flex justify-content-between align-items-center px-3 py-2 border-top bg-white">
+            <div className="text-muted text-[9px] fw-medium">
+              Menampilkan {data.length} dari {meta.total} data
+            </div>
+            <nav className="d-flex align-items-center gap-1">
+              <button
+                className="btn btn-light btn-sm border shadow-none p-1 rounded-2"
+                disabled={meta.current_page === 1}
+                onClick={() => handlePageChange(meta.current_page - 1)}
+                title="Previous"
+                aria-label="Previous"
+              >
+                <ChevronLeft size={12} />
+              </button>
+              <div className="d-flex gap-1">
+                {(() => {
+                  const pages = [];
+                  const cp = meta.current_page;
+                  const lp = Math.max(1, meta.last_page);
+                  pages.push(1);
+                  if (cp > 3) pages.push('ellipsis-1');
+                  for (let i = Math.max(2, cp - 1); i <= Math.min(lp - 1, cp + 1); i++) {
+                    pages.push(i);
+                  }
+                  if (cp < lp - 2) pages.push('ellipsis-2');
+                  if (lp > 1) pages.push(lp);
+                  return pages.map((p, idx) => {
+                    if (typeof p === 'string') return <span key={`e-${idx}`} className="px-1 text-muted text-[10px]">...</span>;
+                    return (
+                      <button
+                        key={p}
+                        onClick={() => handlePageChange(p)}
+                        className={`btn btn-sm px-2 py-1 rounded-2 fw-bold text-[10px] border-0 ${cp === p ? 'btn-warning text-white' : 'btn-light text-dark'}`}
+                      >
+                        {p}
+                      </button>
+                    );
+                  });
+                })()}
+              </div>
+              <button
+                className="btn btn-light btn-sm border shadow-none p-1 rounded-2"
+                disabled={meta.current_page === meta.last_page}
+                onClick={() => handlePageChange(meta.current_page + 1)}
+                title="Next"
+                aria-label="Next"
+              >
+                <ChevronLeft size={12} className="rotate-180" />
+              </button>
+            </nav>
           </div>
-        </div>
+        )}
       </div>
 
       {showForm && (
@@ -611,7 +639,7 @@ export default function ManajemenAlbum() {
                   <div className="ui-cropper-wrapper">
                     <Cropper image={tempImage} crop={crop} zoom={zoom} aspect={4 / 3} onCropChange={setCrop} onCropComplete={onCropComplete} onZoomChange={setZoom} />
                     <div className="position-absolute bottom-0 start-0 w-100 p-2 d-flex gap-2 z-index-10">
-                      <button onClick={handleApplyCrop} className="btn btn-primary btn-sm flex-grow-1 fw-bold text-[10px] py-1.5 rounded-3 shadow">
+                      <button onClick={handleApplyCrop} className="btn btn-warning btn-sm flex-grow-1 fw-bold text-[10px] py-1.5 rounded-3 shadow">
                         <Crop size={11} className="me-1"/> Selesai
                       </button>
                     </div>
@@ -650,7 +678,7 @@ export default function ManajemenAlbum() {
               </div>
               {!tempImage && (
                 <div className="modal-footer border-0 p-3 pt-0">
-                  <button onClick={handleSave} className="btn btn-primary btn-sm w-100 fw-bold shadow-sm py-2 text-[11px] rounded-3" disabled={isSubmitting}>
+                  <button onClick={handleSave} className="btn btn-warning btn-sm w-100 fw-bold shadow-sm py-2 text-[11px] rounded-3" disabled={isSubmitting}>
                     {isSubmitting ? <Loader2 size={12} className="animate-spin" /> : (isEdit ? "Update Album" : "Simpan Album")}
                   </button>
                 </div>

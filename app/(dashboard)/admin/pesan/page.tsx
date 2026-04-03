@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, memo, useMemo } from 'react';
 import { 
-  Mail, Loader2, Trash2, Eye, Calendar, CheckCircle, MailWarning
+  Mail, Loader2, Trash2, Eye, Calendar, CheckCircle, MailWarning, ChevronLeft
 } from 'lucide-react';
 import api from '@/lib/api';
 import Swal from 'sweetalert2';
@@ -36,7 +36,7 @@ const PesanRow = memo(({ pesan, onView, onDelete }: { pesan: any, onView: (p: an
       <div className="d-flex justify-content-end gap-1">
         <button 
           onClick={() => onView(pesan)} 
-          className="btn btn-sm p-1 text-primary border-0 shadow-none" 
+          className="btn btn-sm p-1 text-warning border-0 shadow-none" 
           title="Lihat Detail Pesan"
           aria-label="Lihat Detail Pesan"
         >
@@ -62,7 +62,6 @@ export default function ManajemenPesan() {
   const [data, setData] = useState<any[]>([]);
   const [meta, setMeta] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
   const [showDetail, setShowDetail] = useState(false);
   const [selectedPesan, setSelectedPesan] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -83,12 +82,13 @@ export default function ManajemenPesan() {
       if (res?.data) {
         setData(res.data.data || []);
         setMeta(res.data.meta || null);
-        setCurrentPage(page);
       }
     } catch (e) { console.error(e); } finally { setLoading(false); }
   }, [authLoading, user]);
 
   useEffect(() => { fetchData(1); }, [fetchData]);
+
+  const handlePageChange = (page: number) => fetchData(page);
 
   const handleViewPesan = useCallback(async (p: any) => {
     setSelectedPesan(p);
@@ -115,7 +115,7 @@ export default function ManajemenPesan() {
       const res = await api.admin.pesan.markAllRead();
       if (res.data?.success) {
         Toast.fire({ icon: 'success', title: res.data.message });
-        fetchData(currentPage);
+        fetchData(meta?.current_page || 1);
       }
     } catch (e) {
       Toast.fire({ icon: 'error', title: 'Gagal memperbarui status' });
@@ -154,13 +154,13 @@ export default function ManajemenPesan() {
     <div className="container-fluid py-3 px-2 px-md-3">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <div className="d-flex align-items-center">
-          <Mail size={16} className="text-primary me-2" />
+          <Mail size={16} className="text-warning me-2" />
           <h6 className="mb-0 fw-bold text-dark text-uppercase text-[12px] tracking-wider">Pesan Masuk</h6>
         </div>
         <button 
           onClick={handleMarkAllRead} 
           disabled={isSubmitting || data.length === 0}
-          className="btn btn-light btn-sm px-2 px-md-3 shadow-sm rounded-3 py-1.5 text-[10px] text-primary fw-semibold"
+          className="btn btn-light btn-sm px-2 px-md-3 shadow-sm rounded-3 py-1.5 text-[10px] text-warning fw-semibold"
         >
           {isSubmitting ? <Loader2 size={13} className="animate-spin"/> : <CheckCircle size={13} className="me-1"/>}
           <span>Tandai Semua Terbaca</span>
@@ -183,7 +183,7 @@ export default function ManajemenPesan() {
               {loading ? (
                 <tr>
                   <td colSpan={5} className="text-center py-5">
-                    <Loader2 className="text-primary animate-spin mb-2 mx-auto" size={20} />
+                    <Loader2 className="text-warning animate-spin mb-2 mx-auto" size={20} />
                     <div className="text-muted text-[10px]">Memuat pesan...</div>
                   </td>
                 </tr>
@@ -197,40 +197,60 @@ export default function ManajemenPesan() {
             </tbody>
           </table>
         </div>
-        <div className="card-footer bg-white border-top py-2 rounded-bottom-3">
-          <div className="d-flex justify-content-between align-items-center">
-            <div className="text-muted text-[9px] fw-medium">Total: {meta?.total || 0}</div>
-            {meta && meta.last_page > 1 && (
-              <nav>
-                <ul className="pagination pagination-sm mb-0">
-                  <li className={`page-item ${meta.current_page === 1 ? 'disabled' : ''}`}>
-                    <button 
-                      className="page-link border rounded-3 mx-1 ui-pagination-square shadow-none" 
-                      onClick={() => fetchData(meta.current_page - 1)}
-                      title="Halaman Sebelumnya"
-                      aria-label="Halaman Sebelumnya"
-                    >
-                      &lt;
-                    </button>
-                  </li>
-                  <li className="page-item active">
-                    <span className="page-link border rounded-3 mx-1 ui-pagination-square bg-primary text-white border-primary shadow-none">{meta.current_page}</span>
-                  </li>
-                  <li className={`page-item ${meta.current_page === meta.last_page ? 'disabled' : ''}`}>
-                    <button 
-                      className="page-link border rounded-3 mx-1 ui-pagination-square shadow-none" 
-                      onClick={() => fetchData(meta.current_page + 1)}
-                      title="Halaman Selanjutnya"
-                      aria-label="Halaman Selanjutnya"
-                    >
-                      &gt;
-                    </button>
-                  </li>
-                </ul>
-              </nav>
-            )}
+
+        {!loading && data.length > 0 && meta && (
+          <div className="d-flex justify-content-between align-items-center px-3 py-2 border-top bg-white">
+            <div className="text-muted text-[9px] fw-medium">
+              Menampilkan {data.length} dari {meta.total} data
+            </div>
+            <nav className="d-flex align-items-center gap-1">
+              <button
+                className="btn btn-light btn-sm border shadow-none p-1 rounded-2"
+                disabled={meta.current_page === 1}
+                onClick={() => handlePageChange(meta.current_page - 1)}
+                title="Previous"
+                aria-label="Previous"
+              >
+                <ChevronLeft size={12} />
+              </button>
+              <div className="d-flex gap-1">
+                {(() => {
+                  const pages = [];
+                  const cp = meta.current_page;
+                  const lp = Math.max(1, meta.last_page);
+                  pages.push(1);
+                  if (cp > 3) pages.push('ellipsis-1');
+                  for (let i = Math.max(2, cp - 1); i <= Math.min(lp - 1, cp + 1); i++) {
+                    pages.push(i);
+                  }
+                  if (cp < lp - 2) pages.push('ellipsis-2');
+                  if (lp > 1) pages.push(lp);
+                  return pages.map((p, idx) => {
+                    if (typeof p === 'string') return <span key={`e-${idx}`} className="px-1 text-muted text-[10px]">...</span>;
+                    return (
+                      <button
+                        key={p}
+                        onClick={() => handlePageChange(p)}
+                        className={`btn btn-sm px-2 py-1 rounded-2 fw-bold text-[10px] border-0 ${cp === p ? 'btn-warning text-white' : 'btn-light text-dark'}`}
+                      >
+                        {p}
+                      </button>
+                    );
+                  });
+                })()}
+              </div>
+              <button
+                className="btn btn-light btn-sm border shadow-none p-1 rounded-2"
+                disabled={meta.current_page === meta.last_page}
+                onClick={() => handlePageChange(meta.current_page + 1)}
+                title="Next"
+                aria-label="Next"
+              >
+                <ChevronLeft size={12} className="rotate-180" />
+              </button>
+            </nav>
           </div>
-        </div>
+        )}
       </div>
 
       {showDetail && selectedPesan && (
@@ -239,9 +259,9 @@ export default function ManajemenPesan() {
             <div className="modal-content border-0 shadow-lg rounded-3 overflow-hidden">
               <div className="modal-header border-0 pb-0 px-3 pt-3">
                 <h6 className="modal-title fw-bold text-dark text-[12px] d-flex align-items-center">
-                  <MailWarning size={14} className="me-2 text-primary"/> Detail Pesan
+                  <MailWarning size={14} className="me-2 text-warning"/> Detail Pesan
                 </h6>
-                <button onClick={() => setShowDetail(false)} className="btn-close shadow-none scale-75" aria-label="Tutup"></button>
+                <button onClick={() => setShowDetail(false)} className="btn-close shadow-none scale-75" title="Tutup" aria-label="Tutup"></button>
               </div>
               <div className="modal-body p-3 pt-2">
                 <div className="bg-light p-3 rounded-3 mb-3">
@@ -262,7 +282,7 @@ export default function ManajemenPesan() {
                 </div>
               </div>
               <div className="modal-footer border-0 p-3 pt-0">
-                <button onClick={() => setShowDetail(false)} className="btn btn-primary btn-sm w-100 fw-bold shadow-sm py-2 text-[11px] rounded-3">
+                <button onClick={() => setShowDetail(false)} className="btn btn-warning btn-sm w-100 fw-bold shadow-sm py-2 text-[11px] rounded-3">
                   Tutup Pesan
                 </button>
               </div>

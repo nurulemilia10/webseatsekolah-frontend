@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useId, memo, useMemo, useRef } from 'react';
 import { 
-  Plus, Edit2, Loader2, Trash2, FileDown, FileUp, Filter, ChevronLeft, ChevronRight, Eye, CheckCircle2, XCircle, AlertCircle, Search, BookOpen, Users, RefreshCw
+  Plus, Edit2, Loader2, Trash2, FileDown, FileUp, Filter, ChevronLeft, Eye, CheckCircle2, XCircle, AlertCircle, Search, BookOpen, Users, RefreshCw
 } from 'lucide-react';
 import api from '@/lib/api';
 import Swal from 'sweetalert2';
@@ -29,7 +29,7 @@ const GuruMapelRow = memo(({ item, onEdit, onDelete, isSelected, onSelect }: {
     <td className="py-1">
       <div className="d-flex align-items-center">
         <div className="flex-shrink-0 bg-light rounded p-1.5 d-flex align-items-center justify-content-center">
-          <Users size={13} className="text-primary" />
+          <Users size={13} className="text-warning" />
         </div>
         <div className="ms-2">
           <div className="text-dark fw-bold text-truncate mb-0 text-11px">{item.guru?.display || '-'}</div>
@@ -38,7 +38,7 @@ const GuruMapelRow = memo(({ item, onEdit, onDelete, isSelected, onSelect }: {
     </td>
     <td className="py-1 text-muted text-11px">
       <div className="d-flex align-items-center gap-1">
-        <BookOpen size={10} className="text-primary flex-shrink-0" />
+        <BookOpen size={10} className="text-warning flex-shrink-0" />
         <span className="text-truncate mw-120px">{item.mapel?.display || '-'}</span>
       </div>
     </td>
@@ -63,7 +63,7 @@ const GuruMapelRow = memo(({ item, onEdit, onDelete, isSelected, onSelect }: {
       <div className="d-flex justify-content-end gap-0.5">
         <button 
           onClick={() => onEdit(item)} 
-          className="btn btn-sm p-0.5 text-primary border-0 shadow-none" 
+          className="btn btn-sm p-0.5 text-warning border-0 shadow-none" 
           title="Edit Data" 
           aria-label="Edit Data"
         >
@@ -101,8 +101,8 @@ const GuruMapelCard = memo(({ item, onEdit, onDelete, isSelected, onSelect }: {
             onChange={() => onSelect(item.id)} 
             aria-label={`Pilih jadwal ${item.guru?.display}`} 
           />
-          <div className="bg-primary bg-opacity-10 p-1.5 rounded-2 d-flex align-items-center justify-content-center flex-shrink-0">
-            <Users size={14} className="text-primary" />
+          <div className="bg-warning bg-opacity-10 p-1.5 rounded-2 d-flex align-items-center justify-content-center flex-shrink-0">
+            <Users size={14} className="text-warning" />
           </div>
           <div className="ms-2 flex-grow-1 min-w-0">
             <div className="text-dark fw-bold text-truncate text-12px">{item.guru?.display || '-'}</div>
@@ -112,7 +112,7 @@ const GuruMapelCard = memo(({ item, onEdit, onDelete, isSelected, onSelect }: {
         <div className="d-flex gap-1 flex-shrink-0">
           <button 
             onClick={() => onEdit(item)} 
-            className="btn btn-sm p-1 text-primary border-0 shadow-none bg-light rounded-2" 
+            className="btn btn-sm p-1 text-warning border-0 shadow-none bg-light rounded-2" 
             title="Edit" 
             aria-label="Edit"
           >
@@ -663,93 +663,13 @@ export default function ManajemenGuruMapel() {
 
   return (
     <>
-      <style jsx global>{`
-        .w-30px { width: 30px; }
-        .w-50px { width: 50px; }
-        .text-9px { font-size: 9px; }
-        .text-10px { font-size: 10px; }
-        .text-11px { font-size: 11px; }
-        .text-xxs { font-size: 11px; }
-        .text-12px { font-size: 12px; }
-        .text-13px { font-size: 13px; }
-        .mw-120px { max-width: 120px; }
-        .min-w-120px { min-width: 120px; }
-        .min-w-28px { min-width: 28px; }
-        .h-34px { height: 34px; }
-        .h-36px { height: 36px; }
-        .h-38px { height: 38px; }
-        .badge-filter-count { font-size: 8px; width: 14px; height: 14px; }
-        .badge-filter-count-lg { font-size: 8px; width: 16px; height: 16px; }
-        .max-h-300 { max-height: 300px; }
-        .search-input-wrapper { min-width: 150px; max-width: 200px; flex: 1 1 150px; }
-        .page-btn { font-size: 10px; min-width: 28px; }
-        .guru-search-dropdown { top: 100%; z-index: 1050; max-height: 200px; }
-        .guru-search-item { background-color: transparent; }
-        .guru-search-item-active { background-color: #e9ecef; }
-        .guru-search-item-hover { background-color: #f8f9fa; }
-        .modal-zindex-1070 { z-index: 1070; }
-        .form-modal-overlay {
-          position: fixed;
-          inset: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          overflow: hidden;
-          z-index: 1100;
-        }
-        .form-modal-backdrop {
-          position: absolute;
-          inset: 0;
-          background-color: transparent;
-          backdrop-filter: blur(6px);
-          -webkit-backdrop-filter: blur(6px);
-        }
-        .form-modal-dialog {
-          position: relative;
-          z-index: 1;
-          max-width: 500px;
-          pointer-events: auto;
-          width: calc(100% - 1rem);
-        }
-        @media (min-width: 576px) {
-          .form-modal-dialog {
-            width: calc(100% - 2rem);
-          }
-        }
-        .form-modal-content {
-          display: flex;
-          flex-direction: column;
-          width: 100%;
-          max-height: 90vh;
-          background-color: #fff;
-          overflow: hidden;
-        }
-        .form-modal-body-scrollable {
-          flex: 1 1 auto;
-          overflow-y: auto;
-          min-height: 0;
-          -webkit-overflow-scrolling: touch;
-        }
-        .form-modal-header {
-          position: relative;
-          z-index: 10;
-          flex-shrink: 0;
-        }
-        .form-modal-footer {
-          position: relative;
-          z-index: 10;
-          border-top: 1px solid #f8f9fa;
-          flex-shrink: 0;
-          background-color: #fff;
-        }
-      `}</style>
       <div className="container-fluid py-2 px-2 px-md-3">
         <div className="card border-0 shadow-sm rounded-3 mb-2">
           <div className="card-body p-2 p-md-3">
             <div className="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
               <div className="d-flex align-items-center gap-2">
-                <div className="bg-primary bg-opacity-10 p-1.5 p-md-2 rounded-2">
-                  <BookOpen size={16} className="text-primary" />
+                <div className="bg-warning bg-opacity-10 p-1.5 p-md-2 rounded-2">
+                  <BookOpen size={16} className="text-warning" />
                 </div>
                 <div>
                   <h5 className="fw-bold text-dark mb-0 fs-6">Penugasan Guru Mapel</h5>
@@ -774,14 +694,14 @@ export default function ManajemenGuruMapel() {
 
                 <button
                   onClick={() => setShowFilter(!showFilter)}
-                  className={`btn btn-sm px-2 py-[6px] rounded-3 border d-flex align-items-center gap-1 transition-all ${showFilter || activeFilterCount > 0 ? 'btn-primary border-primary' : 'btn-light'}`}
+                  className={`btn btn-sm px-2 py-[6px] rounded-3 border d-flex align-items-center gap-1 transition-all ${showFilter || activeFilterCount > 0 ? 'btn-warning border-warning' : 'btn-light'}`}
                   title="Filter Data"
                   aria-label="Filter Data"
                 >
                   <Filter size={12}/>
                   <span className="d-none d-sm-inline">Filter</span>
                   {activeFilterCount > 0 && (
-                    <span className="badge bg-white text-primary rounded-circle p-0 d-flex align-items-center justify-content-center badge-filter-count-lg">
+                    <span className="badge bg-white text-warning rounded-circle p-0 d-flex align-items-center justify-content-center badge-filter-count-lg">
                       {activeFilterCount}
                     </span>
                   )}
@@ -798,7 +718,7 @@ export default function ManajemenGuruMapel() {
                   <span className="d-none d-sm-inline">Impor</span>
                   <input type="file" className="d-none" accept=".xlsx, .xls, .csv" onChange={handleImportRequest} />
                 </label>
-                <button onClick={() => setShowForm(true)} className="btn btn-primary btn-sm px-2 py-[6px] rounded-3 d-flex align-items-center gap-1" title="Tambah Data Baru" aria-label="Tambah Data Baru">
+                <button onClick={() => setShowForm(true)} className="btn btn-warning btn-sm px-2 py-[6px] rounded-3 d-flex align-items-center gap-1" title="Tambah Data Baru" aria-label="Tambah Data Baru">
                   <Plus size={12}/>
                   <span>Tambah</span>
                 </button>
@@ -976,7 +896,7 @@ export default function ManajemenGuruMapel() {
                 </thead>
                 <tbody className="border-top-0">
                   {loading ? (
-                    <tr><td colSpan={8} className="text-center py-5"><Loader2 className="text-primary animate-spin mx-auto" size={20} /></td></tr>
+                    <tr><td colSpan={8} className="text-center py-5"><Loader2 className="text-warning animate-spin mx-auto" size={20} /></td></tr>
                   ) : data.length === 0 ? (
                     <tr><td colSpan={8} className="text-center py-5 text-muted text-12px">Tidak ada data ditemukan.</td></tr>
                   ) : data.map((item) => (
@@ -995,47 +915,53 @@ export default function ManajemenGuruMapel() {
 
             {!loading && data.length > 0 && (
               <div className="d-flex justify-content-between align-items-center px-3 py-2 border-top bg-white">
-                <div className="text-muted text-10px">
+                <div className="text-muted text-[9px] fw-medium">
                   Menampilkan {data.length} dari {pagination.total} data
                 </div>
                 <nav className="d-flex align-items-center gap-1">
                   <button
-                    className="btn btn-light btn-sm border-0 shadow-none p-1 rounded-2"
+                    className="btn btn-light btn-sm border shadow-none p-1 rounded-2"
                     disabled={pagination.currentPage === 1}
                     onClick={() => handlePageChange(pagination.currentPage - 1)}
-                    aria-label="Halaman sebelumnya"
-                    title="Halaman sebelumnya"
+                    title="Previous"
+                    aria-label="Previous"
                   >
-                    <ChevronLeft size={14} />
+                    <ChevronLeft size={12} />
                   </button>
-                  <div className="d-flex gap-0.5">
-                    {[...Array(pagination.lastPage)].map((_, i) => {
-                      const p = i + 1;
-                      if (p === 1 || p === pagination.lastPage || (p >= pagination.currentPage - 1 && p <= pagination.currentPage + 1)) {
+                  <div className="d-flex gap-1">
+                    {(() => {
+                      const pages = [];
+                      const cp = pagination.currentPage;
+                      const lp = Math.max(1, pagination.lastPage);
+                      pages.push(1);
+                      if (cp > 3) pages.push('ellipsis-1');
+                      for (let i = Math.max(2, cp - 1); i <= Math.min(lp - 1, cp + 1); i++) {
+                        pages.push(i);
+                      }
+                      if (cp < lp - 2) pages.push('ellipsis-2');
+                      if (lp > 1) pages.push(lp);
+                      return pages.map((p, idx) => {
+                        if (typeof p === 'string') return <span key={`e-${idx}`} className="px-1 text-muted text-[10px]">...</span>;
                         return (
                           <button
                             key={p}
                             onClick={() => handlePageChange(p)}
-                            className={`btn btn-sm px-2 py-0.5 rounded-2 fw-bold page-btn ${pagination.currentPage === p ? 'btn-primary' : 'btn-light'}`}
+                            className={`btn btn-sm px-2 py-1 rounded-2 fw-bold text-[10px] border-0 ${cp === p ? 'btn-warning text-white' : 'btn-light text-dark'}`}
                           >
                             {p}
                           </button>
                         );
-                      }
-                      if (p === pagination.currentPage - 2 || p === pagination.currentPage + 2) {
-                        return <span key={p} className="px-1 text-muted text-10px">...</span>;
-                      }
-                      return null;
-                    })}
+                      });
+                    })()}
                   </div>
                   <button
-                    className="btn btn-light btn-sm border-0 shadow-none p-1 rounded-2"
+                    className="btn btn-light btn-sm border shadow-none p-1 rounded-2"
                     disabled={pagination.currentPage === pagination.lastPage}
                     onClick={() => handlePageChange(pagination.currentPage + 1)}
-                    aria-label="Halaman selanjutnya"
-                    title="Halaman selanjutnya"
+                    title="Next"
+                    aria-label="Next"
                   >
-                    <ChevronRight size={14} />
+                    <ChevronLeft size={12} className="rotate-180" />
                   </button>
                 </nav>
               </div>
@@ -1046,7 +972,7 @@ export default function ManajemenGuruMapel() {
         <div className="d-lg-none">
           {loading ? (
             <div className="text-center py-5">
-              <Loader2 className="text-primary animate-spin mx-auto" size={24} />
+              <Loader2 className="text-warning animate-spin mx-auto" size={24} />
             </div>
           ) : data.length === 0 ? (
             <div className="card border-0 shadow-sm rounded-3">
@@ -1088,27 +1014,54 @@ export default function ManajemenGuruMapel() {
                 ))}
               </div>
               {data.length > 0 && (
-                <div className="d-flex justify-content-between align-items-center px-2 py-2 mt-1">
-                  <div className="text-muted text-10px">
-                    {data.length} dari {pagination.total}
+                <div className="d-flex justify-content-between align-items-center px-3 py-2 border-top bg-white mt-1">
+                  <div className="text-muted text-[9px] fw-medium">
+                    Menampilkan {data.length} dari {pagination.total} data
                   </div>
                   <nav className="d-flex align-items-center gap-1">
                     <button
-                      className="btn btn-light btn-sm border-0 shadow-none p-1 rounded-2"
+                      className="btn btn-light btn-sm border shadow-none p-1 rounded-2"
                       disabled={pagination.currentPage === 1}
                       onClick={() => handlePageChange(pagination.currentPage - 1)}
-                      aria-label="Sebelumnya"
+                      title="Previous"
+                      aria-label="Previous"
                     >
-                      <ChevronLeft size={14} />
+                      <ChevronLeft size={12} />
                     </button>
-                    <span className="px-2 text-11px">{pagination.currentPage} / {pagination.lastPage}</span>
+                    <div className="d-flex gap-1">
+                      {(() => {
+                        const pages = [];
+                        const cp = pagination.currentPage;
+                        const lp = Math.max(1, pagination.lastPage);
+                        pages.push(1);
+                        if (cp > 3) pages.push('ellipsis-1');
+                        for (let i = Math.max(2, cp - 1); i <= Math.min(lp - 1, cp + 1); i++) {
+                          pages.push(i);
+                        }
+                        if (cp < lp - 2) pages.push('ellipsis-2');
+                        if (lp > 1) pages.push(lp);
+                        return pages.map((p, idx) => {
+                          if (typeof p === 'string') return <span key={`e-${idx}`} className="px-1 text-muted text-[10px]">...</span>;
+                          return (
+                            <button
+                              key={p}
+                              onClick={() => handlePageChange(p)}
+                              className={`btn btn-sm px-2 py-1 rounded-2 fw-bold text-[10px] border-0 ${cp === p ? 'btn-warning text-white' : 'btn-light text-dark'}`}
+                            >
+                              {p}
+                            </button>
+                          );
+                        });
+                      })()}
+                    </div>
                     <button
-                      className="btn btn-light btn-sm border-0 shadow-none p-1 rounded-2"
+                      className="btn btn-light btn-sm border shadow-none p-1 rounded-2"
                       disabled={pagination.currentPage === pagination.lastPage}
                       onClick={() => handlePageChange(pagination.currentPage + 1)}
-                      aria-label="Selanjutnya"
+                      title="Next"
+                      aria-label="Next"
                     >
-                      <ChevronRight size={14} />
+                      <ChevronLeft size={12} className="rotate-180" />
                     </button>
                   </nav>
                 </div>
@@ -1123,7 +1076,7 @@ export default function ManajemenGuruMapel() {
               <div className="modal-content border-0 shadow-lg rounded-3">
                 <div className="modal-header border-0 pb-0 px-3 pt-3">
                   <div className="d-flex align-items-center">
-                    <Eye size={16} className="text-primary me-2 flex-shrink-0" />
+                    <Eye size={16} className="text-warning me-2 flex-shrink-0" />
                     <h6 className="modal-title fw-bold text-dark mb-0 text-13px">Preview Import Penugasan</h6>
                   </div>
                   <button onClick={() => setPreviewData(null)} className="btn-close shadow-none flex-shrink-0" aria-label="Tutup preview" title="Tutup"></button>
@@ -1142,7 +1095,7 @@ export default function ManajemenGuruMapel() {
                     <table className="table table-sm table-hover mb-0 text-11px">
                       <thead className="bg-light sticky-top">
                         <tr className="text-10px">
-                          <th className="py-2 ps-3 border-0 text-center" style={{width: '50px'}}>Baris</th>
+                          <th className="py-2 ps-3 border-0 text-center w-50px">Baris</th>
                           <th className="py-2 border-0">Guru</th>
                           <th className="py-2 border-0">Mapel</th>
                           <th className="py-2 border-0">Kelas</th>
@@ -1187,7 +1140,7 @@ export default function ManajemenGuruMapel() {
                     <div className="col-6">
                       <button
                         onClick={confirmImport}
-                        className={`btn btn-primary btn-sm w-100 py-2 rounded-3 shadow-none fw-bold d-flex align-items-center justify-content-center gap-2 text-11px ${hasError ? 'opacity-50' : ''}`}
+                        className={`btn btn-warning btn-sm w-100 py-2 rounded-3 shadow-none fw-bold d-flex align-items-center justify-content-center gap-2 text-11px ${hasError ? 'opacity-50' : ''}`}
                         disabled={isSubmitting || hasError}
                         aria-label="Konfirmasi impor"
                         title="Konfirmasi"
@@ -1209,8 +1162,8 @@ export default function ManajemenGuruMapel() {
               <div className="form-modal-content border-0 shadow-lg rounded-4">
                 <div className="modal-header border-0 pb-0 px-3 pt-3 form-modal-header">
                   <h6 className="fw-bold text-dark d-flex align-items-center gap-2 m-0 text-13px">
-                    <div className="bg-primary bg-opacity-10 p-1 rounded-2">
-                      {isEdit ? <Edit2 size={12} className="text-primary"/> : <Plus size={12} className="text-primary"/>}
+                    <div className="bg-warning bg-opacity-10 p-1 rounded-2">
+                      {isEdit ? <Edit2 size={12} className="text-warning"/> : <Plus size={12} className="text-warning"/>}
                     </div>
                     {isEdit ? "Edit Penugasan" : "Tambah Penugasan"}
                   </h6>
@@ -1257,7 +1210,7 @@ export default function ManajemenGuruMapel() {
                       </select>
                     </div>
                     <div className="col-12 pt-1">
-                      <div className="fw-bold text-primary text-uppercase border-bottom pb-1 mb-2 text-10px">Jadwal</div>
+                      <div className="fw-bold text-warning text-uppercase border-bottom pb-1 mb-2 text-10px">Jadwal</div>
                     </div>
                     <div className="col-12">
                       <label className="fw-bold text-muted mb-1 d-block text-10px" htmlFor={hariFormId}>Hari <span className="text-danger">*</span></label>
@@ -1321,7 +1274,7 @@ export default function ManajemenGuruMapel() {
                 <div className="modal-footer border-0 p-3 pt-1 form-modal-footer">
                   <button 
                     onClick={handleSave} 
-                    className="btn btn-primary btn-sm w-100 py-2 rounded-3 shadow-sm fw-bold d-flex align-items-center justify-content-center gap-2 text-12px" 
+                    className="btn btn-warning btn-sm w-100 py-2 rounded-3 shadow-sm fw-bold d-flex align-items-center justify-content-center gap-2 text-12px" 
                     disabled={isSubmitting} 
                     aria-label={isEdit ? "Perbarui data" : "Simpan data"} 
                     title={isEdit ? "Perbarui" : "Simpan"}

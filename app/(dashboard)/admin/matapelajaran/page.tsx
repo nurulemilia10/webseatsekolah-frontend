@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useId, memo, useMemo } from 'react';
 import { 
-  Plus, Edit2, Loader2, BookOpen, Trash2, FileDown, FileUp, ChevronLeft, ChevronRight, Eye, Search, Filter, RefreshCw, CheckCircle2, AlertCircle, XCircle
+  Plus, Edit2, Loader2, BookOpen, Trash2, FileDown, FileUp, ChevronLeft, Eye, Search, Filter, RefreshCw, CheckCircle2, AlertCircle, XCircle
 } from 'lucide-react';
 import api from '@/lib/api';
 import Swal from 'sweetalert2';
@@ -35,7 +35,7 @@ const MapelRow = memo(({
     <td className="py-2">
       <div className="d-flex align-items-center">
         <div className="flex-shrink-0 bg-light rounded p-[6px] d-flex align-items-center justify-content-center">
-          <BookOpen size={13} className="text-primary" />
+          <BookOpen size={13} className="text-warning" />
         </div>
         <div className="ms-2">
           <div className="text-dark fw-bold text-sm-custom mb-0">{item.nama_mapel}</div>
@@ -61,7 +61,7 @@ const MapelRow = memo(({
     </td>
     <td className="py-2 text-end pe-3">
       <div className="d-flex justify-content-end gap-1">
-        <button onClick={() => onEdit(item)} className="btn btn-sm p-1 text-primary border-0 shadow-none" title="Edit Data">
+        <button onClick={() => onEdit(item)} className="btn btn-sm p-1 text-warning border-0 shadow-none" title="Edit Data">
           <span className="bg-light p-1 rounded-3 d-inline-flex"><Edit2 size={11}/></span>
         </button>
         <button onClick={() => onDelete(item.id)} className="btn btn-sm p-1 text-danger border-0 shadow-none" title="Hapus Data">
@@ -350,7 +350,7 @@ export default function ManajemenMataPelajaran() {
         <div className="card-body p-2 p-md-3">
           <div className="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
             <div className="d-flex align-items-center">
-              <BookOpen size={16} className="text-primary me-2" />
+              <BookOpen size={16} className="text-warning me-2" />
               <h6 className="mb-0 fw-bold text-dark text-uppercase text-md-custom">Mata Pelajaran</h6>
             </div>
             
@@ -369,12 +369,12 @@ export default function ManajemenMataPelajaran() {
 
               <button 
                 onClick={() => setShowFilters(!showFilters)} 
-                className={`btn btn-sm px-2 py-[6px] rounded-3 border d-flex align-items-center gap-1 transition-all ${showFilters || activeFilterCount > 0 ? 'btn-primary border-primary' : 'btn-light'}`}
+                className={`btn btn-sm px-2 py-[6px] rounded-3 border d-flex align-items-center gap-1 transition-all ${showFilters || activeFilterCount > 0 ? 'btn-warning border-warning' : 'btn-light'}`}
                 title="Tampilkan Filter"
               >
                 <Filter size={13}/>
                 <span className="d-none d-lg-inline">Filter</span>
-                {activeFilterCount > 0 && <span className="badge bg-white text-primary rounded-circle ms-1 p-1 text-[8px]">{activeFilterCount}</span>}
+                {activeFilterCount > 0 && <span className="badge bg-white text-warning rounded-circle ms-1 p-1 text-[8px]">{activeFilterCount}</span>}
               </button>
 
               <div className="vr d-none d-md-block mx-1"></div>
@@ -389,7 +389,7 @@ export default function ManajemenMataPelajaran() {
                   <span className="d-none d-lg-inline">Impor</span>
                   <input type="file" className="d-none" accept=".xlsx, .xls, .csv" onChange={handleImportRequest} aria-label="Upload file impor" />
                 </label>
-                <button onClick={() => setShowForm(true)} className="btn btn-primary btn-sm px-2 shadow-sm rounded-3 py-[6px] d-flex align-items-center gap-1" title="Tambah Data">
+                <button onClick={() => setShowForm(true)} className="btn btn-warning btn-sm px-2 shadow-sm rounded-3 py-[6px] d-flex align-items-center gap-1" title="Tambah Data">
                   <Plus size={13}/>
                   <span>Tambah</span>
                 </button>
@@ -480,7 +480,7 @@ export default function ManajemenMataPelajaran() {
             </thead>
             <tbody className="border-top-0">
               {loading ? (
-                <tr><td colSpan={5} className="text-center py-5"><Loader2 className="text-primary animate-spin mx-auto" size={20} /></td></tr>
+                <tr><td colSpan={5} className="text-center py-5"><Loader2 className="text-warning animate-spin mx-auto" size={20} /></td></tr>
               ) : data.length === 0 ? (
                 <tr><td colSpan={5} className="text-center py-5 text-muted">Tidak ada data ditemukan.</td></tr>
               ) : data.map((item) => (
@@ -498,50 +498,54 @@ export default function ManajemenMataPelajaran() {
         </div>
         
         {!loading && data.length > 0 && (
-          <div className="d-flex justify-content-between align-items-center p-3 border-top bg-white">
-            <div className="text-muted text-xxs fw-medium">
+          <div className="d-flex justify-content-between align-items-center px-3 py-2 border-top bg-white">
+            <div className="text-muted text-[9px] fw-medium">
               Menampilkan {data.length} dari {pagination.total} data
             </div>
-            <nav className="d-flex align-items-center gap-1" aria-label="Navigasi halaman">
-              <button 
-                className="btn btn-light btn-sm border-0 shadow-none p-[6px] rounded-3" 
-                disabled={pagination.currentPage === 1} 
+            <nav className="d-flex align-items-center gap-1">
+              <button
+                className="btn btn-light btn-sm border shadow-none p-1 rounded-2"
+                disabled={pagination.currentPage === 1}
                 onClick={() => handlePageChange(pagination.currentPage - 1)}
-                title="Halaman Sebelumnya"
+                title="Previous"
+                aria-label="Previous"
               >
-                <ChevronLeft size={16} />
+                <ChevronLeft size={12} />
               </button>
-              
-              <div className="d-flex gap-1 mx-1">
-                {[...Array(pagination.lastPage)].map((_, i) => {
-                  const pageNum = i + 1;
-                  if (pageNum > pagination.currentPage + 1 || pageNum < pagination.currentPage - 1) {
-                    if (pageNum === 1 || pageNum === pagination.lastPage) {
-                         return (
-                            <button key={pageNum} onClick={() => handlePageChange(pageNum)} className={`btn btn-sm px-[10px] py-1 rounded-3 fw-bold transition-all ${pagination.currentPage === pageNum ? 'btn-primary shadow-sm' : 'btn-light border-0'}`}>{pageNum}</button>
-                         )
-                    }
-                    return null;
+              <div className="d-flex gap-1">
+                {(() => {
+                  const pages = [];
+                  const cp = pagination.currentPage;
+                  const lp = Math.max(1, pagination.lastPage);
+                  pages.push(1);
+                  if (cp > 3) pages.push('ellipsis-1');
+                  for (let i = Math.max(2, cp - 1); i <= Math.min(lp - 1, cp + 1); i++) {
+                    pages.push(i);
                   }
-                  return (
-                    <button 
-                      key={pageNum}
-                      onClick={() => handlePageChange(pageNum)}
-                      className={`btn btn-sm px-[10px] py-1 rounded-3 fw-bold transition-all ${pagination.currentPage === pageNum ? 'btn-primary shadow-sm' : 'btn-light border-0'}`}
-                    >
-                      {pageNum}
-                    </button>
-                  );
-                })}
+                  if (cp < lp - 2) pages.push('ellipsis-2');
+                  if (lp > 1) pages.push(lp);
+                  return pages.map((p, idx) => {
+                    if (typeof p === 'string') return <span key={`e-${idx}`} className="px-1 text-muted text-[10px]">...</span>;
+                    return (
+                      <button
+                        key={p}
+                        onClick={() => handlePageChange(p)}
+                        className={`btn btn-sm px-2 py-1 rounded-2 fw-bold text-[10px] border-0 ${cp === p ? 'btn-warning text-white' : 'btn-light text-dark'}`}
+                      >
+                        {p}
+                      </button>
+                    );
+                  });
+                })()}
               </div>
-
-              <button 
-                className="btn btn-light btn-sm border-0 shadow-none p-[6px] rounded-3" 
-                disabled={pagination.currentPage === pagination.lastPage} 
+              <button
+                className="btn btn-light btn-sm border shadow-none p-1 rounded-2"
+                disabled={pagination.currentPage === pagination.lastPage}
                 onClick={() => handlePageChange(pagination.currentPage + 1)}
-                title="Halaman Selanjutnya"
+                title="Next"
+                aria-label="Next"
               >
-                <ChevronRight size={16} />
+                <ChevronLeft size={12} className="rotate-180" />
               </button>
             </nav>
           </div>
@@ -554,7 +558,7 @@ export default function ManajemenMataPelajaran() {
             <div className="modal-content border-0 shadow-lg rounded-3">
               <div className="modal-header border-0 pb-0 px-3 pt-3">
                 <div className="d-flex align-items-center">
-                  <Eye size={16} className="text-primary me-2" />
+                  <Eye size={16} className="text-warning me-2" />
                   <h6 className="modal-title fw-bold text-dark text-md-custom">Preview Import Data</h6>
                 </div>
                 <button onClick={() => setPreviewData(null)} className="btn-close scale-75 shadow-none" aria-label="Tutup Preview"></button>
@@ -625,7 +629,7 @@ export default function ManajemenMataPelajaran() {
                   <div className="col-6">
                     <button 
                       onClick={confirmImport} 
-                      className={`btn btn-primary btn-sm w-100 py-2 rounded-3 shadow-none fw-bold d-flex align-items-center justify-content-center gap-2 text-xxs ${hasImportConflict ? 'opacity-50 cursor-not-allowed' : ''}`} 
+                      className={`btn btn-warning btn-sm w-100 py-2 rounded-3 shadow-none fw-bold d-flex align-items-center justify-content-center gap-2 text-xxs ${hasImportConflict ? 'opacity-50 cursor-not-allowed' : ''}`} 
                       disabled={isSubmitting || hasImportConflict}
                     >
                       {isSubmitting ? <Loader2 size={12} className="animate-spin" /> : (
@@ -649,8 +653,8 @@ export default function ManajemenMataPelajaran() {
             <div className="modal-content border-0 shadow-lg rounded-4 border">
               <div className="modal-header border-0 pb-0 px-4 pt-4">
                 <h6 className="modal-title fw-bold text-dark d-flex align-items-center gap-2">
-                  <div className="bg-primary bg-opacity-10 p-[6px] rounded-3">
-                    {isEdit ? <Edit2 size={15} className="text-primary"/> : <Plus size={15} className="text-primary"/>}
+                  <div className="bg-warning bg-opacity-10 p-[6px] rounded-3">
+                    {isEdit ? <Edit2 size={15} className="text-warning"/> : <Plus size={15} className="text-warning"/>}
                   </div>
                   {isEdit ? "Edit Mata Pelajaran" : "Tambah Mata Pelajaran Baru"}
                 </h6>
@@ -701,7 +705,7 @@ export default function ManajemenMataPelajaran() {
                 </div>
               </div>
               <div className="modal-footer border-0 p-4 pt-0">
-                <button onClick={handleSave} className="btn btn-primary btn-sm w-100 py-[10px] rounded-3 shadow-sm fw-bold d-flex align-items-center justify-content-center gap-2" disabled={isSubmitting}>
+                <button onClick={handleSave} className="btn btn-warning btn-sm w-100 py-[10px] rounded-3 shadow-sm fw-bold d-flex align-items-center justify-content-center gap-2" disabled={isSubmitting}>
                   {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : (isEdit ? "Perbarui Data" : "Simpan Mata Pelajaran")}
                 </button>
               </div>

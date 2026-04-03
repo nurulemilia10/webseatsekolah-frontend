@@ -117,7 +117,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen, schoolProfile }
                                     decoding="async"
                                 />
                             ) : (
-                                <School size={18} className="text-primary" />
+                                <School size={18} className="text-warning" />
                             )}
                         </div>
                         {!isCollapsed && (
@@ -162,7 +162,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen, schoolProfile }
                                 onKeyDown={(e) => e.key === 'Enter' && handleGroupClick(group.title)}
                                 title={group.title}
                             >
-                                <span className="text-primary d-flex align-items-center">{group.icon}</span>
+                                <span className="text-warning d-flex align-items-center">{group.icon}</span>
                                 {!isCollapsed && (
                                     <>
                                         <span className="flex-grow-1 sidebar-school-name fw-bold opacity-75 ms-2 text-truncate">{group.title}</span>
@@ -178,7 +178,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen, schoolProfile }
                                             const isActive = pathname === item.path;
                                             return (
                                                 <Link key={idx} href={item.path} className="text-decoration-none d-block py-1">
-                                                    <div className={`px-2 py-2 rounded-2 sidebar-item-text transition-all ${isActive ? 'bg-primary text-white fw-bold shadow-sm' : 'text-secondary hover-bg-light'}`}>
+                                                    <div className={`px-2 py-2 rounded-2 sidebar-item-text transition-all ${isActive ? 'bg-warning text-dark fw-bold shadow-sm' : 'text-secondary hover-bg-light'}`}>
                                                         {item.title}
                                                     </div>
                                                 </Link>

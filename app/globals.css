@@ -1,4 +1,6 @@
-/* --- VARIABLES --- */
+/* --- VARIABLES & RESET --- */
+@import "@tabler/core/dist/css/tabler.min.css";
+@import "bootstrap-icons/font/bootstrap-icons.css";
 :root {
     --slate-50: #f8fafc;
     --slate-100: #f1f5f9;
@@ -16,11 +18,9 @@ html, body {
   max-width: 100%;
   overflow-x: hidden;
   position: relative;
-  /* Mencegah efek pantul/overscroll di beberapa browser mobile */
   overscroll-behavior-y: none; 
 }
 
-/* --- BASE STYLES --- */
 body {
     margin: 0;
     padding: 0;
@@ -29,7 +29,6 @@ body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-/* Scrollbar styling */
 *::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -52,7 +51,7 @@ body {
     }
 }
 
-/* Custom Login Styles - Compact Version */
+/* --- LOGIN PAGE --- */
 .max-w-420 { 
     max-width: 380px; 
 }
@@ -100,7 +99,7 @@ body {
     margin-top: 2rem !important; 
 }
 
-/* --- UTILITY CLASSES --- */
+/* --- UTILITIES --- */
 .fw-black { font-weight: 900 !important; }
 .tracking-tighter { letter-spacing: -0.05em !important; }
 .tracking-widest { letter-spacing: 0.12em !important; }
@@ -112,7 +111,6 @@ body {
 .cursor-pointer-custom { cursor: pointer; }
 .line-height-1-custom { line-height: 1; }
 
-/* FIX: Support untuk Safari (Menghilangkan Error Microsoft Edge Tools) */
 .user-select-none-custom { 
     -webkit-user-select: none; 
     -moz-user-select: none;
@@ -120,11 +118,10 @@ body {
     user-select: none; 
 }
 
-/* --- NAVBAR CUSTOM STYLES (Role & Online Status) --- */
 .text-online-kecil {
     font-size: 11px;
     font-weight: 500;
-    text-transform: lowercase; /* Memastikan teks 'online' tetap huruf kecil */
+    text-transform: lowercase;
     opacity: 0.8;
 }
 
@@ -134,7 +131,7 @@ body {
 }
 
 .text-role-capitalize {
-    text-transform: capitalize; /* Format: Admin, Guru, Orangtua */
+    text-transform: capitalize;
     font-size: 13px;
 }
 
@@ -143,55 +140,18 @@ body {
     letter-spacing: 0.5px;
 }
 
-/* --- CORE LAYOUT --- */
 .page-container {
     display: flex;
     min-height: 100vh;
     width: 100%;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
-/* Custom CSS untuk Navbar */
 
-.cursor-pointer-custom { 
-  cursor: pointer; 
-}
-
-.user-select-none-custom { 
-  -webkit-user-select: none; 
-  user-select: none; 
-}
-
-.line-height-1-custom { 
-  line-height: 1; 
-}
-
-.text-online-kecil {
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: lowercase; 
-  opacity: 0.8;
-}
-
-.text-role-capitalize {
-  text-transform: capitalize;
-}
-
-.online-dot-mini {
-  width: 6px;
-  height: 6px;
-}
-
-.max-w-400 {
-  max-width: 400px;
-}
-
-/* Modal Overlay */
 .custom-modal-overlay {
-  background-color: rgba(5, 4, 4, 0.5);
+  background-color: transparent;
   z-index: 2000;
 }
 
-/* Animasi Fade In */
 @keyframes fadeIn {
   from { 
     opacity: 0; 
@@ -207,7 +167,6 @@ body {
   animation: fadeIn 0.2s ease-out forwards;
 }
 
-/* Utility tambahan untuk transisi */
 .transition-all {
   transition: all 0.2s ease-in-out;
 }
@@ -220,6 +179,7 @@ body {
   opacity: 0.75;
 }
 
+/* --- SIDEBAR & ASIDE --- */
 aside {
     flex-shrink: 0;
     width: var(--sidebar-width);
@@ -248,12 +208,11 @@ main {
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* --- SIDEBAR COMPONENTS --- */
 aside.collapsed .sidebar-logo-container,
 aside.collapsed .sidebar-school-name,
 aside.collapsed .sidebar-panel-text,
 aside.collapsed .sidebar-menu-container,
-aside.collapsed nav span:not(.text-primary),
+aside.collapsed nav span:not(.text-warning),
 aside.collapsed .ms-2,
 aside.collapsed .chevron-down-icon {
     display: none !important;
@@ -279,7 +238,7 @@ aside.collapsed .sidebar-group-header {
 }
 
 .sidebar-logo-img {
-    width: 80%;
+    width: 55%;
     height: auto;
     object-fit: contain; 
     padding: 4px; 
@@ -381,10 +340,9 @@ aside.collapsed .sidebar-group-header {
     transform: scale(1.05);
 }
 
-/* --- DROPDOWN & OVERLAYS --- */
 .dropdown-overlay {
     z-index: 1050 !important;
-    background: rgba(0, 0, 0, 0.05);
+    background: transparent;
     position: fixed;
     top: 0;
     left: 0;
@@ -446,7 +404,7 @@ aside.collapsed .sidebar-group-header {
     border-bottom: 1px solid var(--slate-100);
 }
 
-/* --- STATS BOX & UTILS --- */
+/* --- COMPONENTS --- */
 .bg-dark-sisko {
     background-color: #1e293b !important;
     color: var(--white) !important;
@@ -474,68 +432,20 @@ aside.collapsed .sidebar-group-header {
 .stat-orange { background: rgba(249, 115, 22, 0.1); color: #f97316; }
 .stat-purple { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
 
-/* --- ANIMATIONS --- */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes slideInNavbar {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* --- RESPONSIVE --- */
-@media (max-width: 992px) {
-    aside {
-        position: fixed !important;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        transform: translateX(-100%);
-        z-index: 2000;
-        width: 280px !important;
-        height: 100vh !important;
-        background-color: white;
-        transition: transform 0.3s ease-in-out;
-    }
-
-    aside.mobile-open {
-        transform: translateX(0);
-        box-shadow: 10px 0 30px rgba(0,0,0,0.2);
-    }
-
-    .mobile-overlay {
-        background: rgba(0, 0, 0, 0.4);
-        z-index: 1040;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-    }
-}
-
-@media (max-width: 768px) {
-    .sidebar-school-name { font-size: 12px !important; }
-    .table-custom thead { display: none; }
-}
-/* Untuk lebar dropdown */
+/* --- CUSTOM UI COMPONENTS --- */
 .w-custom-200 {
   min-width: 200px;
 }
 
-/* Untuk modal backdrop */
 .modal-backdrop-custom {
   z-index: 2000;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: transparent;
 }
 
-/* Untuk form max width */
 .max-w-400 {
   max-width: 400px;
 }
-/* Custom Utility untuk Manajemen User */
+
 .text-xs-custom {
   font-size: 12px;
 }
@@ -561,7 +471,6 @@ aside.collapsed .sidebar-group-header {
   border-radius: 10px;
 }
 
-/* Animasi hover untuk button edit */
 .hover-zoom {
   transition: transform 0.2s ease;
 }
@@ -573,6 +482,7 @@ aside.collapsed .sidebar-group-header {
 .cursor-pointer {
   cursor: pointer;
 }
+
 .ui-thumb-container {
     width: 40px;
     height: 40px;
@@ -668,12 +578,12 @@ aside.collapsed .sidebar-group-header {
 .z-index-10 {
     z-index: 10;
 }
+
 .text-wrap-custom {
   white-space: normal !important;
   word-break: break-word;
   overflow: hidden;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   line-height: 1.4;
 }
@@ -682,11 +592,6 @@ aside.collapsed .sidebar-group-header {
   max-width: 200px;
 }
 
-@media (max-width: 576px) {
-  .max-w-title {
-    max-width: 150px;
-  }
-}
 .ui-search-select-container {
     position: relative;
 }
@@ -740,6 +645,7 @@ aside.collapsed .sidebar-group-header {
 .modal-body {
     overflow: visible !important;
 }
+
 .ui-ttd-container {
     display: flex;
     flex-direction: column;
@@ -753,11 +659,6 @@ aside.collapsed .sidebar-group-header {
     max-width: 45px;
     width: auto;
     object-fit: contain;
-}
-
-.ui-preview-foto {
-    position: relative;
-    cursor: pointer;
 }
 
 .ui-preview-foto:hover .ui-preview-overlay {
@@ -786,13 +687,9 @@ aside.collapsed .sidebar-group-header {
     padding: 2px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
-/* Custom Font Sizes */
+
 .text-xxs {
     font-size: 9px !important;
-}
-
-.text-xs-custom {
-    font-size: 10px !important;
 }
 
 .text-sm-custom {
@@ -801,11 +698,6 @@ aside.collapsed .sidebar-group-header {
 
 .text-md-custom {
     font-size: 12px !important;
-}
-
-/* Utilities */
-.cursor-pointer {
-    cursor: pointer;
 }
 
 .max-h-300 {
@@ -824,7 +716,6 @@ aside.collapsed .sidebar-group-header {
     font-style: italic;
 }
 
-/* Modal Z-Index Management */
 .z-modal-preview {
     z-index: 1060;
 }
@@ -833,7 +724,6 @@ aside.collapsed .sidebar-group-header {
     z-index: 1050;
 }
 
-/* Badge Variants for Preview */
 .badge-pelajaran {
     background-color: rgba(13, 110, 253, 0.1);
     color: #0d6efd;
@@ -855,18 +745,40 @@ aside.collapsed .sidebar-group-header {
     font-size: 8px;
 }
 
-/* Responsive Overrides */
-@media (min-width: 768px) {
-    .w-md-150px {
-        width: 150px !important;
-    }
-    
-    .w-md-130px {
-        width: 130px !important;
-    }
+/* --- MODAL & FORMS --- */
+.modal.show .modal-content {
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: 90vh !important;
+  overflow: hidden !important;
 }
 
-/* Animation */
+.modal.show .modal-body {
+  flex: 1 1 auto !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  min-height: 0 !important;
+}
+
+.modal.show .modal-header,
+.modal.show .modal-footer {
+  flex-shrink: 0 !important;
+}
+
+.form-control { border-color: #f97316 !important; }
+.form-control:focus { border-color: #f97316 !important; box-shadow: 0 0 0 0.25rem rgba(249, 115, 22, 0.25) !important; }
+
+.form-check-input:checked {
+    background-color: #fd7e14;
+    border-color: #fd7e14;
+}
+
+.form-check-input:focus {
+    border-color: #fd7e14;
+    box-shadow: 0 0 0 0.25rem rgba(253, 126, 20, 0.25);
+}
+
+/* --- ANIMATIONS --- */
 .animate-spin {
     animation: spin 1s linear infinite;
 }
@@ -875,25 +787,275 @@ aside.collapsed .sidebar-group-header {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
 }
-/* Paksa struktur modal agar fleksibel dan tidak melebihi layar */
-.modal.show .modal-content {
-  display: flex !important;
-  flex-direction: column !important;
-  max-height: 90vh !important; /* Batasi tinggi maksimal 90% layar */
-  overflow: hidden !important;
+
+@keyframes slideInNavbar {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-/* Jadikan Body Modal area yang bisa di-scroll */
-.modal.show .modal-body {
-  flex: 1 1 auto !important;
-  overflow-y: auto !important; /* Aktifkan scroll vertikal */
-  overflow-x: hidden !important; /* Sembunyikan scroll horizontal */
-  min-height: 0 !important; /* Trik penting agar flexbox scroll bekerja */
-  -webkit-overflow-scrolling: touch; /* Halus di iPhone/iPad */
+/* --- RESPONSIVE --- */
+@media (max-width: 992px) {
+    aside {
+        position: fixed !important;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        transform: translateX(-100%);
+        z-index: 2000;
+        width: 280px !important;
+        height: 100vh !important;
+        background-color: white;
+        transition: transform 0.3s ease-in-out;
+    }
+
+    aside.mobile-open {
+        transform: translateX(0);
+        box-shadow: 10px 0 30px rgba(0,0,0,0.2);
+    }
+
+    .mobile-overlay {
+        background: transparent;
+        z-index: 1040;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+}
+.w-30px {
+  width: 30px;
+}
+.w-50px {
+  width: 50px;
+}
+.min-w-28px {
+  min-width: 28px;
+}
+.min-w-120px {
+  min-width: 120px;
+}
+.mw-100px {
+  max-width: 100px;
+}
+.mw-120px {
+  max-width: 120px;
+}
+.h-34px {
+  height: 34px;
+}
+.h-36px {
+  height: 36px;
+}
+.h-38px {
+  height: 38px;
+}
+.max-h-150 {
+  max-height: 150px;
+}
+.max-h-300 {
+  max-height: 300px;
+}
+.text-9px {
+  font-size: 9px;
+}
+.text-10px {
+  font-size: 10px;
+}
+.text-xxs {
+  font-size: 11px;
+}
+.text-11px {
+  font-size: 11px;
+}
+.text-12px {
+  font-size: 12px;
+}
+.text-13px {
+  font-size: 13px;
+}
+.avatar-sm {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  border-radius: 50%;
+}
+.symbol-70px {
+  width: 70px;
+  height: 70px;
+}
+.btn-close-xs {
+  width: 14px;
+  height: 14px;
+}
+.badge-filter-count {
+  font-size: 8px;
+  width: 14px;
+  height: 14px;
+}
+.badge-filter-count-lg {
+  font-size: 8px;
+  width: 16px;
+  height: 16px;
+}
+.page-btn {
+  font-size: 10px;
+  min-width: 28px;
+}
+.bg-none {
+  background-image: none;
+}
+.z-index-10 {
+  z-index: 10;
+}
+.pos-rel-z10 {
+  position: relative;
+  z-index: 10;
+}
+.modal-zindex-1070 {
+  z-index: 1070;
+}
+.search-input-wrapper {
+  min-width: 150px;
+  max-width: 200px;
+  flex: 1 1 150px;
+}
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.modal-dialog-custom {
+  max-width: 500px;
+  pointer-events: auto;
+  width: 100%;
+}
+.modal-backdrop-custom {
+  position: fixed;
+  inset: 0;
+  background-color: transparent;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-dialog-centered-custom {
+  max-width: 500px;
+  width: 100%;
+  padding: 0 1rem;
+  pointer-events: auto;
+}
+.modal-content-custom {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: 90vh;
+  background-color: #fff;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+}
+.modal-body-scrollable {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0;
+}
+.modal-footer-sticky {
+  position: relative;
+  z-index: 10;
+  border-top: 1px solid #f8f9fa;
+}
+.cropper-container {
+  height: 250px;
+  width: 100%;
+  background: #333;
+}
+.guru-search-dropdown {
+  top: 100%;
+  z-index: 1050;
+  max-height: 200px;
+}
+.guru-search-item {
+  background-color: transparent;
+}
+.guru-search-item-active {
+  background-color: #e9ecef;
+}
+.guru-search-item-hover {
+  background-color: #f8f9fa;
+}
+.form-modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  z-index: 1100;
+}
+.form-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background-color: transparent;
+}
+.form-modal-dialog {
+  position: relative;
+  z-index: 1;
+  max-width: 500px;
+  pointer-events: auto;
+  width: calc(100% - 1rem);
+}
+.form-modal-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: 90vh;
+  background-color: #fff;
+  overflow: hidden;
+}
+.form-modal-body-scrollable {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0;
+}
+.form-modal-header {
+  position: relative;
+  z-index: 10;
+  flex-shrink: 0;
+}
+.form-modal-footer {
+  position: relative;
+  z-index: 10;
+  border-top: 1px solid #f8f9fa;
+  flex-shrink: 0;
+  background-color: #fff;
+}
+@media (min-width: 576px) {
+  .form-modal-dialog {
+    width: calc(100% - 2rem);
+  }
 }
 
-/* Pastikan Header dan Footer tidak mengecil */
-.modal.show .modal-header,
-.modal.show .modal-footer {
-  flex-shrink: 0 !important;
+@media (max-width: 768px) {
+    .sidebar-school-name { font-size: 12px !important; }
+    .table-custom thead { display: none; }
+}
+
+@media (max-width: 576px) {
+  .max-w-title {
+    max-width: 150px;
+  }
+}
+
+@media (min-width: 768px) {
+    .w-md-150px {
+        width: 150px !important;
+    }
+    
+    .w-md-130px {
+        width: 130px !important;
+    }
 }

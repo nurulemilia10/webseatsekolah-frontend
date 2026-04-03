@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useId, memo, useMemo } from 'react';
 import { 
-  Plus, Edit2, Loader2, BookOpen, Trash2, FileText, Calendar
+  Plus, Edit2, Loader2, BookOpen, Trash2, ChevronLeft
 } from 'lucide-react';
 import api from '@/lib/api';
 import Swal from 'sweetalert2';
@@ -14,7 +14,7 @@ const KurikulumRow = memo(({ kurikulum, onEdit, onDelete }: { kurikulum: any, on
       <div className="d-flex align-items-center">
         <div className="ui-thumb-container flex-shrink-0">
           <div className="d-flex align-items-center justify-content-center w-100 h-100 bg-light rounded">
-            <BookOpen size={14} className="text-primary" />
+            <BookOpen size={14} className="text-warning" />
           </div>
         </div>
         <div className="ms-2 text-dark fw-medium text-[11px] text-wrap-custom max-w-title">
@@ -31,7 +31,7 @@ const KurikulumRow = memo(({ kurikulum, onEdit, onDelete }: { kurikulum: any, on
     </td>
     <td className="py-2 text-end pe-3">
       <div className="d-flex justify-content-end gap-1">
-        <button onClick={() => onEdit(kurikulum)} className="btn btn-sm p-1 text-primary border-0 shadow-none" title="Edit Kurikulum" aria-label="Edit Kurikulum">
+        <button onClick={() => onEdit(kurikulum)} className="btn btn-sm p-1 text-warning border-0 shadow-none" title="Edit Kurikulum" aria-label="Edit Kurikulum">
           <span className="bg-light p-1 rounded-3 d-inline-flex"><Edit2 size={11}/></span>
         </button>
         <button onClick={() => onDelete(kurikulum.id)} className="btn btn-sm p-1 text-danger border-0 shadow-none" title="Hapus Kurikulum" aria-label="Hapus Kurikulum">
@@ -49,7 +49,6 @@ export default function ManajemenKurikulum() {
   const [data, setData] = useState<any[]>([]);
   const [meta, setMeta] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [currentId, setCurrentId] = useState<string | null>(null);
@@ -84,7 +83,6 @@ export default function ManajemenKurikulum() {
       if (res?.data) {
         setData(res.data.data || []);
         setMeta(res.data.meta || null);
-        setCurrentPage(page);
       }
     } catch (e) { console.error(e); } finally { setLoading(false); }
   }, [authLoading, user]);
@@ -161,7 +159,7 @@ export default function ManajemenKurikulum() {
       if (res.status === 200 || res.status === 201 || res.data?.success) { 
         Toast.fire({ icon: 'success', title: res.data?.message || 'Data berhasil disimpan' });
         handleCloseForm(); 
-        fetchData(isEdit ? currentPage : 1); 
+        fetchData(meta?.current_page || 1); 
       }
     } catch (e: any) { 
       if (e.response?.status === 422) {
@@ -178,10 +176,10 @@ export default function ManajemenKurikulum() {
     <div className="container-fluid py-3 px-2 px-md-3">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <div className="d-flex align-items-center">
-          <BookOpen size={16} className="text-primary me-2" />
+          <BookOpen size={16} className="text-warning me-2" />
           <h6 className="mb-0 fw-bold text-dark text-uppercase text-[12px] tracking-wider">Manajemen Kurikulum</h6>
         </div>
-        <button onClick={() => setShowForm(true)} className="btn btn-primary btn-sm px-2 px-md-3 shadow-sm rounded-3 py-1.5 text-[10px]" title="Tambah Kurikulum Baru" aria-label="Tambah Kurikulum Baru">
+        <button onClick={() => setShowForm(true)} className="btn btn-warning btn-sm px-2 px-md-3 shadow-sm rounded-3 py-1.5 text-[10px]" title="Tambah Kurikulum Baru" aria-label="Tambah Kurikulum Baru">
           <Plus size={13} className="me-1"/> <span>Tambah Kurikulum</span>
         </button>
       </div>
@@ -200,7 +198,7 @@ export default function ManajemenKurikulum() {
               {loading ? (
                 <tr>
                   <td colSpan={3} className="text-center py-5">
-                    <Loader2 className="text-primary animate-spin mb-2 mx-auto" size={20} />
+                    <Loader2 className="text-warning animate-spin mb-2 mx-auto" size={20} />
                     <div className="text-muted text-[10px]">Memuat data...</div>
                   </td>
                 </tr>
@@ -214,26 +212,58 @@ export default function ManajemenKurikulum() {
             </tbody>
           </table>
         </div>
-        <div className="card-footer bg-white border-top py-2 rounded-bottom-3">
-          <div className="d-flex justify-content-between align-items-center">
-            <div className="text-muted text-[9px] fw-medium">Total: {meta?.total || 0}</div>
-            {meta && meta.last_page > 1 && (
-              <nav>
-                <ul className="pagination pagination-sm mb-0">
-                  <li className={`page-item ${meta.current_page === 1 ? 'disabled' : ''}`}>
-                    <button className="page-link border rounded-3 mx-1 ui-pagination-square shadow-none" onClick={() => fetchData(meta.current_page - 1)} title="Halaman Sebelumnya" aria-label="Halaman Sebelumnya">&lt;</button>
-                  </li>
-                  <li className="page-item active">
-                    <span className="page-link border rounded-3 mx-1 ui-pagination-square bg-primary text-white border-primary shadow-none">{meta.current_page}</span>
-                  </li>
-                  <li className={`page-item ${meta.current_page === meta.last_page ? 'disabled' : ''}`}>
-                    <button className="page-link border rounded-3 mx-1 ui-pagination-square shadow-none" onClick={() => fetchData(meta.current_page + 1)} title="Halaman Selanjutnya" aria-label="Halaman Selanjutnya">&gt;</button>
-                  </li>
-                </ul>
-              </nav>
-            )}
+        
+        {!loading && data.length > 0 && meta && (
+          <div className="d-flex justify-content-between align-items-center px-3 py-2 border-top bg-white">
+            <div className="text-muted text-[9px] fw-medium">
+              Menampilkan {data.length} dari {meta.total} data
+            </div>
+            <nav className="d-flex align-items-center gap-1">
+              <button
+                className="btn btn-light btn-sm border shadow-none p-1 rounded-2"
+                disabled={meta.current_page === 1}
+                onClick={() => fetchData(meta.current_page - 1)}
+                title="Previous"
+              >
+                <ChevronLeft size={12} />
+              </button>
+              <div className="d-flex gap-1">
+                {(() => {
+                  const pages = [];
+                  const cp = meta.current_page;
+                  const lp = Math.max(1, meta.last_page);
+                  pages.push(1);
+                  if (cp > 3) pages.push('ellipsis-1');
+                  for (let i = Math.max(2, cp - 1); i <= Math.min(lp - 1, cp + 1); i++) {
+                    pages.push(i);
+                  }
+                  if (cp < lp - 2) pages.push('ellipsis-2');
+                  if (lp > 1) pages.push(lp);
+                  return pages.map((p, idx) => {
+                    if (typeof p === 'string') return <span key={`e-${idx}`} className="px-1 text-muted text-[10px]">...</span>;
+                    return (
+                      <button
+                        key={p}
+                        onClick={() => fetchData(p)}
+                        className={`btn btn-sm px-2 py-1 rounded-2 fw-bold text-[10px] border-0 ${cp === p ? 'btn-warning text-white' : 'btn-light text-dark'}`}
+                      >
+                        {p}
+                      </button>
+                    );
+                  });
+                })()}
+              </div>
+              <button
+                className="btn btn-light btn-sm border shadow-none p-1 rounded-2"
+                disabled={meta.current_page === meta.last_page}
+                onClick={() => fetchData(meta.current_page + 1)}
+                title="Next"
+              >
+                <ChevronLeft size={12} className="rotate-180" />
+              </button>
+            </nav>
           </div>
-        </div>
+        )}
       </div>
 
       {showForm && (
@@ -270,7 +300,7 @@ export default function ManajemenKurikulum() {
                 </div>
               </div>
               <div className="modal-footer border-0 p-3 pt-0">
-                <button onClick={handleSave} className="btn btn-primary btn-sm w-100 fw-bold shadow-sm py-2 text-[11px] rounded-3" disabled={isSubmitting}>
+                <button onClick={handleSave} className="btn btn-warning btn-sm w-100 fw-bold shadow-sm py-2 text-[11px] rounded-3" disabled={isSubmitting}>
                   {isSubmitting ? <Loader2 size={12} className="animate-spin" /> : (isEdit ? "Update Kurikulum" : "Simpan Kurikulum")}
                 </button>
               </div>

@@ -3,24 +3,16 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   Save, Loader2, School, Settings, Image as ImageIcon, 
-  FileText, Phone, Crop, FileUp, Globe
+  FileText, Phone, FileUp, Globe
 } from 'lucide-react';
-import Cropper from 'react-easy-crop';
 import api from '@/lib/api';
 import Swal from 'sweetalert2';
 import { useAuth } from '@/hooks/useAuth';
-import { getCroppedImg } from '@/app/utils/imageUtils';
 
 export default function ProfilDanSetting() {
   const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [activeCrop, setActiveCrop] = useState<'logo' | 'logo_provinsi' | null>(null);
-  
-  const [tempImage, setTempImage] = useState<string | null>(null);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
   const [profilData, setProfilData] = useState<any>({});
   const [settingData, setSettingData] = useState<any>({});
@@ -71,33 +63,16 @@ export default function ProfilDanSetting() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const onCropComplete = useCallback((_: any, clippedPixels: any) => { setCroppedAreaPixels(clippedPixels); }, []);
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'logo' | 'logo_provinsi') => {
     if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
       const reader = new FileReader();
       reader.onload = () => {
-        setTempImage(reader.result as string);
-        setActiveCrop(type);
+        const newUrl = URL.createObjectURL(file);
+        setFiles(prev => ({ ...prev, [type]: file }));
+        setPreviews(prev => ({ ...prev, [type]: newUrl }));
       };
-      reader.readAsDataURL(e.target.files[0]);
-    }
-  };
-
-  const handleApplyCrop = async () => {
-    if (tempImage && croppedAreaPixels && activeCrop) {
-      try {
-        const croppedBlob = await getCroppedImg(tempImage, croppedAreaPixels);
-        const file = new File([croppedBlob], `${activeCrop}.jpg`, { type: "image/jpeg" });
-        const newUrl = URL.createObjectURL(croppedBlob);
-        
-        setFiles(prev => ({ ...prev, [activeCrop]: file }));
-        setPreviews(prev => ({ ...prev, [activeCrop]: newUrl }));
-        setTempImage(null);
-        setActiveCrop(null);
-      } catch (e) { 
-        Toast.fire({ icon: 'error', title: 'Gagal memotong gambar' }); 
-      }
+      reader.readAsDataURL(file);
     }
   };
 
@@ -148,7 +123,7 @@ export default function ProfilDanSetting() {
 
   if (authLoading || loading) return (
     <div className="d-flex flex-column align-items-center justify-content-center min-vh-100">
-      <Loader2 className="text-primary animate-spin mb-2" size={30} />
+      <Loader2 className="text-warning animate-spin mb-2" size={30} />
       <span className="text-muted text-[12px]">Memuat...</span>
     </div>
   );
@@ -156,8 +131,8 @@ export default function ProfilDanSetting() {
   return (
     <div className="container-fluid py-4 px-3">
       <div className="d-flex align-items-center mb-4">
-        <div className="bg-primary/10 p-2 rounded-3 me-3">
-          <School size={20} className="text-primary" />
+        <div className="bg-warning/10 p-2 rounded-3 me-3">
+          <School size={20} className="text-warning" />
         </div>
         <div>
           <h5 className="mb-0 fw-bold text-dark text-uppercase tracking-tight text-[14px]">Pengaturan Sekolah</h5>
@@ -170,10 +145,10 @@ export default function ProfilDanSetting() {
           <div className="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
             <div className="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center border-bottom">
               <div className="d-flex align-items-center">
-                <FileText size={16} className="text-primary me-2" />
+                <FileText size={16} className="text-warning me-2" />
                 <span className="fw-bold text-[12px] text-dark">Profil Utama</span>
               </div>
-              <button onClick={saveProfil} disabled={isSubmitting} className="btn btn-primary btn-sm px-4 rounded-3 text-[11px] fw-bold">
+              <button onClick={saveProfil} disabled={isSubmitting} className="btn btn-warning btn-sm px-4 rounded-3 text-[11px] fw-bold">
                 {isSubmitting ? <Loader2 size={12} className="animate-spin" /> : <><Save size={12} className="me-1"/> Simpan</>}
               </button>
             </div>
@@ -218,10 +193,10 @@ export default function ProfilDanSetting() {
           <div className="card border-0 shadow-sm rounded-4 overflow-hidden">
             <div className="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center border-bottom">
               <div className="d-flex align-items-center">
-                <Settings size={16} className="text-primary me-2" />
+                <Settings size={16} className="text-warning me-2" />
                 <span className="fw-bold text-[12px] text-dark">Konfigurasi Sistem</span>
               </div>
-              <button onClick={saveSetting} disabled={isSubmitting} className="btn btn-dark btn-sm px-4 rounded-3 text-[11px] fw-bold">
+              <button onClick={saveSetting} disabled={isSubmitting} className="btn btn-warning btn-sm px-4 rounded-3 text-[11px] fw-bold">
                 {isSubmitting ? <Loader2 size={12} className="animate-spin" /> : <><Save size={12} className="me-1"/> Simpan</>}
               </button>
             </div>
@@ -247,7 +222,7 @@ export default function ProfilDanSetting() {
                     <div className="d-flex align-items-center bg-light rounded-3 px-2">
                       <input id="buku_poin_file" type="file" accept=".pdf" className="form-control form-control-sm border-0 bg-transparent shadow-none text-[10px]" onChange={e => setFiles({...files, buku_poin: e.target.files?.[0] || null})} />
                       {previews.buku_poin && (
-                        <a href={previews.buku_poin} target="_blank" rel="noreferrer" className="btn btn-link btn-sm text-primary p-1" title="Lihat Buku Poin">
+                        <a href={previews.buku_poin} target="_blank" rel="noreferrer" className="btn btn-link btn-sm text-warning p-1" title="Lihat Buku Poin">
                           <Globe size={14}/>
                         </a>
                       )}
@@ -261,7 +236,7 @@ export default function ProfilDanSetting() {
         <div className="col-lg-4">
           <div className="card border-0 shadow-sm rounded-4 p-4 h-100">
             <div className="d-flex align-items-center mb-3">
-              <ImageIcon size={16} className="text-primary me-2" />
+              <ImageIcon size={16} className="text-warning me-2" />
               <span className="fw-bold text-[12px] text-dark">Identitas Visual</span>
             </div>
             
@@ -276,7 +251,7 @@ export default function ProfilDanSetting() {
                 ) : (
                   <ImageIcon size={30} className="text-muted opacity-20" />
                 )}
-                <div className="position-absolute inset-0 bg-primary/60 opacity-0 group-hover:opacity-100 transition-all d-flex align-items-center justify-content-center">
+                <div className="position-absolute inset-0 bg-warning/60 opacity-0 group-hover:opacity-100 transition-all d-flex align-items-center justify-content-center">
                   <FileUp className="text-white" size={24} />
                 </div>
               </div>
@@ -294,7 +269,7 @@ export default function ProfilDanSetting() {
                 ) : (
                   <ImageIcon size={30} className="text-muted opacity-20" />
                 )}
-                <div className="position-absolute inset-0 bg-primary/60 opacity-0 group-hover:opacity-100 transition-all d-flex align-items-center justify-content-center">
+                <div className="position-absolute inset-0 bg-warning/60 opacity-0 group-hover:opacity-100 transition-all d-flex align-items-center justify-content-center">
                   <FileUp className="text-white" size={24} />
                 </div>
               </div>
@@ -304,37 +279,6 @@ export default function ProfilDanSetting() {
           </div>
         </div>
       </div>
-
-      {tempImage && (
-        <div className="modal fade show d-block bg-black/40 z-[1050]">
-          <div className="modal-dialog modal-dialog-centered px-3 modal-max-width mx-auto">
-            <div className="modal-content border-0 shadow-lg rounded-3 overflow-hidden">
-              <div className="modal-header border-0 pb-0 px-3 pt-3">
-                <h6 className="modal-title fw-bold text-dark text-[12px]">Sesuaikan Gambar</h6>
-                <button onClick={() => setTempImage(null)} className="btn-close shadow-none scale-75" aria-label="Close"></button>
-              </div>
-              <div className="modal-body p-3 pt-2">
-                <div className="ui-cropper-wrapper">
-                  <Cropper 
-                    image={tempImage} 
-                    crop={crop} 
-                    zoom={zoom} 
-                    aspect={1/1} 
-                    onCropChange={setCrop} 
-                    onCropComplete={onCropComplete} 
-                    onZoomChange={setZoom} 
-                  />
-                  <div className="position-absolute bottom-0 start-0 w-100 p-2 d-flex gap-2 z-index-10">
-                     <button onClick={handleApplyCrop} className="btn btn-primary btn-sm flex-grow-1 fw-bold text-[10px] py-1.5 rounded-3 shadow">
-                       <Crop size={11} className="me-1"/> Terapkan
-                     </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

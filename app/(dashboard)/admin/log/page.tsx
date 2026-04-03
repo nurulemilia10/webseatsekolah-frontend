@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, memo } from 'react';
 import { 
-  Activity, Loader2, User, Info, Eye, RefreshCw, Search, X
+  Activity, Loader2, User, Info, Eye, RefreshCw, Search, X, ChevronLeft
 } from 'lucide-react';
 import api from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
@@ -15,7 +15,7 @@ const LogDetailModal = ({ log, onClose }: { log: any, onClose: () => void }) => 
         <div className="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
           <div className="modal-header border-0 pb-0 px-4 pt-4 d-flex justify-content-between align-items-center">
             <h6 className="modal-title fw-bold text-dark text-[13px] d-flex align-items-center">
-              <span className="me-2 text-primary d-flex align-items-center"><Info size={14} /></span> Rincian Aktivitas
+              <span className="me-2 text-warning d-flex align-items-center"><Info size={14} /></span> Rincian Aktivitas
             </h6>
             <button onClick={onClose} className="btn-close shadow-none scale-75" title="Tutup"></button>
           </div>
@@ -44,7 +44,7 @@ const LogDetailModal = ({ log, onClose }: { log: any, onClose: () => void }) => 
             </div>
           </div>
           <div className="modal-footer border-0 p-3 pt-0">
-             <button onClick={onClose} className="btn btn-primary btn-sm w-100 fw-bold rounded-3 text-[11px] py-2 shadow-sm">Tutup Detail</button>
+             <button onClick={onClose} className="btn btn-warning btn-sm w-100 fw-bold rounded-3 text-[11px] py-2 shadow-sm">Tutup Detail</button>
           </div>
         </div>
       </div>
@@ -66,8 +66,8 @@ const LogRow = memo(({ log, onShowDetail }: { log: any, onShowDetail: (l: any) =
     <tr onClick={() => onShowDetail(log)} className="cursor-pointer border-bottom">
       <td className="ps-3 py-3">
         <div className="d-flex align-items-start">
-          <div className="flex-shrink-0 bg-primary bg-opacity-10 d-flex align-items-center justify-content-center rounded-circle border border-primary border-opacity-10 mt-1 w-[32px] h-[32px]">
-             <User size={14} className="text-primary" />
+          <div className="flex-shrink-0 bg-warning bg-opacity-10 d-flex align-items-center justify-content-center rounded-circle border border-warning border-opacity-10 mt-1 w-[32px] h-[32px]">
+             <User size={14} className="text-warning" />
           </div>
           <div className="ms-3 flex-grow-1">
             <div className="d-flex justify-content-between align-items-center mb-1">
@@ -100,7 +100,7 @@ const LogRow = memo(({ log, onShowDetail }: { log: any, onShowDetail: (l: any) =
         </div>
       </td>
       <td className="py-3 text-end pe-3 align-middle">
-         <button className="btn btn-sm p-2 text-primary border-0 shadow-none bg-primary bg-opacity-10 rounded-circle" title="Lihat Detail">
+         <button className="btn btn-sm p-2 text-warning border-0 shadow-none bg-warning bg-opacity-10 rounded-circle" title="Lihat Detail">
             <Eye size={14} />
          </button>
       </td>
@@ -156,7 +156,7 @@ export default function LogAktivitas() {
       <div className="d-flex flex-column mb-3 gap-2">
         <div className="d-flex align-items-center justify-content-between">
             <div className="d-flex align-items-center">
-                <Activity size={16} className="text-primary me-2" />
+                <Activity size={16} className="text-warning me-2" />
                 <h6 className="mb-0 fw-bold text-dark text-uppercase text-[11px] tracking-wider">Riwayat Sistem</h6>
             </div>
             <button onClick={() => fetchData(1, searchTerm, filterDate)} className="btn btn-white btn-sm border shadow-none rounded-3 py-1 px-3 d-flex align-items-center text-[10px]" title="Muat Ulang">
@@ -213,7 +213,7 @@ export default function LogAktivitas() {
               {loading ? (
                 <tr>
                   <td colSpan={4} className="text-center py-5">
-                    <Loader2 className="text-primary animate-spin mb-2 mx-auto" size={20} />
+                    <Loader2 className="text-warning animate-spin mb-2 mx-auto" size={20} />
                     <div className="text-muted text-[10px]">Memuat log...</div>
                   </td>
                 </tr>
@@ -230,26 +230,57 @@ export default function LogAktivitas() {
           </table>
         </div>
         
-        <div className="card-footer bg-white border-top py-2 px-3 rounded-bottom-4">
-          <div className="d-flex justify-content-between align-items-center">
-            <div className="text-muted text-[9px] fw-bold">
-              {meta?.total || 0} TOTAL DATA
+        {!loading && data.length > 0 && meta && (
+          <div className="d-flex justify-content-between align-items-center px-3 py-2 border-top bg-white">
+            <div className="text-muted text-[9px] fw-medium">
+              Menampilkan {data.length} dari {meta.total} data
             </div>
-            {meta && meta.last_page > 1 && (
-              <div className="d-flex gap-1 align-items-center">
-                  <button className="btn btn-xs btn-light border py-1 px-2 rounded-2" 
-                          disabled={meta.current_page === 1} 
-                          title="Halaman Sebelumnya"
-                          onClick={() => fetchData(meta.current_page - 1, debouncedSearch, filterDate)}>&lt;</button>
-                  <span className="text-[9px] fw-bold mx-1">{meta.current_page} / {meta.last_page}</span>
-                  <button className="btn btn-xs btn-light border py-1 px-2 rounded-2" 
-                          disabled={meta.current_page === meta.last_page} 
-                          title="Halaman Berikutnya"
-                          onClick={() => fetchData(meta.current_page + 1, debouncedSearch, filterDate)}>&gt;</button>
+            <nav className="d-flex align-items-center gap-1">
+              <button
+                className="btn btn-light btn-sm border shadow-none p-1 rounded-2"
+                disabled={meta.current_page === 1}
+                onClick={() => fetchData(meta.current_page - 1, debouncedSearch, filterDate)}
+                title="Previous"
+              >
+                <ChevronLeft size={12} />
+              </button>
+              <div className="d-flex gap-1">
+                {(() => {
+                  const pages = [];
+                  const cp = meta.current_page;
+                  const lp = Math.max(1, meta.last_page);
+                  pages.push(1);
+                  if (cp > 3) pages.push('ellipsis-1');
+                  for (let i = Math.max(2, cp - 1); i <= Math.min(lp - 1, cp + 1); i++) {
+                    pages.push(i);
+                  }
+                  if (cp < lp - 2) pages.push('ellipsis-2');
+                  if (lp > 1) pages.push(lp);
+                  return pages.map((p, idx) => {
+                    if (typeof p === 'string') return <span key={`e-${idx}`} className="px-1 text-muted text-[10px]">...</span>;
+                    return (
+                      <button
+                        key={p}
+                        onClick={() => fetchData(p, debouncedSearch, filterDate)}
+                        className={`btn btn-sm px-2 py-1 rounded-2 fw-bold text-[10px] border-0 ${cp === p ? 'btn-warning text-white' : 'btn-light text-dark'}`}
+                      >
+                        {p}
+                      </button>
+                    );
+                  });
+                })()}
               </div>
-            )}
+              <button
+                className="btn btn-light btn-sm border shadow-none p-1 rounded-2"
+                disabled={meta.current_page === meta.last_page}
+                onClick={() => fetchData(meta.current_page + 1, debouncedSearch, filterDate)}
+                title="Next"
+              >
+                <ChevronLeft size={12} className="rotate-180" />
+              </button>
+            </nav>
           </div>
-        </div>
+        )}
       </div>
 
       {selectedLog && <LogDetailModal log={selectedLog} onClose={() => setSelectedLog(null)} />}

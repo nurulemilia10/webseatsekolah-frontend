@@ -33,7 +33,7 @@ const SosmedRow = memo(({ item, onEdit, onDelete }: { item: any, onEdit: (i: any
   <tr className="border-bottom">
     <td className="ps-2 ps-md-4 py-3">
       <div className="d-flex align-items-center">
-        <div className="bg-primary bg-opacity-10 p-1.5 p-md-2 rounded-3 me-2 me-md-3 text-primary flex-shrink-0">
+        <div className="bg-warning bg-opacity-10 p-1.5 p-md-2 rounded-3 me-2 me-md-3 text-warning flex-shrink-0">
           {getPlatformIcon(item.nama_platform)}
         </div>
         <div className="d-flex flex-column min-w-0">
@@ -58,11 +58,11 @@ const SosmedRow = memo(({ item, onEdit, onDelete }: { item: any, onEdit: (i: any
       <div className="d-flex justify-content-end gap-1 gap-md-2">
         <button 
           onClick={() => onEdit(item)} 
-          className="btn btn-sm p-0 border-0 shadow-none text-primary"
+          className="btn btn-sm p-0 border-0 shadow-none text-warning"
           title="Edit Data"
           aria-label="Edit Data"
         >
-          <div className="bg-primary bg-opacity-10 p-1.5 rounded-2">
+          <div className="bg-warning bg-opacity-10 p-1.5 rounded-2">
             <Edit2 size={12}/>
           </div>
         </button>
@@ -239,7 +239,7 @@ export default function PengaturanPortal() {
     <div className="container-fluid py-3 px-2 px-md-4">
       <div className="d-flex flex-column flex-sm-row align-items-sm-center mb-4 gap-3">
         <div className="d-flex align-items-center">
-          <div className="bg-primary p-2 rounded-3 me-3 shadow-sm">
+          <div className="bg-warning p-2 rounded-3 me-3 shadow-sm">
             <Globe size={18} className="text-white" />
           </div>
           <div>
@@ -254,8 +254,8 @@ export default function PengaturanPortal() {
           <div className="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
             <div className="card-header bg-white border-0 pt-4 pb-0 px-4">
               <div className="d-flex align-items-center">
-                <div className="bg-primary bg-opacity-10 p-2 rounded-3 me-3">
-                  <Smartphone size={16} className="text-primary" />
+                <div className="bg-warning bg-opacity-10 p-2 rounded-3 me-3">
+                  <Smartphone size={16} className="text-warning" />
                 </div>
                 <h6 className="mb-0 fw-bold text-dark text-[11px] md:text-[12px]">KONFIGURASI PPDB</h6>
               </div>
@@ -301,7 +301,7 @@ export default function PengaturanPortal() {
                 type="button"
                 onClick={handleUpdatePPDB}
                 disabled={isSubmittingPPDB}
-                className="btn btn-primary w-100 py-2.5 fw-bold rounded-3 shadow-sm text-[11px] md:text-[12px] mt-2 d-flex align-items-center justify-content-center"
+                className="btn btn-warning w-100 py-2.5 fw-bold rounded-3 shadow-sm text-[11px] md:text-[12px] mt-2 d-flex align-items-center justify-content-center"
               >
                 {isSubmittingPPDB ? <Loader2 size={16} className="animate-spin" /> : <><Save size={16} className="me-2"/> Simpan Perubahan</>}
               </button>
@@ -313,8 +313,8 @@ export default function PengaturanPortal() {
           <div className="card border-0 shadow-sm rounded-4 overflow-hidden">
             <div className="card-header bg-white border-0 pt-4 pb-3 px-3 px-md-4 d-flex justify-content-between align-items-center">
               <div className="d-flex align-items-center min-w-0">
-                <div className="bg-primary bg-opacity-10 p-2 rounded-3 me-2 me-md-3 flex-shrink-0">
-                  <ExternalLink size={16} className="text-primary" />
+                <div className="bg-warning bg-opacity-10 p-2 rounded-3 me-2 me-md-3 flex-shrink-0">
+                  <ExternalLink size={16} className="text-warning" />
                 </div>
                 <h6 className="mb-0 fw-bold text-dark text-[10px] md:text-[12px] text-truncate">SOSIAL MEDIA & PORTAL</h6>
               </div>
@@ -326,7 +326,7 @@ export default function PengaturanPortal() {
                   setErrors({});
                   setShowSosmedForm(true); 
                 }} 
-                className="btn btn-primary btn-sm rounded-3 py-2 px-2 px-md-3 text-[9px] md:text-[10px] fw-bold shadow-sm flex-shrink-0"
+                className="btn btn-warning btn-sm rounded-3 py-2 px-2 px-md-3 text-[9px] md:text-[10px] fw-bold shadow-sm flex-shrink-0"
               >
                 <Plus size={14} className="me-1" /> TAMBAH
               </button>
@@ -344,7 +344,7 @@ export default function PengaturanPortal() {
                   {loadingSosmed ? (
                     <tr>
                       <td colSpan={3} className="text-center py-5">
-                        <Loader2 className="text-primary animate-spin mb-2 mx-auto" size={20} />
+                        <Loader2 className="text-warning animate-spin mb-2 mx-auto" size={20} />
                         <div className="text-muted text-[10px]">Memuat data...</div>
                       </td>
                     </tr>
@@ -399,7 +399,7 @@ export default function PengaturanPortal() {
                   <div className="col-12">
                     <label htmlFor="platform_select" className="form-label text-[10px] md:text-[11px] fw-bold mb-2">Platform</label>
                     <div className="d-flex gap-2">
-                       <div className="bg-light p-2.5 rounded-3 d-flex align-items-center text-primary border flex-shrink-0" aria-hidden="true">
+                       <div className="bg-warning bg-opacity-10 p-2.5 rounded-3 d-flex align-items-center text-warning border flex-shrink-0" aria-hidden="true">
                           {getPlatformIcon(sosmedForm.nama_platform)}
                        </div>
                        <select 
@@ -456,7 +456,7 @@ export default function PengaturanPortal() {
                       type="button"
                       onClick={handleSaveSosmed} 
                       disabled={isSubmittingSosmed} 
-                      className="btn btn-primary w-100 py-2.5 fw-bold text-[11px] md:text-[12px] rounded-3 shadow-sm d-flex align-items-center justify-content-center"
+                      className="btn btn-warning w-100 py-2.5 fw-bold text-[11px] md:text-[12px] rounded-3 shadow-sm d-flex align-items-center justify-content-center"
                     >
                       {isSubmittingSosmed ? <Loader2 size={16} className="animate-spin" /> : "SIMPAN DATA"}
                     </button>

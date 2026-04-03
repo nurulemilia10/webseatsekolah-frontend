@@ -94,7 +94,6 @@ const api = {
 
         kelaswalikelas: createResource('/api/admin/kelaswalikelas'),
         tingkatan: createResource('/api/admin/tingkatan'),
-        user: createResource('/api/admin/user'),
         role: createResource('/api/admin/role'),
         jurusan: createResource('/api/admin/jurusan'),
         kurikulum: createResource('/api/admin/kurikulum'),
@@ -112,6 +111,10 @@ const api = {
         jabatan: createResource('/api/admin/jabatan'),
         struktur_jabatan: createResource('/api/admin/struktur_jabatan'),
         
+        user: {
+            ...createResource('/api/admin/user'),
+            bulkDelete: (ids: string[]) => Api.post('/api/admin/user/bulk-delete', { ids }),
+        },
         Setting: {
             get: () => Api.get('/api/admin/setting/general'),
             update: (data: any) => Api.post('/api/admin/setting/general', data),

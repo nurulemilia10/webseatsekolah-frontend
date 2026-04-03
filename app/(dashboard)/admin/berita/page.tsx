@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useCallback, useId, memo, useMemo } from 'react';
 import { 
-  Plus, Edit2, Loader2, Newspaper, Trash2, Image as ImageIcon, Calendar, Crop
+  Plus, Edit2, Loader2, Newspaper, Trash2, Image as ImageIcon, Calendar, Crop,
+  ChevronLeft, ChevronRight
 } from 'lucide-react';
 import Cropper from 'react-easy-crop';
 import api from '@/lib/api';
@@ -36,7 +37,7 @@ const BeritaRow = memo(({ berita, onEdit, onDelete }: { berita: any, onEdit: (b:
     </td>
     <td className="py-2 text-end pe-3">
       <div className="d-flex justify-content-end gap-1">
-        <button onClick={() => onEdit(berita)} className="btn btn-sm p-1 text-primary border-0 shadow-none" title="Edit Berita" aria-label="Edit Berita">
+        <button onClick={() => onEdit(berita)} className="btn btn-sm p-1 text-warning border-0 shadow-none" title="Edit Berita" aria-label="Edit Berita">
           <span className="bg-light p-1 rounded-3 d-inline-flex"><Edit2 size={11}/></span>
         </button>
         <button onClick={() => onDelete(berita.id)} className="btn btn-sm p-1 text-danger border-0 shadow-none" title="Hapus Berita" aria-label="Hapus Berita">
@@ -201,16 +202,18 @@ export default function ManajemenBerita() {
     } finally { setIsSubmitting(false); }
   };
 
+  const handlePageChange = (page: number) => fetchData(page);
+
   if (authLoading) return null;
 
   return (
     <div className="container-fluid py-3 px-2 px-md-3">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <div className="d-flex align-items-center">
-          <Newspaper size={16} className="text-primary me-2" />
+          <Newspaper size={16} className="text-warning me-2" />
           <h6 className="mb-0 fw-bold text-dark text-uppercase text-[12px] tracking-wider">Berita & Informasi</h6>
         </div>
-        <button onClick={() => setShowForm(true)} className="btn btn-primary btn-sm px-2 px-md-3 shadow-sm rounded-3 py-1.5 text-[10px]">
+        <button onClick={() => setShowForm(true)} className="btn btn-warning btn-sm px-2 px-md-3 shadow-sm rounded-3 py-1.5 text-[10px]">
           <Plus size={13} className="me-1"/> <span>Tambah Berita</span>
         </button>
       </div>
@@ -229,7 +232,7 @@ export default function ManajemenBerita() {
               {loading ? (
                 <tr>
                   <td colSpan={3} className="text-center py-5">
-                    <Loader2 className="text-primary animate-spin mb-2 mx-auto" size={20} />
+                    <Loader2 className="text-warning animate-spin mb-2 mx-auto" size={20} />
                     <div className="text-muted text-[10px]">Memuat data...</div>
                   </td>
                 </tr>
@@ -243,26 +246,67 @@ export default function ManajemenBerita() {
             </tbody>
           </table>
         </div>
-        <div className="card-footer bg-white border-top py-2 rounded-bottom-3">
-          <div className="d-flex justify-content-between align-items-center">
-            <div className="text-muted text-[9px] fw-medium">Total: {meta?.total || 0}</div>
-            {meta && meta.last_page > 1 && (
-              <nav>
-                <ul className="pagination pagination-sm mb-0">
-                  <li className={`page-item ${meta.current_page === 1 ? 'disabled' : ''}`}>
-                    <button className="page-link border rounded-3 mx-1 ui-pagination-square shadow-none" onClick={() => fetchData(meta.current_page - 1)}>&lt;</button>
-                  </li>
-                  <li className="page-item active">
-                    <span className="page-link border rounded-3 mx-1 ui-pagination-square bg-primary text-white border-primary shadow-none">{meta.current_page}</span>
-                  </li>
-                  <li className={`page-item ${meta.current_page === meta.last_page ? 'disabled' : ''}`}>
-                    <button className="page-link border rounded-3 mx-1 ui-pagination-square shadow-none" onClick={() => fetchData(meta.current_page + 1)}>&gt;</button>
-                  </li>
-                </ul>
-              </nav>
-            )}
+        {!loading && data.length > 0 && meta && (
+          <div className="d-flex justify-content-between align-items-center px-2 py-1 border-top bg-white">
+            <div className="text-muted text-10px">
+              Menampilkan {data.length} dari {meta.total} data
+            </div>
+            <nav className="d-flex align-items-center gap-0.5">
+              <button
+                className="btn btn-light btn-sm border-0 shadow-none p-0.5 rounded-2"
+                disabled={meta.current_page === 1}
+                onClick={() => handlePageChange(meta.current_page - 1)}
+                aria-label="Halaman sebelumnya"
+                title="Halaman sebelumnya"
+              >
+                <ChevronLeft size={12} />
+              </button>
+              <div className="d-flex gap-0.5">
+                {(() => {
+                  const pages: (number | string)[] = [];
+                  const cp = meta.current_page;
+                  const lp = meta.last_page || 1;
+                  
+                  pages.push(1);
+                  
+                  if (cp > 3) pages.push('start-ellipsis');
+                  
+                  for (let i = Math.max(2, cp - 1); i <= Math.min(lp - 1, cp + 1); i++) {
+                    if (i > 1 && i < lp) pages.push(i);
+                  }
+                  
+                  if (cp < lp - 2) pages.push('end-ellipsis');
+                  
+                  if (lp > 1) pages.push(lp);
+                  
+                  return pages.map((p, idx) => {
+                    if (p === 'start-ellipsis' || p === 'end-ellipsis') {
+                      return <span key={`e-${idx}`} className="px-0.5 text-muted">...</span>;
+                    }
+                    return (
+                      <button
+                        key={p}
+                        onClick={() => handlePageChange(p as number)}
+                        className={`btn btn-sm px-1.5 py-0.5 rounded-2 fw-bold ${cp === p ? 'btn-warning' : 'btn-light'} text-10px`}
+                      >
+                        {p}
+                      </button>
+                    );
+                  });
+                })()}
+              </div>
+              <button
+                className="btn btn-light btn-sm border-0 shadow-none p-0.5 rounded-2"
+                disabled={meta.current_page === meta.last_page || meta.last_page <= 1}
+                onClick={() => handlePageChange(meta.current_page + 1)}
+                aria-label="Halaman selanjutnya"
+                title="Halaman selanjutnya"
+              >
+                <ChevronRight size={12} />
+              </button>
+            </nav>
           </div>
-        </div>
+        )}
       </div>
 
       {showForm && (
@@ -280,7 +324,7 @@ export default function ManajemenBerita() {
                   <div className="ui-cropper-wrapper">
                     <Cropper image={tempImage} crop={crop} zoom={zoom} aspect={16 / 9} onCropChange={setCrop} onCropComplete={onCropComplete} onZoomChange={setZoom} />
                     <div className="position-absolute bottom-0 start-0 w-100 p-2 d-flex gap-2 z-index-10">
-                       <button onClick={handleApplyCrop} className="btn btn-primary btn-sm flex-grow-1 fw-bold text-[10px] py-1.5 rounded-3 shadow">
+                       <button onClick={handleApplyCrop} className="btn btn-warning btn-sm flex-grow-1 fw-bold text-[10px] py-1.5 rounded-3 shadow">
                          <Crop size={11} className="me-1"/> Selesai
                        </button>
                     </div>
@@ -317,7 +361,7 @@ export default function ManajemenBerita() {
               </div>
               {!tempImage && (
                 <div className="modal-footer border-0 p-3 pt-0">
-                  <button onClick={handleSave} className="btn btn-primary btn-sm w-100 fw-bold shadow-sm py-2 text-[11px] rounded-3" disabled={isSubmitting}>
+                  <button onClick={handleSave} className="btn btn-warning btn-sm w-100 fw-bold shadow-sm py-2 text-[11px] rounded-3" disabled={isSubmitting}>
                     {isSubmitting ? <Loader2 size={12} className="animate-spin" /> : (isEdit ? "Update Berita" : "Simpan Berita")}
                   </button>
                 </div>

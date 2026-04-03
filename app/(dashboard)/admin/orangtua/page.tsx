@@ -19,7 +19,6 @@ import {
   FileDown,
   FileUp,
   ChevronLeft,
-  ChevronRight,
   Eye,
   Search,
   Filter,
@@ -149,7 +148,7 @@ const OrangtuaRow = memo(({
         <div className="d-flex justify-content-end gap-0.5">
           <button 
             onClick={() => onEdit(item)} 
-            className="btn btn-sm p-0.5 text-primary border-0 shadow-none"
+            className="btn btn-sm p-0.5 text-warning border-0 shadow-none"
             aria-label="Edit data"
             title="Edit data"
           >
@@ -617,31 +616,14 @@ export default function ManajemenOrangtua() {
 
   return (
     <>
-      <style jsx global>{`
-        .w-30px { width: 30px; }
-        .avatar-sm { width: 28px; height: 28px; min-width: 28px; border-radius: 50%; }
-        .text-9px { font-size: 9px; }
-        .text-10px { font-size: 10px; }
-        .text-11px { font-size: 11px; }
-        .text-12px { font-size: 12px; }
-        .text-13px { font-size: 13px; }
-        .badge-filter-count { font-size: 8px; width: 14px; height: 14px; }
-        .min-w-120px { min-width: 120px; }
-        .modal-backdrop-custom { position: fixed; inset: 0; background-color: transparent; z-index: 1100; display: flex; align-items: center; justify-content: center; }
-        .modal-dialog-centered-custom { max-width: 500px; width: 100%; padding: 0 1rem; pointer-events: auto; }
-        .modal-content-custom { display: flex; flex-direction: column; width: 100%; max-height: 90vh; background-color: #fff; border-radius: 1rem; overflow: hidden; box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15); }
-        .modal-body-scrollable { flex: 1 1 auto; overflow-y: auto; min-height: 0; -webkit-overflow-scrolling: touch; }
-        .modal-footer-sticky { position: relative; z-index: 10; border-top: 1px solid #f8f9fa; }
-        .max-h-300 { max-height: 300px; }
-        .max-h-150 { max-height: 150px; }
-      `}</style>
+      
       <div className="container-fluid py-2 px-2 px-md-3">
         <div className="card border-0 shadow-sm rounded-3 mb-2">
           <div className="card-body p-2">
             <div className="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
               <div className="d-flex align-items-center gap-2">
-                <div className="bg-primary bg-opacity-10 p-1.5 rounded-2">
-                  <Users size={16} className="text-primary" />
+                <div className="bg-warning bg-opacity-10 p-1.5 rounded-2">
+                  <Users size={16} className="text-warning" />
                 </div>
                 <div>
                   <h5 className="fw-bold text-dark mb-0 fs-6">Manajemen Orang Tua</h5>
@@ -663,14 +645,14 @@ export default function ManajemenOrangtua() {
 
                 <button
                   onClick={() => setShowFilters(!showFilters)}
-                  className={`btn btn-sm px-1.5 py-0.5 rounded-2 border d-flex align-items-center gap-1 ${showFilters || activeFilterCount > 0 ? 'btn-primary border-primary' : 'btn-light'}`}
+                  className={`btn btn-sm px-1.5 py-0.5 rounded-2 border d-flex align-items-center gap-1 ${showFilters || activeFilterCount > 0 ? 'btn-warning border-warning' : 'btn-light'}`}
                   aria-label="Tampilkan filter"
                   title="Filter"
                 >
                   <Filter size={10}/>
                   <span className="d-none d-sm-inline text-10px">Filter</span>
                   {activeFilterCount > 0 && (
-                    <span className="badge bg-white text-primary rounded-circle p-0.5 badge-filter-count">
+                    <span className="badge bg-white text-warning rounded-circle p-0.5 badge-filter-count">
                       {activeFilterCount}
                     </span>
                   )}
@@ -696,7 +678,7 @@ export default function ManajemenOrangtua() {
 
                 <button
                   onClick={() => { resetForm(); setShowForm(true); }}
-                  className="btn btn-primary btn-sm px-1.5 py-0.5 rounded-2 d-flex align-items-center gap-1"
+                  className="btn btn-warning btn-sm px-1.5 py-0.5 rounded-2 d-flex align-items-center gap-1"
                   aria-label="Tambah data baru"
                   title="Tambah"
                 >
@@ -816,7 +798,7 @@ export default function ManajemenOrangtua() {
                 {loading ? (
                   <tr>
                     <td colSpan={6} className="text-center py-5">
-                      <Loader2 className="text-primary animate-spin mx-auto" size={16} />
+                      <Loader2 className="text-warning animate-spin mx-auto" size={16} />
                     </td>
                   </tr>
                 ) : data.length === 0 ? (
@@ -843,50 +825,54 @@ export default function ManajemenOrangtua() {
           </div>
           
           {!loading && data.length > 0 && (
-            <div className="d-flex flex-row justify-content-between align-items-center px-2 py-1 border-top bg-white">
-              <div className="text-muted text-10px text-truncate me-2">
+            <div className="d-flex justify-content-between align-items-center px-2 py-1 border-top bg-white">
+              <div className="text-muted text-10px fw-medium">
                 Menampilkan {data.length} dari {pagination.total} data
               </div>
-              <nav className="d-flex align-items-center gap-0.5 flex-shrink-0">
+              <nav className="d-flex align-items-center gap-0.5">
                 <button
-                  className="btn btn-light btn-sm border-0 shadow-none p-0.5 rounded-2"
+                  className="btn btn-light btn-sm border shadow-none p-0.5 rounded-2"
                   disabled={pagination.currentPage === 1}
                   onClick={() => handlePageChange(pagination.currentPage - 1)}
+                  title="Halaman sebelumnya"
                   aria-label="Halaman sebelumnya"
-                  title="Sebelumnya"
                 >
                   <ChevronLeft size={12} />
                 </button>
                 <div className="d-flex gap-0.5">
-                  {[...Array(pagination.lastPage)].map((_, i) => {
-                    const p = i + 1;
-                    if (p === 1 || p === pagination.lastPage || (p >= pagination.currentPage - 1 && p <= pagination.currentPage + 1)) {
+                  {(() => {
+                    const pages = [];
+                    const cp = pagination.currentPage;
+                    const lp = Math.max(1, pagination.lastPage);
+                    pages.push(1);
+                    if (cp > 3) pages.push('ellipsis-1');
+                    for (let i = Math.max(2, cp - 1); i <= Math.min(lp - 1, cp + 1); i++) {
+                      pages.push(i);
+                    }
+                    if (cp < lp - 2) pages.push('ellipsis-2');
+                    if (lp > 1) pages.push(lp);
+                    return pages.map((p, idx) => {
+                      if (typeof p === 'string') return <span key={`e-${idx}`} className="px-0.5 text-muted text-10px">...</span>;
                       return (
                         <button
                           key={p}
                           onClick={() => handlePageChange(p)}
-                          className={`btn btn-sm px-1.5 py-0.5 rounded-2 fw-bold ${pagination.currentPage === p ? 'btn-primary' : 'btn-light'} text-10px`}
-                          aria-label={`Halaman ${p}`}
-                          title={`Halaman ${p}`}
+                          className={`btn btn-sm px-1.5 py-0.5 rounded-2 fw-bold border-0 text-10px ${cp === p ? 'btn-warning text-white' : 'btn-light text-dark'}`}
                         >
                           {p}
                         </button>
                       );
-                    }
-                    if (p === pagination.currentPage - 2 || p === pagination.currentPage + 2) {
-                      return <span key={p} className="px-0.5 text-muted">...</span>;
-                    }
-                    return null;
-                  })}
+                    });
+                  })()}
                 </div>
                 <button
-                  className="btn btn-light btn-sm border-0 shadow-none p-0.5 rounded-2"
+                  className="btn btn-light btn-sm border shadow-none p-0.5 rounded-2"
                   disabled={pagination.currentPage === pagination.lastPage}
                   onClick={() => handlePageChange(pagination.currentPage + 1)}
-                  aria-label="Halaman berikutnya"
-                  title="Berikutnya"
+                  title="Halaman selanjutnya"
+                  aria-label="Halaman selanjutnya"
                 >
-                  <ChevronRight size={12} />
+                  <ChevronLeft size={12} className="rotate-180" />
                 </button>
               </nav>
             </div>
@@ -899,7 +885,7 @@ export default function ManajemenOrangtua() {
               <div className="modal-content border-0 shadow-lg rounded-3">
                 <div className="modal-header border-0 pb-0 px-3 pt-3">
                   <div className="d-flex align-items-center">
-                    <Eye size={16} className="text-primary me-2" />
+                    <Eye size={16} className="text-warning me-2" />
                     <h6 className="modal-title fw-bold text-dark">Preview Import Orang Tua</h6>
                   </div>
                   <button onClick={() => setPreviewData(null)} className="btn-close scale-75 shadow-none" aria-label="Tutup preview" title="Tutup"></button>
@@ -978,7 +964,7 @@ export default function ManajemenOrangtua() {
                     <div className="col-6">
                       <button 
                         onClick={confirmImport} 
-                        className={`btn btn-primary btn-sm w-100 py-2 rounded-3 shadow-none fw-bold d-flex align-items-center justify-content-center gap-2 text-11px ${hasImportConflict ? 'opacity-50 cursor-not-allowed' : ''}`} 
+                        className={`btn btn-warning btn-sm w-100 py-2 rounded-3 shadow-none fw-bold d-flex align-items-center justify-content-center gap-2 text-11px ${hasImportConflict ? 'opacity-50 cursor-not-allowed' : ''}`} 
                         disabled={isSubmitting || hasImportConflict}
                         aria-label="Konfirmasi impor"
                         title="Konfirmasi"
@@ -999,8 +985,8 @@ export default function ManajemenOrangtua() {
               <div className="modal-content-custom">
                 <div className="d-flex justify-content-between align-items-center p-3 pb-0">
                   <h6 className="fw-bold text-dark d-flex align-items-center gap-2 m-0 text-13px">
-                    <div className="bg-primary bg-opacity-10 p-1 rounded-2">
-                      {isEdit ? <Edit2 size={12} className="text-primary"/> : <Plus size={12} className="text-primary"/>}
+                    <div className="bg-warning bg-opacity-10 p-1 rounded-2">
+                      {isEdit ? <Edit2 size={12} className="text-warning"/> : <Plus size={12} className="text-warning"/>}
                     </div>
                     {isEdit ? "Edit Data" : "Tambah Orang Tua"}
                   </h6>
@@ -1032,7 +1018,7 @@ export default function ManajemenOrangtua() {
 
                     <div className="col-12 pt-2 border-top mt-2">
                         <div className="d-flex justify-content-between align-items-center mb-2">
-                            <span className="text-10px fw-bold text-primary text-uppercase">Daftar Anak</span>
+                            <span className="text-10px fw-bold text-warning text-uppercase">Daftar Anak</span>
                         </div>
                         
                         <div className="mb-2">
@@ -1061,7 +1047,7 @@ export default function ManajemenOrangtua() {
                                                 <div className="fw-bold text-dark">{s.nama_lengkap}</div>
                                                 <div className="text-muted">{s.nis} - {s.kelas?.nama || '-'}</div>
                                             </div>
-                                            <UserPlus size={12} className="text-primary"/>
+                                            <UserPlus size={12} className="text-warning"/>
                                         </button>
                                     ))}
                                 </div>
@@ -1100,7 +1086,7 @@ export default function ManajemenOrangtua() {
                 <div className="p-3 pt-1 flex-shrink-0 bg-white modal-footer-sticky">
                   <button
                     onClick={handleSave}
-                    className="btn btn-primary btn-sm w-100 py-2 rounded-3 shadow-sm fw-bold d-flex align-items-center justify-content-center gap-2 text-12px"
+                    className="btn btn-warning btn-sm w-100 py-2 rounded-3 shadow-sm fw-bold d-flex align-items-center justify-content-center gap-2 text-12px"
                     disabled={isSubmitting}
                     aria-label={isEdit ? "Perbarui data orang tua" : "Simpan data orang tua"}
                     title={isEdit ? "Perbarui" : "Simpan"}

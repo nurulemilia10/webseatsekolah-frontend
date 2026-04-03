@@ -91,7 +91,7 @@ export default function ManajemenDataKontak() {
   if (authLoading || loading) {
     return (
       <div className="d-flex flex-column align-items-center justify-content-center py-5">
-        <Loader2 className="text-primary animate-spin mb-2" size={24} />
+        <Loader2 className="text-warning animate-spin mb-2" size={24} />
         <div className="text-muted text-[10px]">Memuat data kontak...</div>
       </div>
     );
@@ -100,7 +100,7 @@ export default function ManajemenDataKontak() {
   return (
     <div className="container-fluid py-3 px-2 px-md-3">
       <div className="d-flex align-items-center mb-3">
-        <MapPin size={16} className="text-primary me-2" />
+        <MapPin size={16} className="text-warning me-2" />
         <h6 className="mb-0 fw-bold text-dark text-uppercase text-[12px] tracking-wider">Informasi Kontak Instansi</h6>
       </div>
 
@@ -151,7 +151,7 @@ export default function ManajemenDataKontak() {
               </div>
 
               <div className="col-12 mt-2">
-                <button onClick={handleSave} className="btn btn-primary w-100 fw-bold shadow-sm py-2.5 text-[12px] rounded-3" disabled={isSubmitting}>
+                <button onClick={handleSave} className="btn btn-warning w-100 fw-bold shadow-sm py-2.5 text-[12px] rounded-3" disabled={isSubmitting}>
                   {isSubmitting ? <Loader2 size={14} className="animate-spin me-2" /> : "Simpan Perubahan"}
                 </button>
               </div>
@@ -162,7 +162,7 @@ export default function ManajemenDataKontak() {
         <div className="col-md-4">
           <div className="card border-0 shadow-sm rounded-4 p-4 h-100">
             <div className="d-flex align-items-center mb-2">
-              <Map size={16} className="text-primary me-2" />
+              <Map size={16} className="text-warning me-2" />
               <label htmlFor={mapsId} className="form-label text-dark mb-0 fw-bold text-[11px]">Google Maps Embed Code</label>
             </div>
             <textarea id={mapsId} rows={5} className="form-control bg-light border-0 shadow-none py-2 px-3 text-[10px] rounded-3 mb-3 font-monospace" value={formData.peta_embed_code} onChange={(e) => setFormData({...formData, peta_embed_code: e.target.value})} placeholder='Masukkan <iframe> tag dari Google Maps' />

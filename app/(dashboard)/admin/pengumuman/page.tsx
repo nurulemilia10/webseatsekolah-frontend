@@ -2,37 +2,45 @@
 
 import React, { useState, useEffect, useCallback, useId, memo, useMemo } from 'react';
 import { 
-  Plus, Edit2, Loader2, Megaphone, Trash2, Calendar
+  Plus, Edit2, Loader2, Newspaper, Trash2, Image as ImageIcon, Calendar, Crop,
+  ChevronLeft, ChevronRight
 } from 'lucide-react';
+import Cropper from 'react-easy-crop';
 import api from '@/lib/api';
 import Swal from 'sweetalert2';
 import { useAuth } from '@/hooks/useAuth';
+import { getCroppedImg, getBase64FromUrl } from '@/app/utils/imageUtils';
 
-const PengumumanRow = memo(({ pengumuman, onEdit, onDelete }: { pengumuman: any, onEdit: (p: any) => void, onDelete: (id: string) => void }) => (
+const BeritaRow = memo(({ berita, onEdit, onDelete }: { berita: any, onEdit: (b: any) => void, onDelete: (id: string) => void }) => (
   <tr>
     <td className="ps-3 py-2">
       <div className="d-flex align-items-center">
-        <div className={`p-1.5 rounded-2 me-2 ${pengumuman.penting ? 'bg-warning/10 text-warning' : 'bg-primary/10 text-primary'}`}>
-          <Megaphone size={12} />
+        <div className="ui-thumb-container flex-shrink-0">
+          {berita.foto_url ? (
+            <img src={`${berita.foto_url}?t=${berita.updated_at || Date.now()}`} alt="thumb" className="w-100 h-100 object-cover block" />
+          ) : (
+            <div className="d-flex align-items-center justify-content-center w-100 h-100">
+              <ImageIcon size={10} className="text-muted" />
+            </div>
+          )}
         </div>
-        <div className="text-dark fw-medium text-[11px] text-wrap-custom max-w-title">
-          {pengumuman.judul}
-          {pengumuman.penting && <span className="ms-1 badge bg-warning text-dark text-[8px] px-1 py-0.5 fw-bold">PENTING</span>}
+        <div className="ms-2 text-dark fw-medium text-[11px] text-wrap-custom max-w-title">
+          {berita.judul}
         </div>
       </div>
     </td>
     <td className="py-2 text-muted text-[10px] d-none d-md-table-cell">
       <div className="d-flex align-items-center">
         <Calendar size={11} className="me-1" />
-        {pengumuman.tanggal_human || pengumuman.tanggal_publikasi || '-'}
+        {berita.tanggal_human || berita.tanggal_publikasi || '-'}
       </div>
     </td>
     <td className="py-2 text-end pe-3">
       <div className="d-flex justify-content-end gap-1">
-        <button onClick={() => onEdit(pengumuman)} className="btn btn-sm p-1 text-primary border-0 shadow-none" title="Edit Pengumuman">
+        <button onClick={() => onEdit(berita)} className="btn btn-sm p-1 text-warning border-0 shadow-none" title="Edit Berita" aria-label="Edit Berita">
           <span className="bg-light p-1 rounded-3 d-inline-flex"><Edit2 size={11}/></span>
         </button>
-        <button onClick={() => onDelete(pengumuman.id)} className="btn btn-sm p-1 text-danger border-0 shadow-none" title="Hapus Pengumuman">
+        <button onClick={() => onDelete(berita.id)} className="btn btn-sm p-1 text-danger border-0 shadow-none" title="Hapus Berita" aria-label="Hapus Berita">
           <span className="bg-danger bg-opacity-10 p-1 rounded-3 d-inline-flex"><Trash2 size={11}/></span>
         </button>
       </div>
@@ -40,9 +48,9 @@ const PengumumanRow = memo(({ pengumuman, onEdit, onDelete }: { pengumuman: any,
   </tr>
 ));
 
-PengumumanRow.displayName = 'PengumumanRow';
+BeritaRow.displayName = 'BeritaRow';
 
-export default function ManajemenPengumuman() {
+export default function ManajemenBerita() {
   const { user, loading: authLoading } = useAuth();
   const [data, setData] = useState<any[]>([]);
   const [meta, setMeta] = useState<any>(null);
@@ -53,13 +61,20 @@ export default function ManajemenPengumuman() {
   const [currentId, setCurrentId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [formData, setFormData] = useState({ judul: '', isi_pengumuman: '', tanggal_publikasi: '', penting: false });
+  const [tempImage, setTempImage] = useState<string | null>(null);
+  const [originalImage, setOriginalImage] = useState<string | null>(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  
+  const [formData, setFormData] = useState({ judul: '', isi_berita: '', tanggal_publikasi: '', foto: null as File | null });
   const [errors, setErrors] = useState<any>({});
 
   const judulId = useId();
   const tglId = useId();
   const isiId = useId();
-  const pentingId = useId();
+  const fotoId = useId();
 
   const Toast = useMemo(() => Swal.mixin({
     toast: true,
@@ -73,7 +88,7 @@ export default function ManajemenPengumuman() {
     if (authLoading || !user) return;
     setLoading(true);
     try {
-      const res = await api.admin.pengumuman.getAll({ page });
+      const res = await api.admin.berita.getAll({ page });
       if (res?.data) {
         setData(res.data.data || []);
         setMeta(res.data.meta || null);
@@ -84,25 +99,53 @@ export default function ManajemenPengumuman() {
 
   useEffect(() => { fetchData(1); }, [fetchData]);
 
-  const handleCloseForm = useCallback(() => {
-    setShowForm(false); setIsEdit(false); setCurrentId(null); setErrors({});
-    setFormData({ judul: '', isi_pengumuman: '', tanggal_publikasi: '', penting: false });
-  }, []);
+  const onCropComplete = useCallback((_: any, clippedPixels: any) => { setCroppedAreaPixels(clippedPixels); }, []);
 
-  const handleEditClick = useCallback((p: any) => {
-    setIsEdit(true); setCurrentId(p.id);
-    setFormData({ 
-      judul: p.judul || '', 
-      isi_pengumuman: p.isi_pengumuman || '', 
-      tanggal_publikasi: p.tanggal_publikasi || '', 
-      penting: !!p.penting 
-    });
+  const handleApplyCrop = async () => {
+    if (tempImage && croppedAreaPixels) {
+      try {
+        const croppedBlob = await getCroppedImg(tempImage, croppedAreaPixels);
+        const file = new File([croppedBlob], "berita_foto.jpg", { type: "image/jpeg" });
+        if (photoPreview && photoPreview.startsWith('blob:')) URL.revokeObjectURL(photoPreview);
+        const newUrl = URL.createObjectURL(croppedBlob);
+        setFormData(prev => ({ ...prev, foto: file }));
+        setPhotoPreview(newUrl);
+        setTempImage(null);
+      } catch (e) { Toast.fire({ icon: 'error', title: 'Gagal memotong gambar' }); }
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setOriginalImage(reader.result as string);
+        setTempImage(reader.result as string);
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    }
+  };
+
+  const handleCloseForm = useCallback(() => {
+    if (photoPreview && photoPreview.startsWith('blob:')) URL.revokeObjectURL(photoPreview);
+    setShowForm(false); setIsEdit(false); setCurrentId(null); setTempImage(null);
+    setOriginalImage(null); setPhotoPreview(null); setErrors({});
+    setFormData({ judul: '', isi_berita: '', tanggal_publikasi: '', foto: null });
+  }, [photoPreview]);
+
+  const handleEditClick = useCallback(async (b: any) => {
+    setIsEdit(true); setCurrentId(b.id);
+    setFormData({ judul: b.judul || '', isi_berita: b.isi_berita || '', tanggal_publikasi: b.tanggal_publikasi || '', foto: null });
+    setPhotoPreview(b.foto_url || null);
     setShowForm(true);
+    if (b.foto_url) {
+      try { const base64 = await getBase64FromUrl(b.foto_url); setOriginalImage(base64); } catch (e) { console.error(e); }
+    }
   }, []);
 
   const handleDelete = async (id: string) => {
     const result = await Swal.fire({
-      title: 'Hapus Pengumuman?',
+      title: 'Hapus Berita?',
       text: "Data akan langsung dihapus dari daftar.",
       icon: 'warning',
       showCancelButton: true,
@@ -115,9 +158,9 @@ export default function ManajemenPengumuman() {
       const previousData = [...data];
       setData(prev => prev.filter(item => item.id !== id));
       try {
-        const res = await api.admin.pengumuman.delete(id);
+        const res = await api.admin.berita.delete(id);
         if (res.status === 200 || res.data?.success) {
-          Toast.fire({ icon: 'success', title: res.data?.message || 'Pengumuman dihapus' });
+          Toast.fire({ icon: 'success', title: res.data?.message || 'Berita dihapus' });
           if (meta) setMeta({ ...meta, total: meta.total - 1 });
         } else { throw new Error(); }
       } catch (e: any) {
@@ -130,13 +173,19 @@ export default function ManajemenPengumuman() {
   const handleSave = async () => {
     setErrors({});
     setIsSubmitting(true);
-    
+    const payload = new FormData();
+    payload.append('judul', formData.judul);
+    payload.append('isi_berita', formData.isi_berita);
+    if (formData.tanggal_publikasi) payload.append('tanggal_publikasi', formData.tanggal_publikasi);
+    if (formData.foto) payload.append('foto', formData.foto);
+
     try {
       let res;
       if (isEdit && currentId) {
-        res = await api.admin.pengumuman.update(currentId, formData);
+        payload.append('_method', 'PUT');
+        res = await api.admin.berita.update(currentId, payload);
       } else {
-        res = await api.admin.pengumuman.create(formData);
+        res = await api.admin.berita.create(payload);
       }
 
       if (res.status === 200 || res.status === 201 || res.data?.success) { 
@@ -153,17 +202,19 @@ export default function ManajemenPengumuman() {
     } finally { setIsSubmitting(false); }
   };
 
+  const handlePageChange = (page: number) => fetchData(page);
+
   if (authLoading) return null;
 
   return (
     <div className="container-fluid py-3 px-2 px-md-3">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <div className="d-flex align-items-center">
-          <Megaphone size={16} className="text-primary me-2" />
-          <h6 className="mb-0 fw-bold text-dark text-uppercase text-[12px] tracking-wider">Pengumuman Sekolah</h6>
+          <Newspaper size={16} className="text-warning me-2" />
+          <h6 className="mb-0 fw-bold text-dark text-uppercase text-[12px] tracking-wider">Berita & Informasi</h6>
         </div>
-        <button onClick={() => setShowForm(true)} className="btn btn-primary btn-sm px-2 px-md-3 shadow-sm rounded-3 py-1.5 text-[10px]">
-          <Plus size={13} className="me-1"/> <span>Tambah Pengumuman</span>
+        <button onClick={() => setShowForm(true)} className="btn btn-warning btn-sm px-2 px-md-3 shadow-sm rounded-3 py-1.5 text-[10px]">
+          <Plus size={13} className="me-1"/> <span>Tambah Berita</span>
         </button>
       </div>
 
@@ -172,7 +223,7 @@ export default function ManajemenPengumuman() {
           <table className="table table-hover align-middle mb-0">
             <thead className="bg-light">
               <tr className="text-[9px]">
-                <th className="ps-3 border-0 py-2.5 fw-bold text-muted text-uppercase">Judul Pengumuman</th>
+                <th className="ps-3 border-0 py-2.5 fw-bold text-muted text-uppercase">Judul Berita</th>
                 <th className="border-0 py-2.5 fw-bold text-muted text-uppercase d-none d-md-table-cell">Tgl Publikasi</th>
                 <th className="border-0 py-2.5 text-end pe-3 fw-bold text-muted text-uppercase">Aksi</th>
               </tr>
@@ -181,40 +232,81 @@ export default function ManajemenPengumuman() {
               {loading ? (
                 <tr>
                   <td colSpan={3} className="text-center py-5">
-                    <Loader2 className="text-primary animate-spin mb-2 mx-auto" size={20} />
+                    <Loader2 className="text-warning animate-spin mb-2 mx-auto" size={20} />
                     <div className="text-muted text-[10px]">Memuat data...</div>
                   </td>
                 </tr>
               ) : data.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="text-center py-5 text-muted text-[10px]">Tidak ada pengumuman.</td>
+                  <td colSpan={3} className="text-center py-5 text-muted text-[10px]">Tidak ada berita.</td>
                 </tr>
-              ) : data.map((p) => (
-                <PengumumanRow key={p.id} pengumuman={p} onEdit={handleEditClick} onDelete={handleDelete} />
+              ) : data.map((b) => (
+                <BeritaRow key={b.id} berita={b} onEdit={handleEditClick} onDelete={handleDelete} />
               ))}
             </tbody>
           </table>
         </div>
-        <div className="card-footer bg-white border-top py-2 rounded-bottom-3">
-          <div className="d-flex justify-content-between align-items-center">
-            <div className="text-muted text-[9px] fw-medium">Total: {meta?.total || 0}</div>
-            {meta && meta.last_page > 1 && (
-              <nav>
-                <ul className="pagination pagination-sm mb-0">
-                  <li className={`page-item ${meta.current_page === 1 ? 'disabled' : ''}`}>
-                    <button className="page-link border rounded-3 mx-1 ui-pagination-square shadow-none" onClick={() => fetchData(meta.current_page - 1)}>&lt;</button>
-                  </li>
-                  <li className="page-item active">
-                    <span className="page-link border rounded-3 mx-1 ui-pagination-square bg-primary text-white border-primary shadow-none">{meta.current_page}</span>
-                  </li>
-                  <li className={`page-item ${meta.current_page === meta.last_page ? 'disabled' : ''}`}>
-                    <button className="page-link border rounded-3 mx-1 ui-pagination-square shadow-none" onClick={() => fetchData(meta.current_page + 1)}>&gt;</button>
-                  </li>
-                </ul>
-              </nav>
-            )}
+        {!loading && data.length > 0 && meta && (
+          <div className="d-flex justify-content-between align-items-center px-2 py-1 border-top bg-white">
+            <div className="text-muted text-10px">
+              Menampilkan {data.length} dari {meta.total} data
+            </div>
+            <nav className="d-flex align-items-center gap-0.5">
+              <button
+                className="btn btn-light btn-sm border-0 shadow-none p-0.5 rounded-2"
+                disabled={meta.current_page === 1}
+                onClick={() => handlePageChange(meta.current_page - 1)}
+                aria-label="Halaman sebelumnya"
+                title="Halaman sebelumnya"
+              >
+                <ChevronLeft size={12} />
+              </button>
+              <div className="d-flex gap-0.5">
+                {(() => {
+                  const pages: (number | string)[] = [];
+                  const cp = meta.current_page;
+                  const lp = Math.max(1, meta.last_page);
+                  
+                  pages.push(1);
+                  
+                  if (cp > 3) pages.push('start-ellipsis');
+                  
+                  for (let i = Math.max(2, cp - 1); i <= Math.min(lp - 1, cp + 1); i++) {
+                    pages.push(i);
+                  }
+                  
+                  if (cp < lp - 2) pages.push('end-ellipsis');
+                  
+                  if (lp > 1) pages.push(lp);
+                  
+                  return pages.map((p, idx) => {
+                    if (p === 'start-ellipsis' || p === 'end-ellipsis') {
+                      return <span key={`e-${idx}`} className="px-0.5 text-muted">...</span>;
+                    }
+                    return (
+                      <button
+                        key={p}
+                        onClick={() => handlePageChange(p as number)}
+                        className={`btn btn-sm px-1.5 py-0.5 rounded-2 fw-bold ${cp === p ? 'btn-warning' : 'btn-light'} text-10px`}
+                      >
+                        {p}
+                      </button>
+                    );
+                  });
+                })()}
+              </div>
+              <button
+                className="btn btn-light btn-sm border-0 shadow-none p-0.5 rounded-2"
+                disabled={meta.current_page === meta.last_page}
+                onClick={() => handlePageChange(meta.current_page + 1)}
+                aria-label="Halaman selanjutnya"
+                title="Halaman selanjutnya"
+              >
+                <ChevronRight size={12} />
+              </button>
+            </nav>
           </div>
-        </div>
+        )}
       </div>
 
       {showForm && (
@@ -223,35 +315,57 @@ export default function ManajemenPengumuman() {
             <div className="modal-content border-0 shadow-lg rounded-3 overflow-hidden">
               <div className="modal-header border-0 pb-0 px-3 pt-3">
                 <h6 className="modal-title fw-bold text-dark text-[12px]">
-                  {isEdit ? "Edit Pengumuman" : "Input Pengumuman"}
+                  {tempImage ? "Potong Foto" : (isEdit ? "Edit Berita" : "Input Berita")}
                 </h6>
                 <button onClick={handleCloseForm} className="btn-close shadow-none scale-75" aria-label="Close"></button>
               </div>
               <div className="modal-body p-3 pt-2">
-                <div className="mb-2">
-                  <label className="form-label text-dark mb-1 fw-semibold text-[10px]" htmlFor={judulId}>Judul</label>
-                  <input id={judulId} type="text" className="form-control bg-light border-0 shadow-none py-1.5 px-3 text-[10px] rounded-3" value={formData.judul} onChange={(e) => setFormData({...formData, judul: e.target.value})} />
-                  {errors.judul && <div className="text-danger mt-1 text-[8px]">{errors.judul[0]}</div>}
-                </div>
-                <div className="mb-2">
-                  <label className="form-label text-dark mb-1 fw-semibold text-[10px]" htmlFor={tglId}>Tanggal Publikasi</label>
-                  <input id={tglId} type="date" className="form-control bg-light border-0 shadow-none py-1.5 px-3 text-[10px] rounded-3" value={formData.tanggal_publikasi} onChange={(e) => setFormData({...formData, tanggal_publikasi: e.target.value})} />
-                </div>
-                <div className="mb-2">
-                  <label className="form-label text-dark mb-1 fw-semibold text-[10px]" htmlFor={isiId}>Isi Pengumuman</label>
-                  <textarea id={isiId} rows={4} className="form-control bg-light border-0 shadow-none py-1.5 px-3 text-[10px] rounded-3" value={formData.isi_pengumuman} onChange={(e) => setFormData({...formData, isi_pengumuman: e.target.value})} />
-                  {errors.isi_pengumuman && <div className="text-danger mt-1 text-[8px]">{errors.isi_pengumuman[0]}</div>}
-                </div>
-                <div className="mb-2 d-flex align-items-center">
-                  <input id={pentingId} type="checkbox" className="form-check-input shadow-none me-2 accent-warning" checked={formData.penting} onChange={(e) => setFormData({...formData, penting: e.target.checked})} />
-                  <label className="form-check-label text-dark fw-semibold text-[10px]" htmlFor={pentingId}>Tandai sebagai Penting</label>
-                </div>
+                {tempImage ? (
+                  <div className="ui-cropper-wrapper">
+                    <Cropper image={tempImage} crop={crop} zoom={zoom} aspect={16 / 9} onCropChange={setCrop} onCropComplete={onCropComplete} onZoomChange={setZoom} />
+                    <div className="position-absolute bottom-0 start-0 w-100 p-2 d-flex gap-2 z-index-10">
+                       <button onClick={handleApplyCrop} className="btn btn-warning btn-sm flex-grow-1 fw-bold text-[10px] py-1.5 rounded-3 shadow">
+                         <Crop size={11} className="me-1"/> Selesai
+                       </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="mb-2">
+                      <label className="form-label text-dark mb-1 fw-semibold text-[10px]" htmlFor={judulId}>Judul</label>
+                      <input id={judulId} type="text" className="form-control bg-light border-0 shadow-none py-1.5 px-3 text-[10px] rounded-3" value={formData.judul} onChange={(e) => setFormData({...formData, judul: e.target.value})} />
+                      {errors.judul && <div className="text-danger mt-1 text-[8px]">{errors.judul[0]}</div>}
+                    </div>
+                    <div className="mb-2">
+                      <label className="form-label text-dark mb-1 fw-semibold text-[10px]" htmlFor={tglId}>Tanggal</label>
+                      <input id={tglId} type="date" className="form-control bg-light border-0 shadow-none py-1.5 px-3 text-[10px] rounded-3" value={formData.tanggal_publikasi} onChange={(e) => setFormData({...formData, tanggal_publikasi: e.target.value})} />
+                    </div>
+                    <div className="mb-2">
+                      <label className="form-label text-dark mb-1 fw-semibold text-[10px]" htmlFor={isiId}>Isi</label>
+                      <textarea id={isiId} rows={3} className="form-control bg-light border-0 shadow-none py-1.5 px-3 text-[10px] rounded-3" value={formData.isi_berita} onChange={(e) => setFormData({...formData, isi_berita: e.target.value})} />
+                      {errors.isi_berita && <div className="text-danger mt-1 text-[8px]">{errors.isi_berita[0]}</div>}
+                    </div>
+                    <div className="mb-2">
+                      <label className="form-label text-dark mb-1 fw-semibold text-[10px]" htmlFor={fotoId}>Foto</label>
+                      <input id={fotoId} type="file" accept="image/*" className="form-control bg-light border-0 shadow-none py-1.5 px-3 text-[10px] rounded-3" onChange={handleFileChange} />
+                      {photoPreview && (
+                        <div className="ui-preview-foto" onClick={() => originalImage && setTempImage(originalImage)}>
+                          <img src={photoPreview} alt="Preview" />
+                          <div className="ui-preview-overlay"><span>Klik untuk potong ulang</span></div>
+                          <button type="button" className="btn-close ui-btn-delete-preview shadow-none" aria-label="Hapus Foto" onClick={(e) => { e.stopPropagation(); setFormData({...formData, foto: null}); setPhotoPreview(null); setOriginalImage(null); }}></button>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
-              <div className="modal-footer border-0 p-3 pt-0">
-                <button onClick={handleSave} className="btn btn-primary btn-sm w-100 fw-bold shadow-sm py-2 text-[11px] rounded-3" disabled={isSubmitting}>
-                  {isSubmitting ? <Loader2 size={12} className="animate-spin" /> : (isEdit ? "Update Pengumuman" : "Simpan Pengumuman")}
-                </button>
-              </div>
+              {!tempImage && (
+                <div className="modal-footer border-0 p-3 pt-0">
+                  <button onClick={handleSave} className="btn btn-warning btn-sm w-100 fw-bold shadow-sm py-2 text-[11px] rounded-3" disabled={isSubmitting}>
+                    {isSubmitting ? <Loader2 size={12} className="animate-spin" /> : (isEdit ? "Update Berita" : "Simpan Berita")}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -19,7 +19,6 @@ import {
   FileDown,
   FileUp,
   ChevronLeft,
-  ChevronRight,
   Eye,
   Search,
   Filter,
@@ -105,7 +104,7 @@ const GuruRow = memo(({
               onError={(e) => { e.currentTarget.src = DEFAULT_AVATAR; }}
             />
           </div>
-          <div className="text-dark fw-bold text-xxs text-truncate">
+          <div className="text-dark fw-bold text-xxs">
             {item.nama}
           </div>
         </div>
@@ -130,7 +129,7 @@ const GuruRow = memo(({
       <td className="py-1 text-xxs d-none d-xxl-table-cell">
         {item.agama || '-'}
       </td>
-      <td className="py-1 text-xxs text-truncate d-none d-xxl-table-cell mw-120px">
+      <td className="py-1 text-xxs text-break d-none d-xxl-table-cell">
         {item.alamat_lengkap || '-'}
       </td>
       <td className="py-1 text-xxs d-none d-xl-table-cell">
@@ -170,7 +169,7 @@ const GuruRow = memo(({
         <div className="d-flex justify-content-end gap-0.5">
           <button 
             onClick={() => onEdit(item)} 
-            className="btn btn-sm p-0.5 text-primary border-0 shadow-none"
+            className="btn btn-sm p-0.5 text-warning border-0 shadow-none"
             aria-label="Edit data"
             title="Edit data"
           >
@@ -649,38 +648,13 @@ export default function ManajemenGuru() {
 
   return (
     <>
-      <style jsx global>{`
-        .w-30px { width: 30px; }
-        .avatar-sm { width: 28px; height: 28px; min-width: 28px; border-radius: 50%; }
-        .text-9px { font-size: 9px; }
-        .mw-100px { max-width: 100px; }
-        .text-10px { font-size: 10px; }
-        .badge-filter-count { font-size: 8px; width: 14px; height: 14px; }
-        .min-w-120px { min-width: 120px; }
-        .text-11px { font-size: 11px; }
-        .mw-120px { max-width: 120px; }
-        .symbol-70px { width: 70px; height: 70px; }
-        .btn-close-xs { width: 14px; height: 14px; }
-        .bg-none { background-image: none; }
-        .modal-overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .modal-dialog-custom { max-width: 500px; pointer-events: auto; width: 100%; }
-        .modal-content-custom { display: flex; flex-direction: column; width: 100%; max-height: 90vh; background-color: #fff; overflow: hidden; }
-        .text-13px { font-size: 13px; }
-        .modal-body-scrollable { flex: 1 1 auto; overflow-y: auto; min-height: 0; -webkit-overflow-scrolling: touch; }
-        .cropper-container { height: 250px; width: 100%; background: #333; }
-        .z-index-10 { z-index: 10; }
-        .pos-rel-z10 { position: relative; z-index: 10; }
-        .modal-footer-sticky { position: relative; z-index: 10; border-top: 1px solid #f8f9fa; }
-        .text-12px { font-size: 12px; }
-        .max-h-300 { max-height: 300px; }
-      `}</style>
       <div className="container-fluid py-2 px-2 px-md-3 text-xs-custom">
         <div className="card border-0 shadow-sm rounded-3 mb-2">
           <div className="card-body p-2">
             <div className="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
               <div className="d-flex align-items-center gap-2">
-                <div className="bg-primary bg-opacity-10 p-1.5 rounded-2">
-                  <Users size={16} className="text-primary" />
+                <div className="bg-warning bg-opacity-10 p-1.5 rounded-2">
+                  <Users size={16} className="text-warning" />
                 </div>
                 <div>
                   <h5 className="fw-bold text-dark mb-0 fs-6">Manajemen Guru</h5>
@@ -702,12 +676,12 @@ export default function ManajemenGuru() {
 
                 <button
                   onClick={() => setShowFilters(!showFilters)}
-                  className={`btn btn-sm px-1.5 py-0.5 rounded-2 border d-flex align-items-center gap-1 ${showFilters || activeFilterCount > 0 ? 'btn-primary border-primary' : 'btn-light'}`}
+                  className={`btn btn-sm px-1.5 py-0.5 rounded-2 border d-flex align-items-center gap-1 ${showFilters || activeFilterCount > 0 ? 'btn-warning border-warning' : 'btn-light'}`}
                 >
                   <Filter size={10}/>
                   <span className="d-none d-sm-inline text-10px">Filter</span>
                   {activeFilterCount > 0 && (
-                    <span className="badge bg-white text-primary rounded-circle p-0.5 badge-filter-count">
+                    <span className="badge bg-white text-warning rounded-circle p-0.5 badge-filter-count">
                       {activeFilterCount}
                     </span>
                   )}
@@ -731,7 +705,7 @@ export default function ManajemenGuru() {
 
                 <button
                   onClick={() => { resetForm(); setShowForm(true); }}
-                  className="btn btn-primary btn-sm px-1.5 py-0.5 rounded-2 d-flex align-items-center gap-1"
+                  className="btn btn-warning btn-sm px-1.5 py-0.5 rounded-2 d-flex align-items-center gap-1"
                 >
                   <Plus size={10}/>
                   <span className="text-10px">Tambah</span>
@@ -892,7 +866,7 @@ export default function ManajemenGuru() {
               {loading ? (
                 <tr>
                   <td colSpan={13} className="text-center py-5">
-                    <Loader2 className="text-primary animate-spin mx-auto" size={16} />
+                    <Loader2 className="text-warning animate-spin mx-auto" size={16} />
                   </td>
                 </tr>
               ) : data.length === 0 ? (
@@ -918,48 +892,54 @@ export default function ManajemenGuru() {
         </div>
         
         {!loading && data.length > 0 && (
-          <div className="d-flex justify-content-between align-items-center px-2 py-1 border-top bg-white">
-            <div className="text-muted text-10px">
+          <div className="d-flex justify-content-between align-items-center px-3 py-2 border-top bg-white">
+            <div className="text-muted text-[9px] fw-medium">
               Menampilkan {data.length} dari {pagination.total} data
             </div>
-            <nav className="d-flex align-items-center gap-0.5">
+            <nav className="d-flex align-items-center gap-1">
               <button
-                className="btn btn-light btn-sm border-0 shadow-none p-0.5 rounded-2"
+                className="btn btn-light btn-sm border shadow-none p-1 rounded-2"
                 disabled={pagination.currentPage === 1}
                 onClick={() => handlePageChange(pagination.currentPage - 1)}
-                aria-label="Halaman sebelumnya"
-                title="Halaman sebelumnya"
+                title="Previous"
+                aria-label="Previous"
               >
                 <ChevronLeft size={12} />
               </button>
-              <div className="d-flex gap-0.5">
-                {[...Array(pagination.lastPage)].map((_, i) => {
-                  const p = i + 1;
-                  if (p === 1 || p === pagination.lastPage || (p >= pagination.currentPage - 1 && p <= pagination.currentPage + 1)) {
+              <div className="d-flex gap-1">
+                {(() => {
+                  const pages = [];
+                  const cp = pagination.currentPage;
+                  const lp = Math.max(1, pagination.lastPage);
+                  pages.push(1);
+                  if (cp > 3) pages.push('ellipsis-1');
+                  for (let i = Math.max(2, cp - 1); i <= Math.min(lp - 1, cp + 1); i++) {
+                    pages.push(i);
+                  }
+                  if (cp < lp - 2) pages.push('ellipsis-2');
+                  if (lp > 1) pages.push(lp);
+                  return pages.map((p, idx) => {
+                    if (typeof p === 'string') return <span key={`e-${idx}`} className="px-1 text-muted text-[10px]">...</span>;
                     return (
                       <button
                         key={p}
                         onClick={() => handlePageChange(p)}
-                        className={`btn btn-sm px-1.5 py-0.5 rounded-2 fw-bold ${pagination.currentPage === p ? 'btn-primary' : 'btn-light'} text-10px`}
+                        className={`btn btn-sm px-2 py-1 rounded-2 fw-bold text-[10px] border-0 ${cp === p ? 'btn-warning text-white' : 'btn-light text-dark'}`}
                       >
                         {p}
                       </button>
                     );
-                  }
-                  if (p === pagination.currentPage - 2 || p === pagination.currentPage + 2) {
-                    return <span key={p} className="px-0.5 text-muted">...</span>;
-                  }
-                  return null;
-                })}
+                  });
+                })()}
               </div>
               <button
-                className="btn btn-light btn-sm border-0 shadow-none p-0.5 rounded-2"
+                className="btn btn-light btn-sm border shadow-none p-1 rounded-2"
                 disabled={pagination.currentPage === pagination.lastPage}
                 onClick={() => handlePageChange(pagination.currentPage + 1)}
-                aria-label="Halaman selanjutnya"
-                title="Halaman selanjutnya"
+                title="Next"
+                aria-label="Next"
               >
-                <ChevronRight size={12} />
+                <ChevronLeft size={12} className="rotate-180" />
               </button>
             </nav>
           </div>
@@ -972,7 +952,7 @@ export default function ManajemenGuru() {
             <div className="modal-content border-0 shadow-lg rounded-3">
               <div className="modal-header border-0 pb-0 px-3 pt-3">
                 <div className="d-flex align-items-center">
-                  <Eye size={16} className="text-primary me-2" />
+                  <Eye size={16} className="text-warning me-2" />
                   <h6 className="modal-title fw-bold text-dark text-md-custom">Preview Import Guru</h6>
                 </div>
                 <button onClick={() => setPreviewData(null)} className="btn-close scale-75 shadow-none" aria-label="Tutup"></button>
@@ -1076,7 +1056,7 @@ export default function ManajemenGuru() {
                   <div className="col-6">
                     <button 
                       onClick={confirmImport} 
-                      className={`btn btn-primary btn-sm w-100 py-2 rounded-3 shadow-none fw-bold d-flex align-items-center justify-content-center gap-2 text-xxs ${hasImportConflict ? 'opacity-50 cursor-not-allowed' : ''}`} 
+                      className={`btn btn-warning btn-sm w-100 py-2 rounded-3 shadow-none fw-bold d-flex align-items-center justify-content-center gap-2 text-xxs ${hasImportConflict ? 'opacity-50 cursor-not-allowed' : ''}`} 
                       disabled={isSubmitting || hasImportConflict}
                     >
                       {isSubmitting ? <Loader2 size={12} className="animate-spin" /> : <><CheckCircle2 size={12} /> Konfirmasi</>}
@@ -1095,8 +1075,8 @@ export default function ManajemenGuru() {
             <div className="modal-content border-0 shadow-lg rounded-4 modal-content-custom">
               <div className="modal-header border-0 pb-0 px-3 pt-3 flex-shrink-0 pos-rel-z10">
                 <h6 className="fw-bold text-dark d-flex align-items-center gap-2 m-0 text-13px">
-                  <div className="bg-primary bg-opacity-10 p-1 rounded-2">
-                    {tempImage ? <Crop size={12} className="text-primary"/> : (isEdit ? <Edit2 size={12} className="text-primary"/> : <Plus size={12} className="text-primary"/>)}
+                  <div className="bg-warning bg-opacity-10 p-1 rounded-2">
+                    {tempImage ? <Crop size={12} className="text-warning"/> : (isEdit ? <Edit2 size={12} className="text-warning"/> : <Plus size={12} className="text-warning"/>)}
                   </div>
                   {tempImage ? "Potong Foto" : (isEdit ? "Edit Data" : "Tambah Guru")}
                 </h6>
@@ -1118,7 +1098,7 @@ export default function ManajemenGuru() {
                     <div className="position-absolute bottom-0 start-0 w-100 p-2 d-flex gap-2 z-index-10">
                       <button
                         onClick={handleApplyCrop}
-                        className="btn btn-primary btn-sm flex-grow-1 fw-bold text-10px py-1.5 rounded-3 shadow"
+                        className="btn btn-warning btn-sm flex-grow-1 fw-bold text-10px py-1.5 rounded-3 shadow"
                         aria-label="Selesai potong foto"
                         title="Selesai potong foto"
                       >
@@ -1315,7 +1295,7 @@ export default function ManajemenGuru() {
                     </div>
 
                     <div className="col-12 pt-2">
-                      <div className="text-10px fw-bold text-primary text-uppercase border-bottom pb-1 mb-2">Kepegawaian</div>
+                      <div className="text-10px fw-bold text-warning text-uppercase border-bottom pb-1 mb-2">Kepegawaian</div>
                     </div>
 
                     <div className="col-6">
@@ -1386,7 +1366,7 @@ export default function ManajemenGuru() {
                 <div className="modal-footer border-0 p-3 pt-1 flex-shrink-0 bg-white modal-footer-sticky">
                   <button
                     onClick={handleSave}
-                    className="btn btn-primary btn-sm w-100 py-2 rounded-3 shadow-sm fw-bold d-flex align-items-center justify-content-center gap-2 text-12px"
+                    className="btn btn-warning btn-sm w-100 py-2 rounded-3 shadow-sm fw-bold d-flex align-items-center justify-content-center gap-2 text-12px"
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : (isEdit ? "Perbarui Data" : "Simpan Data")}

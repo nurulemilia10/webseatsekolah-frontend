@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useCallback, useId, memo, useMemo } from 'react';
 import { 
-  Plus, Edit2, Loader2, Award, Trash2, Image as ImageIcon, Calendar, Crop, Search
+  Plus, Edit2, Loader2, Award, Trash2, Image as ImageIcon, Calendar, Crop, Search,
+  ChevronLeft, ChevronRight
 } from 'lucide-react';
 import Cropper from 'react-easy-crop';
 import api from '@/lib/api';
@@ -38,7 +39,7 @@ const EkskulRow = memo(({ ekskul, onEdit, onDelete }: { ekskul: any, onEdit: (e:
       <div className="d-flex justify-content-end gap-1">
         <button 
           onClick={() => onEdit(ekskul)} 
-          className="btn btn-sm p-1 text-primary border-0 shadow-none"
+          className="btn btn-sm p-1 text-warning border-0 shadow-none"
           title="Edit Ekskul"
           aria-label="Edit Ekskul"
         >
@@ -251,16 +252,18 @@ export default function ManajemenEkskul() {
     } finally { setIsSubmitting(false); }
   };
 
+  const handlePageChange = (page: number) => fetchData(page);
+
   if (authLoading) return null;
 
   return (
     <div className="container-fluid py-3 px-2 px-md-3">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <div className="d-flex align-items-center">
-          <Award size={16} className="text-primary me-2" />
+          <Award size={16} className="text-warning me-2" />
           <h6 className="mb-0 fw-bold text-dark text-uppercase text-[12px] tracking-wider">Data Ekstrakurikuler</h6>
         </div>
-        <button onClick={() => setShowForm(true)} className="btn btn-primary btn-sm px-2 px-md-3 shadow-sm rounded-3 py-1.5 text-[10px]">
+        <button onClick={() => setShowForm(true)} className="btn btn-warning btn-sm px-2 px-md-3 shadow-sm rounded-3 py-1.5 text-[10px]">
           <Plus size={13} className="me-1"/> <span>Tambah Ekskul</span>
         </button>
       </div>
@@ -279,7 +282,7 @@ export default function ManajemenEkskul() {
               {loading ? (
                 <tr>
                   <td colSpan={3} className="text-center py-5">
-                    <Loader2 className="text-primary animate-spin mb-2 mx-auto" size={20} />
+                    <Loader2 className="text-warning animate-spin mb-2 mx-auto" size={20} />
                     <div className="text-muted text-[10px]">Memuat data ekskul...</div>
                   </td>
                 </tr>
@@ -293,31 +296,72 @@ export default function ManajemenEkskul() {
             </tbody>
           </table>
         </div>
-        <div className="card-footer bg-white border-top py-2 rounded-bottom-3">
-          <div className="d-flex justify-content-between align-items-center">
-            <div className="text-muted text-[9px] fw-medium">Total: {meta?.total || 0}</div>
-            {meta && meta.last_page > 1 && (
-              <nav>
-                <ul className="pagination pagination-sm mb-0">
-                  <li className={`page-item ${meta.current_page === 1 ? 'disabled' : ''}`}>
-                    <button className="page-link border rounded-3 mx-1 ui-pagination-square shadow-none" onClick={() => fetchData(meta.current_page - 1)} aria-label="Halaman Sebelumnya">&lt;</button>
-                  </li>
-                  <li className="page-item active">
-                    <span className="page-link border rounded-3 mx-1 ui-pagination-square bg-primary text-white border-primary shadow-none">{meta.current_page}</span>
-                  </li>
-                  <li className={`page-item ${meta.current_page === meta.last_page ? 'disabled' : ''}`}>
-                    <button className="page-link border rounded-3 mx-1 ui-pagination-square shadow-none" onClick={() => fetchData(meta.current_page + 1)} aria-label="Halaman Berikutnya">&gt;</button>
-                  </li>
-                </ul>
-              </nav>
-            )}
+        {!loading && data.length > 0 && meta && (
+          <div className="d-flex justify-content-between align-items-center px-2 py-1 border-top bg-white">
+            <div className="text-muted text-10px">
+              Menampilkan {data.length} dari {meta.total} data
+            </div>
+            <nav className="d-flex align-items-center gap-0.5">
+              <button
+                className="btn btn-light btn-sm border-0 shadow-none p-0.5 rounded-2"
+                disabled={meta.current_page === 1}
+                onClick={() => handlePageChange(meta.current_page - 1)}
+                aria-label="Halaman sebelumnya"
+                title="Halaman sebelumnya"
+              >
+                <ChevronLeft size={12} />
+              </button>
+              <div className="d-flex gap-0.5">
+                {(() => {
+                  const pages = [];
+                  const cp = meta.current_page;
+                  const lp = meta.last_page;
+                  
+                  pages.push(1);
+                  
+                  if (cp > 3) pages.push('start-ellipsis');
+                  
+                  for (let i = Math.max(2, cp - 1); i <= Math.min(lp - 1, cp + 1); i++) {
+                    pages.push(i);
+                  }
+                  
+                  if (cp < lp - 2) pages.push('end-ellipsis');
+                  
+                  if (lp > 1) pages.push(lp);
+                  
+                  return pages.map((p, idx) => {
+                    if (p === 'start-ellipsis' || p === 'end-ellipsis') {
+                      return <span key={`e-${idx}`} className="px-0.5 text-muted">...</span>;
+                    }
+                    return (
+                      <button
+                        key={p}
+                        onClick={() => handlePageChange(p as number)}
+                        className={`btn btn-sm px-1.5 py-0.5 rounded-2 fw-bold ${cp === p ? 'btn-warning' : 'btn-light'} text-10px`}
+                      >
+                        {p}
+                      </button>
+                    );
+                  });
+                })()}
+              </div>
+              <button
+                className="btn btn-light btn-sm border-0 shadow-none p-0.5 rounded-2"
+                disabled={meta.current_page === meta.last_page}
+                onClick={() => handlePageChange(meta.current_page + 1)}
+                aria-label="Halaman selanjutnya"
+                title="Halaman selanjutnya"
+              >
+                <ChevronRight size={12} />
+              </button>
+            </nav>
           </div>
-        </div>
+        )}
       </div>
 
       {showForm && (
         <div className="modal fade show d-block bg-black/40 z-[1050]">
-          <div className="modal-dialog modal-dialog-centered px-3 modal-lg mx-auto">
+          <div className="modal-dialog modal-dialog-centered px-3 modal-md mx-auto">
             <div className="modal-content border-0 shadow-lg rounded-3 overflow-hidden">
               <div className="modal-header border-0 pb-0 px-3 pt-3">
                 <h6 className="modal-title fw-bold text-dark text-[12px]">
@@ -330,21 +374,22 @@ export default function ManajemenEkskul() {
                   <div className="ui-cropper-wrapper h-[350px] relative">
                     <Cropper image={tempImage} crop={crop} zoom={zoom} aspect={1 / 1} onCropChange={setCrop} onCropComplete={onCropComplete} onZoomChange={setZoom} />
                     <div className="position-absolute bottom-0 start-0 w-100 p-2 d-flex gap-2 z-index-10">
-                        <button onClick={handleApplyCrop} className="btn btn-primary btn-sm flex-grow-1 fw-bold text-[10px] py-1.5 rounded-3 shadow">
+                        <button onClick={handleApplyCrop} className="btn btn-warning btn-sm flex-grow-1 fw-bold text-[10px] py-1.5 rounded-3 shadow">
                           <Crop size={11} className="me-1"/> Selesai Potong
                         </button>
                     </div>
                   </div>
                 ) : (
                   <div className="row g-3">
-                    <div className="col-md-7">
+                    <div className="col-12">
                       <div className="mb-2">
                         <label className="form-label text-dark mb-1 fw-semibold text-[10px]">Nama Ekstrakurikuler</label>
                         <input type="text" className="form-control bg-light border-0 shadow-none py-1.5 px-3 text-[10px] rounded-3" value={formData.nama_ekskul} onChange={(e) => setFormData({...formData, nama_ekskul: e.target.value})} placeholder="Contoh: Pramuka" />
                         {errors.nama_ekskul && <div className="text-danger mt-1 text-[8px]">{errors.nama_ekskul[0]}</div>}
                       </div>
+                    </div>
 
-                      {/* --- START: UNIVERSAL SEARCH DROPDOWN --- */}
+                    <div className="col-12">
                       <div className="mb-2 ui-search-select-container">
                         <label className="form-label text-dark mb-1 fw-semibold text-[10px]">Pembina</label>
                         <div className="input-group input-group-sm mb-1">
@@ -395,16 +440,24 @@ export default function ManajemenEkskul() {
                         )}
                         {errors.pembina_id && <div className="text-danger mt-1 text-[8px]">{errors.pembina_id[0]}</div>}
                       </div>
-                      {/* --- END: UNIVERSAL SEARCH DROPDOWN --- */}
+                    </div>
 
+                    <div className="col-12">
                       <div className="mb-2">
                         <label className="form-label text-dark mb-1 fw-semibold text-[10px]">Jadwal Hari</label>
                         <input type="text" className="form-control bg-light border-0 shadow-none py-1.5 px-3 text-[10px] rounded-3" value={formData.hari} onChange={(e) => setFormData({...formData, hari: e.target.value})} placeholder="Contoh: Senin - Kamis" />
                       </div>
                     </div>
 
-                    <div className="col-md-5">
+                    <div className="col-12">
                       <div className="mb-2">
+                        <label className="form-label text-dark mb-1 fw-semibold text-[10px]">Deskripsi</label>
+                        <textarea rows={3} className="form-control bg-light border-0 shadow-none py-1.5 px-3 text-[10px] rounded-3" value={formData.deskripsi} onChange={(e) => setFormData({...formData, deskripsi: e.target.value})} placeholder="Deskripsi ekskul..." />
+                      </div>
+                    </div>
+
+                    <div className="col-12">
+                      <div className="mb-0">
                         <label className="form-label text-dark mb-1 fw-semibold text-[10px]" htmlFor={fotoId}>Foto Ekskul (1:1)</label>
                         <input id={fotoId} type="file" accept="image/*" className="form-control bg-light border-0 shadow-none py-1.5 px-3 text-[10px] rounded-3" onChange={handleFileChange} />
                         
@@ -416,17 +469,13 @@ export default function ManajemenEkskul() {
                           </div>
                         )}
                       </div>
-                      <div className="mb-0">
-                        <label className="form-label text-dark mb-1 fw-semibold text-[10px]">Deskripsi</label>
-                        <textarea rows={3} className="form-control bg-light border-0 shadow-none py-1.5 px-3 text-[10px] rounded-3" value={formData.deskripsi} onChange={(e) => setFormData({...formData, deskripsi: e.target.value})} placeholder="Deskripsi ekskul..." />
-                      </div>
                     </div>
                   </div>
                 )}
               </div>
               {!tempImage && (
                 <div className="modal-footer border-0 p-3 pt-0">
-                  <button onClick={handleSave} className="btn btn-primary btn-sm w-100 fw-bold shadow-sm py-2 text-[11px] rounded-3" disabled={isSubmitting}>
+                  <button onClick={handleSave} className="btn btn-warning btn-sm w-100 fw-bold shadow-sm py-2 text-[11px] rounded-3" disabled={isSubmitting}>
                     {isSubmitting ? <Loader2 size={12} className="animate-spin" /> : (isEdit ? "Update Data Ekskul" : "Simpan Data Ekskul")}
                   </button>
                 </div>
