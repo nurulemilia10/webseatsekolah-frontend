@@ -367,6 +367,18 @@ export default function ManajemenJamSekolah() {
     } finally { setIsSubmitting(false); }
   };
 
+  const handleTahunAjaranChange = (newTaId: string) => {
+    setFilterTahunAjaranId(newTaId);
+    const semsForTa = semesters.filter(s => String(s.tahun_ajaran_id) === newTaId);
+    if (semsForTa.length > 0) {
+      const newSemId = String(semsForTa[0].id);
+      setFilterSemesterId(newSemId);
+      fetchData(newSemId, 1);
+    } else {
+      setFilterSemesterId('');
+    }
+  };
+
   if (authLoading) return null;
 
   return (
@@ -398,14 +410,10 @@ export default function ManajemenJamSekolah() {
                     id={taFilterId}
                     className="form-select form-select-sm ps-4 border-0 bg-light text-xs-custom rounded-3 fw-medium w-[120px] w-md-[150px] shadow-none"
                     value={filterTahunAjaranId}
-                    onChange={(e) => {
-                      setFilterTahunAjaranId(e.target.value);
-                      setFilterSemesterId('');
-                    }}
+                    onChange={(e) => handleTahunAjaranChange(e.target.value)}
                     aria-label="Filter Tahun Ajaran"
                     title="Pilih Tahun Ajaran"
                   >
-                    <option value="">Tahun Ajaran</option>
                     {tahunAjarans.map(ta => <option key={ta.id} value={ta.id}>{ta.nama}</option>)}
                   </select>
                 </div>
@@ -416,7 +424,7 @@ export default function ManajemenJamSekolah() {
                     id={semFilterId}
                     className="form-select form-select-sm ps-4 border-0 bg-light text-xs-custom rounded-3 fw-medium w-[110px] w-md-[130px] shadow-none"
                     value={filterSemesterId}
-                    disabled={!filterTahunAjaranId}
+                    disabled={!filterTahunAjaranId || filteredSemesterOptions.length === 0}
                     onChange={(e) => {
                       const newId = e.target.value;
                       setFilterSemesterId(newId);
@@ -425,7 +433,6 @@ export default function ManajemenJamSekolah() {
                     aria-label="Filter Semester"
                     title="Pilih Semester"
                   >
-                    <option value="">Semester</option>
                     {filteredSemesterOptions.map(s => <option key={s.id} value={s.id}>{s.nama}</option>)}
                   </select>
                 </div>

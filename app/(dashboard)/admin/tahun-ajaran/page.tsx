@@ -70,7 +70,7 @@ export default function ManajemenTahunAjaran() {
   const [errors, setErrors] = useState<any>({});
 
   const namaId = useId();
-  const kurikulumSelectId = useId();
+  const kurikulumInputId = useId();
   const activeId = useId();
 
   const Toast = useMemo(() => Swal.mixin({
@@ -80,6 +80,29 @@ export default function ManajemenTahunAjaran() {
     timer: 3000,
     timerProgressBar: true,
   }), []);
+
+  const kurikulumAktif = useMemo(
+    () => kurikulumList.find((k) => k.is_active),
+    [kurikulumList],
+  );
+
+  const kurikulumDisplay = useMemo(() => {
+    if (isEdit && formData.kurikulum_id) {
+      return kurikulumList.find(
+        (k) => k.id?.toString() === formData.kurikulum_id,
+      )?.judul || '';
+    }
+    return kurikulumAktif?.judul || '';
+  }, [isEdit, formData.kurikulum_id, kurikulumList, kurikulumAktif]);
+
+  useEffect(() => {
+    if (showForm && !isEdit && kurikulumAktif) {
+      setFormData((prev) => ({
+        ...prev,
+        kurikulum_id: kurikulumAktif.id?.toString() || '',
+      }));
+    }
+  }, [showForm, isEdit, kurikulumAktif]);
 
   const fetchData = useCallback(async (page = 1) => {
     if (authLoading || !user) return;
@@ -305,13 +328,15 @@ export default function ManajemenTahunAjaran() {
                 </div>
                 
                 <div className="mb-2">
-                  <label className="form-label text-dark mb-1 fw-semibold text-[10px]" htmlFor={kurikulumSelectId}>Pilih Kurikulum</label>
-                  <select id={kurikulumSelectId} className="form-select bg-light border-0 shadow-none py-1.5 px-3 text-[10px] rounded-3" value={formData.kurikulum_id} onChange={(e) => setFormData({...formData, kurikulum_id: e.target.value})}>
-                    <option value="">-- Pilih Kurikulum --</option>
-                    {kurikulumList.map(k => (
-                      <option key={k.id} value={k.id}>{k.judul}</option>
-                    ))}
-                  </select>
+                  <label className="form-label text-dark mb-1 fw-semibold text-[10px]" htmlFor={kurikulumInputId}>Pilih Kurikulum</label>
+                  <input
+                    id={kurikulumInputId}
+                    type="text"
+                    className="form-control bg-light border-0 shadow-none py-1.5 px-3 text-[10px] rounded-3"
+                    value={kurikulumDisplay}
+                    readOnly
+                    tabIndex={-1}
+                  />
                   {errors?.kurikulum_id?.[0] && <div className="text-danger mt-1 text-[8px]">{errors.kurikulum_id[0]}</div>}
                 </div>
 

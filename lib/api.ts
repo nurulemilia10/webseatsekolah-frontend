@@ -187,19 +187,19 @@ const api = {
         },
         presensi: {
             ...createResource('/api/admin/presensi'),
-            export: () => Api.get('/api/admin/presensi/export', { responseType: 'blob' }),
-            listKelas: () => Api.get('/api/admin/list-kelas'),
-            listSiswa: (id: any) => Api.get(`/api/admin/list-siswa/${id}`),
+            export: (params?: any) => Api.get('/api/admin/presensi/export', { responseType: 'blob', params }),
+            listKelas: (params?: any) => Api.get('/api/admin/list-kelas', { params }),
+            listSiswa: (id: any, params?: any) => Api.get(`/api/admin/list-siswa/${id}`, { params }),
         },
         presensiGuruMapel: {
             ...createResource('/api/admin/presensi-guru-mapel'),
-            export: () => Api.get('/api/admin/presensi-guru-mapel/export', { responseType: 'blob' }),
+            export: (params?: any) => Api.get('/api/admin/presensi-guru-mapel/export', { responseType: 'blob', params }),
             jadwalHariIni: () => Api.get('/api/admin/jadwal-hari-ini'),
             siswaByJadwal: (id: any) => Api.get(`/api/admin/siswa-by-jadwal/${id}`),
         },
-        poin_siswa: {
+        poinSiswa: {
             ...createResource('/api/admin/poin_siswa'),
-            export: () => Api.get('/api/admin/poin-siswa/export', { responseType: 'blob' }),
+            export: (params?: any) => Api.get('/api/admin/poin-siswa/export', { responseType: 'blob', params }),
         },
        pesan: {
     ...createResource('/api/admin/pesan'),

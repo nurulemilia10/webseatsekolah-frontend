@@ -657,6 +657,16 @@ export default function ManajemenGuruMapel() {
     setSearchQuery('');
   };
 
+  const handleTahunAjaranChange = (newTaId: string) => {
+    setFilterTahunAjaranId(newTaId);
+    const semsForTa = semesters.filter(s => String(s.tahun_ajaran_id ?? s.tahun_ajaran?.id ?? '') === newTaId);
+    if (semsForTa.length > 0) {
+      setFilterSemesterId(String(semsForTa[0].id));
+    } else {
+      setFilterSemesterId('');
+    }
+  };
+
   const activeFilterCount = [filterGuruId, filterMapelId, filterKelasId, filterJurusanId, filterHari, filterKategori].filter(v => v !== '').length + (searchQuery ? 1 : 0) + (filterIsActive !== '1' ? 1 : 0);
 
   if (authLoading) return null;
@@ -734,10 +744,7 @@ export default function ManajemenGuruMapel() {
                       id={taFilterId}
                       className="form-select form-select-sm bg-light border-0 rounded-2 shadow-none text-11px h-36px"
                       value={filterTahunAjaranId}
-                      onChange={(e) => {
-                        setFilterTahunAjaranId(e.target.value);
-                        setFilterSemesterId('');
-                      }}
+                      onChange={(e) => handleTahunAjaranChange(e.target.value)}
                       aria-label="Filter Tahun Ajaran"
                     >
                       {tahunAjaranList.map(ta => <option key={ta._key} value={ta._key}>{ta.nama}</option>)}
@@ -750,10 +757,9 @@ export default function ManajemenGuruMapel() {
                       className="form-select form-select-sm bg-light border-0 rounded-2 shadow-none text-11px h-36px"
                       value={filterSemesterId}
                       onChange={(e) => setFilterSemesterId(e.target.value)}
-                      disabled={!filterTahunAjaranId}
+                      disabled={!filterTahunAjaranId || filteredSemesterOptions.length === 0}
                       aria-label="Filter Semester"
                     >
-                      <option value="">Pilih Semester</option>
                       {filteredSemesterOptions.map(s => <option key={s.id} value={s.id}>{s.nama}</option>)}
                     </select>
                   </div>

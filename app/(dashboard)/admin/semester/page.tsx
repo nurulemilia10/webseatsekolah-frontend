@@ -99,7 +99,7 @@ export default function ManajemenSemester() {
   const [errors, setErrors] = useState<any>({});
 
   const namaId = useId();
-  const tahunAjaranSelectId = useId();
+  const tahunAjaranInputId = useId();
   const activeId = useId();
 
   const Toast = useMemo(
@@ -113,6 +113,29 @@ export default function ManajemenSemester() {
       }),
     [],
   );
+
+  const tahunAjaranAktif = useMemo(
+    () => tahunAjaranList.find((t) => t.is_active),
+    [tahunAjaranList],
+  );
+
+  const tahunAjaranDisplay = useMemo(() => {
+    if (isEdit && formData.tahun_ajaran_id) {
+      return tahunAjaranList.find(
+        (t) => t.id?.toString() === formData.tahun_ajaran_id,
+      )?.nama || "";
+    }
+    return tahunAjaranAktif?.nama || "";
+  }, [isEdit, formData.tahun_ajaran_id, tahunAjaranList, tahunAjaranAktif]);
+
+  useEffect(() => {
+    if (showForm && !isEdit && tahunAjaranAktif) {
+      setFormData((prev) => ({
+        ...prev,
+        tahun_ajaran_id: tahunAjaranAktif.id?.toString() || "",
+      }));
+    }
+  }, [showForm, isEdit, tahunAjaranAktif]);
 
   const fetchData = useCallback(
     async (page = 1) => {
@@ -408,28 +431,18 @@ export default function ManajemenSemester() {
                 <div className="mb-2">
                   <label
                     className="form-label text-dark mb-1 fw-semibold text-[10px]"
-                    htmlFor={tahunAjaranSelectId}
+                    htmlFor={tahunAjaranInputId}
                   >
                     Pilih Tahun Ajaran
                   </label>
-                  <select
-                    id={tahunAjaranSelectId}
-                    className="form-select bg-light border-0 shadow-none py-1.5 px-3 text-[10px] rounded-3"
-                    value={formData.tahun_ajaran_id}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        tahun_ajaran_id: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="">-- Pilih Tahun Ajaran --</option>
-                    {tahunAjaranList.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.nama}
-                      </option>
-                    ))}
-                  </select>
+                  <input
+                    id={tahunAjaranInputId}
+                    type="text"
+                    className="form-control bg-light border-0 shadow-none py-1.5 px-3 text-[10px] rounded-3"
+                    value={tahunAjaranDisplay}
+                    readOnly
+                    tabIndex={-1}
+                  />
                   {errors?.tahun_ajaran_id?.[0] && (
                     <div className="text-danger mt-1 text-[8px]">
                       {errors.tahun_ajaran_id[0]}
